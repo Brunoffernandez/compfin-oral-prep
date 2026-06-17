@@ -1,0 +1,473 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ch}{\varphi}
+\newtheorem{remark}{Remark}
+
+\title{Lecture 08 --- Poisson Process, Jump Diffusion, and Affine Jump Diffusion}
+\author{Computational Finance (WI4151), TU Delft --- exam notes}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Scope.} This lecture builds the machinery for asset-price models with discontinuous paths.
+The logical chain is: (i) the Poisson process as a counting process; (ii) attaching random jump
+sizes to it; (iii) the jump-diffusion SDE for the stock and the drift correction forced by the
+risk-neutral martingale condition; (iv) the characteristic function (cf) of the resulting log-price,
+which is what Fourier/COS methods consume; (v) the affine jump-diffusion (AJD) framework
+(Duffie--Pan--Singleton 2000) that generalises Heston, Merton and their union, and reduces the cf
+to a system of Riccati ODEs. The recurring punchline of the course is on slide 32: \emph{the COS
+method works as long as the characteristic function is known}. Everything here exists so that we can
+write down that cf. Cross-reference \texttt{notes/Lecture06-notes.pdf} for how the cf actually
+enters the European COS formula.
+
+\section{Why jumps: the empirical motivation}
+The Black--Scholes/GBM model has continuous paths and Gaussian log-returns. Empirically (slides 3--4),
+equity index returns show (a) sudden large moves --- the SPX fell sharply at the onset of COVID-19 in
+March 2020 --- and (b) \emph{fat tails}: the histogram of daily SPX returns has far more mass in the
+extremes than the fitted normal, and the Q--Q plot bends away from the diagonal at both ends. Fat tails
+are quantified by the standardised third and fourth moments,
+\[
+\text{skewness} = \E\!\left[\Big(\tfrac{X-\mu}{\sigma}\Big)^{3}\right], \qquad
+\text{kurtosis}  = \E\!\left[\Big(\tfrac{X-\mu}{\sigma}\Big)^{4}\right],
+\]
+which for the normal are $0$ and $3$; observed returns have negative skew and excess kurtosis ($>3$).
+Diffusion alone cannot generate this at short horizons (a small-variance Gaussian is thin-tailed), so
+we add a jump component. Jumps are also the natural way to model the unpredictability of crashes: they
+arrive at random times that are not foreseeable from past information.
+
+\section{The Poisson random variable and the Poisson process}
+
+\subsection{Poisson distribution}
+A discrete random variable $X$ is Poisson with parameter $\lambda>0$ if
+\begin{equation}\label{eq:poispmf}
+f(k)=\mathbb{P}(X=k)=\frac{\lambda^{k}e^{-\lambda}}{k!},\qquad k\in\mathbb{N}.
+\end{equation}
+Its mean is $\lambda$, computed directly:
+\[
+\E[X]=\sum_{k=0}^{\infty} k\,\frac{\lambda^{k}e^{-\lambda}}{k!}
+=\sum_{k=1}^{\infty}\frac{\lambda^{k}e^{-\lambda}}{(k-1)!}
+=\lambda e^{-\lambda}\sum_{k=1}^{\infty}\frac{\lambda^{k-1}}{(k-1)!}
+=\lambda e^{-\lambda}\,e^{\lambda}=\lambda,
+\]
+using $\sum_{j\ge0}\lambda^{j}/j!=e^{\lambda}$. A short companion computation of $\E[X(X-1)]=\lambda^2$
+gives $\mathrm{Var}(X)=\E[X^2]-\E[X]^2=(\lambda^2+\lambda)-\lambda^2=\lambda$. So for the Poisson law,
+\emph{mean $=$ variance $=\lambda$}; this is a useful sanity check and an examiner favourite.
+
+\subsection{From counts to a process}
+Fix an interval length $t$ and model the number of events (jumps) in it as Poisson with parameter
+$\lambda t$:
+\[
+\mathbb{P}(N_t=k)=\frac{(\lambda t)^{k}e^{-\lambda t}}{k!},\qquad k\in\mathbb{N}.
+\]
+The \textbf{(homogeneous) Poisson process} $N_t$ with intensity $\lambda$ is the counting process
+satisfying
+\begin{enumerate}[label=(\roman*),topsep=2pt,itemsep=1pt]
+  \item $N_0=0$;
+  \item independent and stationary increments;
+  \item $N_{t}-N_{s}\sim \mathrm{Poisson}(\lambda(t-s))$ for $s<t$.
+\end{enumerate}
+Equivalently we write $N_t=\int_0^t \dd N_s = \sum_{\tau_k\le t}\dd N(\tau_k)$, where $\{\tau_k\}$ are
+the (random) jump times. The increments being stationary means the law of $N_{t+\Delta t}-N_t$ depends
+only on $\Delta t$, not on $t$; combined with independence this pins the process down up to $\lambda$.
+
+\subsection{Compensated Poisson process and the martingale property}
+$N_t$ has positive drift ($\E[N_t]=\lambda t$), so it is not a martingale. Subtracting its mean gives the
+\textbf{compensated Poisson process}
+\[
+\widetilde N_t := \int_0^t \dd N_s - \lambda t = N_t-\lambda t,
+\]
+which \emph{is} a martingale. The verification (slide 9) checks the three ingredients of a martingale:
+$N_{t+\Delta t}-N_t$ is independent of $\mathcal F_t$ and stationary; $\E[N_{t+\Delta t}-N_t]=\lambda\Delta t$,
+so
+\[
+\E[\widetilde N_{t+\Delta t}\mid\mathcal F_t]
+=\widetilde N_t + \E[N_{t+\Delta t}-N_t] - \lambda\Delta t
+=\widetilde N_t + \lambda\Delta t - \lambda\Delta t = \widetilde N_t;
+\]
+and integrability, $\E\big[\,\big|\int_0^t \dd N_s-\lambda t\big|\,\big]<\E[N_t]+\lambda t=2\lambda t<\infty$.
+The constant $\lambda t$ is the \emph{compensator}: it is the predictable, finite-variation part that must be
+removed to leave a martingale. This compensator idea returns immediately when we price under $\mathbb Q$:
+the risk-neutral drift correction is exactly the compensator of the jump term.
+
+\subsection{Time-dependent and stochastic intensity}
+If the jump probability varies in time, let $\lambda=\lambda(t)$ and define the integrated intensity
+$\Lambda(a,b)=\int_a^b\lambda(s)\dd s$. Then for $N_{(a,b]}\equiv N_b-N_a$,
+\[
+\mathbb{P}\big(N_{(a,b]}=k\big)=\frac{\Lambda(a,b)^{k}e^{-\Lambda(a,b)}}{k!},
+\]
+and $N_t$ is an \textbf{inhomogeneous Poisson process}: $N_0=0$, independent increments,
+$\mathbb{P}(N_{t+h}-N_t=1)=\lambda(t)h+O(h^2)$ and $\mathbb{P}(N_{t+h}-N_t\ge2)=O(h^2)$. The
+$O(h^2)$ rule (no two jumps in an infinitesimal interval) is what later justifies $\dd N_t\in\{0,1\}$.
+Again $\int_0^t\dd N_s-\int_0^t\lambda(s)\dd s$ is a martingale.
+
+If $\lambda(t)$ is itself a stochastic process (adapted to the same filtration, with
+$\int_0^T\lambda(t)\dd t<\infty$ a.s.), $N_t$ is a \textbf{Cox / doubly stochastic Poisson process}.
+Conditional on a realised path of $\lambda(\cdot)$ it is just an inhomogeneous Poisson process, so
+\[
+\mathbb{P}\big(N_{(a,b]}=k\mid\mathcal F_a\big)
+=\E\!\left[\frac{\Lambda(a,b)^{k}e^{-\Lambda(a,b)}}{k!}\,\Big|\,\mathcal F_a\right],
+\]
+and the compensated process $\int_0^t\dd N_s-\int_0^t\lambda(s)\dd s$ remains a martingale. The Cox
+construction is the natural way to let intensity respond to the state (e.g.\ intensity rising with
+variance), and it is precisely the AJD slot $\lambda(x)=l_0+l_1\cdot x$ later.
+
+\begin{remark}[Paths are c\`adl\`ag]
+Poisson paths are \emph{c\`adl\`ag} (right-continuous with left limits): at a jump time $t$ the value
+is $N_t$, while $N_{t^-}=\lim_{s\uparrow t}N_s$ is the pre-jump value. The jump is not predictable from
+$\mathcal F_{t^-}$; this is the mathematical statement that crashes cannot be anticipated. Throughout,
+``$t^-$'' denotes the left limit and matters once we attach state-dependent jump sizes.
+\end{remark}
+
+\section{The compound Poisson process and its characteristic function}\label{sec:cpp}
+Attach to each jump an i.i.d.\ random size. The \textbf{compound Poisson process} is
+\[
+Q_t=\sum_{k=1}^{N_t} Y_k,
+\]
+with $\{Y_k\}$ i.i.d.\ (law $\nu$, cf $\widehat\nu(u)=\E[e^{\ii u Y}]$), independent of the Poisson
+count $N_t$. The cf of $Q_t$ is the single most reusable computation in this lecture; it is what makes
+jumps tractable for Fourier pricing.
+
+\subsection{Derivation by conditioning (the characteristic exponent)}
+Condition on the number of jumps and use independence:
+\[
+\E\!\left[e^{\ii u Q_t}\right]
+=\sum_{n=0}^{\infty}\mathbb{P}(N_t=n)\,\E\!\left[e^{\ii u\sum_{k=1}^{n}Y_k}\right]
+=\sum_{n=0}^{\infty}\frac{(\lambda t)^{n}e^{-\lambda t}}{n!}\,\big(\widehat\nu(u)\big)^{n},
+\]
+because the $Y_k$ are i.i.d.\ so $\E[e^{\ii u\sum_{k\le n}Y_k}]=\widehat\nu(u)^{n}$. Pull out $e^{-\lambda t}$
+and recognise the exponential series:
+\[
+\E\!\left[e^{\ii u Q_t}\right]
+=e^{-\lambda t}\sum_{n=0}^{\infty}\frac{\big(\lambda t\,\widehat\nu(u)\big)^{n}}{n!}
+=e^{-\lambda t}\,e^{\lambda t\,\widehat\nu(u)}
+=\exp\!\Big(\lambda t\big(\widehat\nu(u)-1\big)\Big).
+\]
+Hence
+\begin{equation}\label{eq:cppcf}
+\boxed{\;\ch_{Q_t}(u)=\exp\!\Big(t\,\lambda\big(\widehat\nu(u)-1\big)\Big)
+       =\exp\!\Big(t\,\lambda\!\int_{\R}\big(e^{\ii u y}-1\big)\dd\nu(y)\Big).\;}
+\end{equation}
+The exponent is \emph{linear in $t$}, so the \textbf{characteristic exponent} is
+$\psi(u)=\lambda(\widehat\nu(u)-1)$. This is the simplest non-trivial instance of the
+\textbf{L\'evy--Khintchine} representation: a pure-jump L\'evy process has cf
+$\exp(t\,\psi(u))$ with $\psi(u)=\int_{\R}(e^{\ii u y}-1)\,\Pi(\dd y)$ and L\'evy measure
+$\Pi(\dd y)=\lambda\,\nu(\dd y)$ (finite mass $\lambda$, i.e.\ finite activity). The ``$-1$'' inside is the
+compensation that makes $\psi(0)=0$ (so $\ch_{Q_t}(0)=1$, as any cf must satisfy).
+
+\subsection{Adding the diffusion: cf of a L\'evy jump-diffusion log-price}
+For a process $X_t=\gamma t+\sigma W_t+Q_t$ (drift $+$ Brownian $+$ compound Poisson, all independent),
+cfs multiply, so
+\begin{equation}\label{eq:levycf}
+\ch_{X_t}(u)=\exp\!\Big(t\Big[\,\ii u\gamma-\tfrac12\sigma^2u^2
+   +\lambda\big(\widehat\nu(u)-1\big)\Big]\Big).
+\end{equation}
+This is the full L\'evy--Khintchine exponent (Gaussian part $-\tfrac12\sigma^2u^2$, drift $\ii u\gamma$,
+jump part $\lambda(\widehat\nu(u)-1)$). For pricing we will fix $\gamma$ by the martingale condition of
+\S\ref{sec:drift}, but the \emph{shape} \eqref{eq:levycf} is model-independent: choose the jump law
+$\nu$ and you have the cf. This is the bridge to COS.
+
+\section{The jump-diffusion SDE and its solution}
+
+\subsection{Random jump sizes and It\^o for jumps}
+Start from $\dd Y_t=J_t\,\dd N_t$: a jump of size $J_t$ occurs whenever $\dd N_t=1$ (and $\dd N_t\in\{0,1\}$
+because two simultaneous jumps have probability $O(\dd t^2)$). $J_t$ is taken left-continuous. For a general
+jump-diffusion $\dd Y_t=\mu_t\,\dd t+\sigma_t\,\dd W_t+J_t\,\dd N_t$, It\^o's lemma must add the jump
+contribution \emph{exactly} (not via a Taylor expansion):
+\begin{equation}\label{eq:itojump}
+\dd g(Y_t,t)=\frac{\partial g}{\partial t}\dd t
++\frac{\partial g}{\partial Y}\big(\mu_t\dd t+\sigma_t\dd W_t\big)
++\tfrac12\frac{\partial^2 g}{\partial Y^2}\sigma_t^2\dd t
++\big[g(Y_{t^-}+J_t,t)-g(Y_{t^-},t)\big]\dd N_t.
+\end{equation}
+The first three terms act on the \emph{continuous part} $Y^c_t=Y_0+\int_0^t\mu_s\dd s+\int_0^t\sigma_s\dd W_s$
+(jumps excluded); the bracket is the \emph{finite} change in $g$ across a jump, not its differential.
+There is no $\tfrac12 g''J^2$ term --- a jump is a finite move, so we use the exact difference. The
+product rule generalises with a covariation term
+$\dd[Y,Z]_t=\sigma^Y_t\sigma^Z_t\rho\,\dd t+\sum_{s\le t}J^Y_sJ^Z_s$ (continuous co-quadratic-variation
+plus simultaneous jumps); for $Y=Z$ this is the quadratic variation
+$[Y,Y]_t=\int_0^t(\sigma^Y_s)^2\dd s+\sum_{s\le t}(J^Y_s)^2$.
+
+\subsection{The stock SDE and its log}
+The Merton-type stock dynamics are
+\begin{equation}\label{eq:stocksde}
+\dd S_t=\mu\,S_{t^-}\dd t+\sigma\,S_{t^-}\dd W_t+J_t\,S_{t^-}\dd N_t,
+\end{equation}
+with $J_t$ a continuous random variable independent of $S_t$ and $N_t$. At a jump,
+$\Delta S_t=S_t-S_{t^-}=J_t S_{t^-}$, so $S_t=S_{t^-}(1+J_t)$: the price is multiplied by $(1+J_t)$.
+(For $S_t>0$ we need $J_t>-1$.) Apply \eqref{eq:itojump} with $g=\ln$:
+\[
+\dd\ln S_t
+=\frac{1}{S_{t^-}}\big(\mu S_{t^-}\dd t+\sigma S_{t^-}\dd W_t\big)
+-\frac{1}{2S_{t^-}^2}\sigma^2S_{t^-}^2\dd t
++\big[\ln S_t-\ln S_{t^-}\big]\dd N_t,
+\]
+and since $\ln S_t-\ln S_{t^-}=\ln(1+J_t)$ at a jump,
+\begin{equation}\label{eq:logsde}
+\dd\ln S_t=\Big(\mu-\tfrac12\sigma^2\Big)\dd t+\sigma\,\dd W_t+\ln(1+J_t)\,\dd N_t.
+\end{equation}
+So the log-price is exactly the L\'evy jump-diffusion of \eqref{eq:levycf} with jump variable
+$\ln(1+J_t)$. Integrating, $\ln S_T=\ln S_0+(\mu-\tfrac12\sigma^2)T+\sigma W_T+\sum_{k=1}^{N_T}\ln(1+J_k)$:
+a Brownian log plus a compound-Poisson sum of i.i.d.\ log-jumps.
+
+\section{The compensator and the risk-neutral drift correction}\label{sec:drift}
+The pricing requirement is that the discounted stock $S_t/M_t=e^{-rt}S_t$ is a $\mathbb Q$-martingale.
+Apply the product rule to $e^{-rt}S_t$ (the cross term $\dd e^{-rt}\dd S_t=0$ since $e^{-rt}$ has finite
+variation):
+\[
+\dd(S_t/M_t)=e^{-rt}\big[-rS_{t^-}\dd t+\dd S_t\big]
+=e^{-rt}\big[(\mu-r)S_{t^-}\dd t+\sigma S_{t^-}\dd W_t+J_tS_{t^-}\dd N_t\big].
+\]
+The $\dd W_t$ term is already a martingale. For the rest, take $\E^{\mathbb Q}$ and use
+$\E[\dd N_t]=\lambda\dd t$ together with the independence of $J_t$:
+\[
+\E^{\mathbb Q}\big[\dd(S_t/M_t)\big]
+=e^{-rt}S_{t^-}\,\E^{\mathbb Q}\big[(\mu-r)\dd t+J_t\,\dd N_t\big]
+=e^{-rt}S_{t^-}\Big[(\mu-r)+\lambda\,\E^{\mathbb Q}[J_t]\Big]\dd t.
+\]
+Setting this to zero gives the \textbf{risk-neutral drift correction}
+\begin{equation}\label{eq:driftcorr}
+\boxed{\;\mu = r-\lambda\,\E^{\mathbb Q}[J_t].\;}
+\end{equation}
+The term $\lambda\E^{\mathbb Q}[J_t]$ is the \emph{jump compensator}: it is exactly $\E[J_t\,\dd N_t]/\dd t$,
+the mean rate at which jumps push the price up, and it must be subtracted from the drift so the jumps do
+not bias the expected return away from $r$. Equivalently, $J_t\dd N_t-\lambda\E[J_t]\dd t$ is the
+compensated (martingale) jump term, mirroring \S\,2.3. The $\mathbb Q$ stock dynamics are
+\[
+\dd S_t=\big(r-\lambda\,\E^{\mathbb Q}[J_t]\big)S_{t^-}\dd t+\sigma S_{t^-}\dd W_t+J_tS_{t^-}\dd N_t.
+\]
+Substituting \eqref{eq:driftcorr} into \eqref{eq:logsde},
+\begin{equation}\label{eq:logQ}
+\dd\ln S_t=\Big(r-\lambda\,\E^{\mathbb Q}[J_t]-\tfrac12\sigma^2\Big)\dd t+\sigma\dd W_t+\ln(1+J_t)\dd N_t.
+\end{equation}
+
+\begin{remark}[Compensate the right thing]
+A standard trap: the drift correction uses $\E[J_t]$ (the \emph{arithmetic} jump in $S/S_{t^-}-1$), not
+$\E[\ln(1+J_t)]$. In the Merton parametrisation below one usually models $\ln(1+J)=\xi\sim\mathcal N(\mu_J,\sigma_J^2)$,
+so $1+J=e^{\xi}$ and $\E[J]=\E[e^\xi]-1=e^{\mu_J+\frac12\sigma_J^2}-1$. The compensator is
+$\lambda(e^{\mu_J+\frac12\sigma_J^2}-1)$. Mixing the two is the classic sign/exponent error.
+\end{remark}
+
+\subsection{PIDE for the option value}
+Requiring $V_t/M_t$ a martingale and repeating the It\^o-for-jumps expansion on $e^{-rt}V(S_t,t)$ gives,
+after taking $\E^{\mathbb Q}$ and using independence of $J$, the
+\textbf{partial integro-differential equation (PIDE)}
+\[
+\frac{\partial V}{\partial t}
++\big(r-\lambda\E[J]\big)S\frac{\partial V}{\partial S}
++\tfrac12\sigma^2S^2\frac{\partial^2 V}{\partial S^2}
+-rV
++\lambda\,\E^{\mathbb Q}\!\big[V(S(1+J),t)-V(S,t)\big]=0.
+\]
+The last term --- an integral against the jump law --- is the non-local piece that distinguishes a PIDE
+from the BS PDE. Numerically it couples all $S$, which is exactly why a transform method (read off the cf
+once, integrate against the payoff) is so much cleaner than solving the PIDE on a grid.
+
+\section{Two popular jump-size models and their cf}
+With $\xi=\ln(1+J)$ the log-jump, the only model-specific input to \eqref{eq:levycf} is $\widehat\nu(u)=\E[e^{\ii u\xi}]$.
+
+\subsection{Merton (1976): lognormal jumps}
+Log-jumps are Gaussian, $\xi\sim\mathcal N(\mu_J,\sigma_J^2)$, with density
+\[
+\nu_J(x)=\frac{1}{\sigma_J\sqrt{2\pi}}\exp\!\Big(-\frac{(x-\mu_J)^2}{2\sigma_J^2}\Big),
+\qquad
+\widehat\nu(u)=\exp\!\Big(\ii u\mu_J-\tfrac12\sigma_J^2u^2\Big).
+\]
+Plugging into \eqref{eq:levycf} with the risk-neutral drift $\gamma=r-\tfrac12\sigma^2-\lambda\E[J]$ and
+$\E[J]=e^{\mu_J+\frac12\sigma_J^2}-1$ gives the \textbf{Merton cf of the log-price}
+$\ln S_T$ (writing $x=\ln S_0$, $\tau=T$):
+\begin{equation}\label{eq:mertoncf}
+\ch_{\ln S_T}(u)=\exp\!\Big(\ii u\big(x+(r-\tfrac12\sigma^2-\lambda\kappa)\tau\big)
+-\tfrac12\sigma^2u^2\tau
++\lambda\tau\big(e^{\ii u\mu_J-\frac12\sigma_J^2u^2}-1\big)\Big),
+\end{equation}
+where $\kappa=\E[J]=e^{\mu_J+\frac12\sigma_J^2}-1$. The first two terms are the GBM cf; the last is the
+compound-Poisson exponent \eqref{eq:cppcf}. Effects on implied volatility (slide 31): $\sigma_J$ controls
+the smile \emph{curvature}, $\lambda$ the overall \emph{level}, and $\mu_J$ the \emph{slope/skew}
+(negative $\mu_J\Rightarrow$ downward skew, the equity case).
+
+\subsection{Kou (2002): double-exponential jumps}
+Log-jumps follow an asymmetric double-exponential law,
+\[
+\nu_X(x)=p\,\eta_1 e^{-\eta_1 x}\mathbf 1_{\{x\ge0\}}+q\,\eta_2 e^{\eta_2 x}\mathbf 1_{\{x<0\}},
+\qquad p+q=1,\ \eta_1>1,\ \eta_2>0.
+\]
+Up-jumps are $\mathrm{Exp}(\eta_1)$ with probability $p$, down-jumps are $-\mathrm{Exp}(\eta_2)$ with
+probability $q$. Its transform (Laplace/cf) is
+\[
+\widehat\nu(u)=\E[e^{\ii u X}]
+=p\,\frac{\eta_1}{\eta_1-\ii u}+q\,\frac{\eta_2}{\eta_2+\ii u},
+\]
+obtained by integrating each exponential tail. The condition $\eta_1>1$ guarantees
+$\E[e^{X}]<\infty$, i.e.\ the jump multiplier $1+J=e^X$ has finite mean so the compensator
+$\kappa=\E[J]=p\frac{\eta_1}{\eta_1-1}+q\frac{\eta_2}{\eta_2+1}-1$ is finite. The Kou cf of the log-price
+is again \eqref{eq:levycf} with this $\widehat\nu$ and $\gamma=r-\tfrac12\sigma^2-\lambda\kappa$:
+\[
+\ch_{\ln S_T}(u)=\exp\!\Big(\ii u\big(x+(r-\tfrac12\sigma^2-\lambda\kappa)\tau\big)
+-\tfrac12\sigma^2u^2\tau
++\lambda\tau\big(\widehat\nu(u)-1\big)\Big).
+\]
+
+\begin{remark}[Merton vs.\ Kou]
+Both add finite-activity jumps to GBM and both yield closed-form cfs. \emph{Merton}: symmetric-tailed
+Gaussian jumps, smooth, but the cf decays like $e^{-c u^2}$ (rapidly). \emph{Kou}: exponential tails
+$\Rightarrow$ heavier, asymmetric, and the cf decays only like $1/u^2$ (rationally); Kou jumps admit
+semi-analytic results for barriers/first-passage because of the memoryless exponential, which Merton does
+not. For COS the practical difference is the tail decay of $\ch$: slower decay (Kou) means more cosine
+terms $N$ for the same accuracy, and the cumulant-based range $[a,b]$ is wider because exponential jumps
+fatten the tails.
+\end{remark}
+
+\section{How the cf enters COS (the crucial connection)}\label{sec:cos}
+Recall (Lecture 06) the European COS price is
+\[
+v(x_0,t_0)\approx e^{-r\tau}\sum_{k=0}^{N-1}{}' \;
+\mathrm{Re}\!\left\{\ch_{X_T}\!\Big(\tfrac{k\pi}{b-a}\Big)\,e^{-\ii k\pi\frac{a}{b-a}}\right\}V_k,
+\]
+where the prime halves the $k=0$ term, $V_k$ are the (closed-form) cosine coefficients of the payoff on
+$[a,b]$, and $\ch_{X_T}$ is the cf of the log-price (with the spot dependence carried as
+$\ch_{X_T}(u)=\ch(u)e^{\ii u x_0}$). The entire model enters through $\ch$ \emph{evaluated at the grid
+$u_k=k\pi/(b-a)$}. Lecture 08 supplies $\ch$ in closed form for Merton \eqref{eq:mertoncf} and Kou,
+exactly the slot COS needs --- nothing else about the jump structure is required. This is the content of
+slide 32: COS is applicable as long as the cf is known. Two practical riders, both exam-relevant:
+\begin{enumerate}[topsep=2pt,itemsep=2pt]
+  \item \textbf{Cumulants for $[a,b]$.} The truncation range is set from cumulants $c_1,c_2,c_4$ of
+  $X_T=\ln S_T$, $[a,b]=[c_1\pm L\sqrt{c_2+\sqrt{c_4}}]$. For a jump-diffusion these get explicit jump
+  contributions; e.g.\ for Merton,
+  $c_1=(r-\tfrac12\sigma^2-\lambda\kappa)\tau+\lambda\tau\mu_J$,
+  $c_2=\sigma^2\tau+\lambda\tau(\mu_J^2+\sigma_J^2)$,
+  $c_4=\lambda\tau(\mu_J^4+6\mu_J^2\sigma_J^2+3\sigma_J^4)$.
+  The pure jump term in $c_4$ is what makes the density fat-tailed and forces a wider $[a,b]$ than the
+  diffusion alone would. \emph{This is precisely the short-maturity trap}: at small $\tau$ the diffusion
+  $c_2=\sigma^2\tau$ shrinks, but jumps can dominate; if $[a,b]$ is built from $c_2$ alone (forgetting the
+  jump kurtosis $c_4$, or taking $L$ too small) the range is too narrow, the truncation error floor stays
+  high, and the price is wrong no matter how many terms $N$ you take. Include $c_4$ and use a generous $L$.
+  \item \textbf{cf decay sets $N$.} COS series error is controlled by the tail decay of $\ch(u_k)$.
+  Merton decays super-exponentially (few terms); Kou only polynomially (more terms). Always evaluate
+  $\ch$ on the principal branch to avoid the kind of branch-cut error that plagues the Heston cf.
+\end{enumerate}
+
+\section{Affine processes and the AJD framework}
+The Heston model and the Merton/Kou jump models are both special cases of one structure: \textbf{affine
+jump diffusions}. A Markov process is \emph{affine} if its conditional cf is exponential-affine in the
+current state,
+\[
+\E\!\big[e^{u\cdot X_T}\mid X_t=x\big]=e^{\alpha(u,t,T)+\beta(u,t,T)\cdot x}.
+\]
+This is the structural reason the cf is available in (semi-)closed form: the $x$-dependence collapses to
+a scalar $\alpha$ and a vector $\beta$ solving ODEs.
+
+\subsection{AJD dynamics (Duffie--Pan--Singleton, 2000)}
+An $n$-dimensional AJD is
+\[
+\dd X_t=\mu(X_t)\dd t+\sigma(X_t)\dd W_t+\dd Z_t,
+\]
+where every coefficient is affine in the state $x$:
+\begin{itemize}[topsep=2pt,itemsep=1pt]
+  \item drift $\mu(x)=K_0+K_1x$, with $K_0\in\R^n$, $K_1\in\R^{n\times n}$;
+  \item diffusion $[\sigma(x)\sigma(x)^{\!\top}]_{ij}=(H_0)_{ij}+(H_1)_{ij}\cdot x$, with
+  $H_0\in\R^{n\times n}$, $H_1\in\R^{n\times n\times n}$;
+  \item jumps $\dd Z_t=J\,\dd N_t$ with state-dependent intensity $\lambda(x)=l_0+l_1\cdot x$, jump sizes
+  $J\sim\nu$ independent of $X_t$;
+  \item short rate $R(x)=\rho_0+\rho_1\cdot x$ (also affine), so discounting stays in the family.
+\end{itemize}
+The jump law enters only through its ``jump transform''
+\[
+\theta(c)=\int_{\R^n}e^{c\cdot z}\dd\nu(z),
+\]
+i.e.\ the same $\widehat\nu$ as in \S\ref{sec:cpp} (here written with a general complex argument $c=\beta(t)$).
+
+\subsection{The cf as the solution of Riccati ODEs}
+The key AJD result: the discounted transform
+\[
+\ch^{X}(u,x,t,T)=\E\!\left[\exp\!\Big(-\!\int_t^T R(X_s)\dd s\Big)e^{u\cdot X_T}\,\Big|\,\mathcal F_t\right]
+=e^{\alpha(u,t,T)+\beta(u,t,T)\cdot x},
+\]
+where $(\alpha,\beta)$ solve the complex ODEs (boundary conditions $\beta(u,T,T)=u$, $\alpha(u,T,T)=0$)
+\[
+\dot\beta=\rho_1-K_1^{\!\top}\beta-\tfrac12\beta^{\!\top}H_1\beta-l_1\big(\theta(\beta)-1\big),\qquad
+\dot\alpha=\rho_0-K_0\cdot\beta-\tfrac12\beta^{\!\top}H_0\beta-l_0\big(\theta(\beta)-1\big).
+\]
+The $\beta$ equation is a \emph{Riccati} ODE (quadratic in $\beta$ via the $H_1$ term); $\alpha$ is then
+a quadrature. The jump contribution is the same $(\theta(\beta)-1)$ compensator-type term that appeared in
+\eqref{eq:cppcf} --- the unifying observation of the whole lecture: \emph{jumps enter every formula as
+$\theta(\cdot)-1$}.
+
+\subsection{Proof sketch (why the ODEs)}
+Set $\ch_t=\exp(-\int_0^t R\,\dd s)e^{\alpha(t)+\beta(t)\cdot X_t}$. By construction $\ch_t$ should be a
+martingale (then $\ch_t=\E_t[\ch_T]$ gives the claimed transform). Apply It\^o-for-jumps. The jump term's
+expected rate is
+\[
+\E_t\big[(\ch_t(X_{t^-}+J)-\ch_t(X_{t^-}))\dd N_t\big]
+=\int_{\R^n}\ch_{t^-}\big(e^{\beta(t)\cdot y}-1\big)\dd\nu(y)\,\lambda(X_t)\dd t
+=\ch_t\big(\theta(\beta(t))-1\big)\lambda(X_t)\dd t,
+\]
+which is exactly where $\theta(\beta)-1$ comes from. Collecting the $\dd t$ drift and using
+$\partial_t\ch=(-R+\dot\alpha+\dot\beta\cdot X)\ch$, $\partial_X\ch=\beta\ch$,
+$\partial_{XX}\ch=\beta\beta^{\!\top}\ch$, the martingale (zero-drift) condition reads
+\[
+\big[-R(X)+\dot\alpha+\dot\beta\cdot X\big]+\mu(X)\beta+\tfrac12\beta\,\sigma\sigma^{\!\top}\beta^{\!\top}
++\big(\theta(\beta)-1\big)\lambda(X)=0.
+\]
+Substituting the affine forms of $R,\mu,\sigma\sigma^{\!\top},\lambda$ and matching the $X$-independent part
+and the coefficient of $X$ separately (since it must hold for all $X_t$) yields precisely the two ODEs above.
+
+\subsection{Sanity check: Black--Scholes as an AJD}
+For GBM there are no jumps ($l_0=l_1=0$). With $X=\ln S$, $\tau=T-t$, the pricing PDE in log-variable is
+$-\partial_\tau U+(r-\tfrac12\sigma^2)\partial_X U+\tfrac12\sigma^2\partial_{XX}U-rU=0$. Probing
+$U=\exp(\alpha(u,\tau)+\beta(u,\tau)X)$ and using $\partial_X U=\beta U$, $\partial_{XX}U=\beta^2U$,
+$\partial_\tau U=(\dot\alpha+X\dot\beta)U$ gives
+\[
+-(\dot\alpha+X\dot\beta)+(r-\tfrac12\sigma^2)\beta+\tfrac12\sigma^2\beta^2-r=0
+\;\Rightarrow\;
+\dot\beta=0,\quad \dot\alpha=(r-\tfrac12\sigma^2)\beta+\tfrac12\sigma^2\beta^2-r.
+\]
+With $\beta(u,0)=\ii u$ (so $\beta\equiv\ii u$) and $\alpha(u,0)=0$,
+\[
+\alpha(u,\tau)=\big(r-\tfrac12\sigma^2\big)\ii u\,\tau-\tfrac12\sigma^2u^2\tau-r\tau,
+\]
+recovering the GBM log-price cf
+$\ch(u,\tau)=\exp\big((r-\tfrac12\sigma^2)\ii u\tau-\tfrac12\sigma^2u^2\tau-r\tau+\ii uX\big)$.
+This is the same closed form COS uses for Black--Scholes, now derived as the degenerate AJD --- confirming
+the framework specialises correctly. Adding the jump terms $l_0(\theta(\ii u)-1)$ reproduces \eqref{eq:mertoncf}.
+
+\section{Where this sits in the course}
+\begin{itemize}[topsep=2pt,itemsep=2pt]
+  \item \textbf{Heston (Lecture 07)} is the AJD with state $X=(\ln S,v)$, affine variance $v$ entering
+  both the diffusion ($H_1$ term, $\sigma\sqrt v$) and as the CIR variance process; no jumps. Its cf is
+  the $(\alpha,\beta)$ solution with a non-trivial Riccati $\beta$. Bates' model $=$ Heston $+$ Merton
+  jumps is the canonical AJD that needs both halves of this lecture.
+  \item \textbf{COS (Lectures 06/10)} is the consumer: it needs only $\ch$, supplied here in closed form
+  (Merton, Kou) or via the ODE solve (general AJD). The pipeline is: pick model $\to$ get $\ch$ from this
+  lecture $\to$ set $[a,b]$ from cumulants (with jump $c_4$!) $\to$ sum the COS series.
+  \item \textbf{The compensator/$\theta-1$ motif} appears at three scales: the compensated Poisson process
+  ($-\lambda t$), the risk-neutral drift correction ($-\lambda\E[J]$), and the AJD ODEs
+  ($-l\,(\theta(\beta)-1)$). They are the same idea --- remove the predictable mean of the jumps.
+\end{itemize}
+
+\section*{Honesty note: what the slides do \emph{not} contain}
+For completeness, the following are referenced or implied but not derived in the Lecture 08 deck, and I
+have filled them in from standard sources (Cont--Tankov; Duffie--Pan--Singleton; Fang--Oosterlee):
+\begin{itemize}[topsep=2pt,itemsep=1pt]
+  \item The slides state the Merton density $\nu_J$ and Kou density $\nu_X$ but \emph{do not write the
+  jump-diffusion characteristic functions} \eqref{eq:mertoncf} or the Kou cf explicitly; the
+  conditioning derivation \eqref{eq:cppcf} and these cfs are supplied here.
+  \item The phrase ``L\'evy--Khintchine'' does not appear on the slides; I have flagged \eqref{eq:cppcf}--%
+  \eqref{eq:levycf} as the finite-activity special case so the structure is named correctly.
+  \item The Kou transform $\widehat\nu(u)=p\eta_1/(\eta_1-\ii u)+q\eta_2/(\eta_2+\ii u)$ and the explicit
+  cumulants $c_1,c_2,c_4$ for the COS range are not on the slides; they are standard and added for the
+  COS connection. \emph{Verify the exact $c_4$ constant against your Assignment 2 code before the oral.}
+  \item The slides cover the general $n$-dimensional AJD and the BS specialisation, but do \emph{not}
+  carry out the Heston specialisation of $(\alpha,\beta)$; see Lecture 07 notes for that Riccati solution.
+\end{itemize}
+
+\end{document}

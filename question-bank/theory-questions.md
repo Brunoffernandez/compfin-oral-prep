@@ -50,5 +50,26 @@ Filled in per cluster as I study. Format: question -> my short answer -> (gap?).
 16. Why is a discretely-monitored barrier a backward recursion? Where does the Markov property enter, and why does the FFT reappear (vs European COS)? -> -> (gap?)
 
 ## Cluster 4 — Models (Heston / jumps)
+
+### Lecture 08
+1. Define the Poisson process N_t with intensity lambda. State its three defining properties and give P(N_t=k). What are its mean and variance? -> -> (gap?)
+2. Show that mean = variance = lambda for the Poisson law. Do the E[X] sum by hand. -> -> (gap?)
+3. What is the compensated Poisson process, and why is it (not N_t itself) a martingale? Verify the martingale property explicitly. -> -> (gap?)
+4. Distinguish homogeneous, inhomogeneous (time-dependent lambda(t)), and Cox/doubly-stochastic Poisson processes. What is the compensator in each case? -> -> (gap?)
+5. Derive the characteristic function of a compound Poisson process Q_t = sum_{k=1}^{N_t} Y_k by conditioning on N_t. You should reach exp(t*lambda*(nu_hat(u)-1)). -> -> (gap?)
+6. Identify the characteristic exponent of the compound Poisson process and connect it to the Levy-Khintchine representation. Why does the "-1" appear, and what condition does nu_hat(0)=1 enforce? -> -> (gap?)
+7. Write the Merton jump-diffusion SDE for S_t and derive the log-price SDE via Ito-for-jumps. Why is there no (1/2)g''J^2 term in the jump part, and why does ln S_t - ln S_{t^-} = ln(1+J_t)? -> -> (gap?)
+8. Derive the risk-neutral drift correction mu = r - lambda*E[J_t] from the requirement that e^{-rt}S_t is a Q-martingale. What is the "jump compensator" here? -> -> (gap?)
+9. Common trap: in the Merton drift correction, is it E[J] or E[ln(1+J)] that gets compensated? If ln(1+J)~N(mu_J,sigma_J^2), what is kappa = E[J]? -> -> (gap?)
+10. Write Merton's lognormal-jump cf of ln S_T and Kou's double-exponential cf. State Kou's nu_hat(u) and explain the roles of p,q,eta_1,eta_2 and why eta_1>1 is required. -> -> (gap?)
+11. Compare Merton vs Kou: tail shape, symmetry, and the decay rate of the cf in u. Why does the cf decay rate matter for COS? -> -> (gap?)
+12. How does the jump-diffusion cf enter the COS formula? At which arguments is phi evaluated, and what is the ONLY model-specific input COS needs? -> -> (gap?)
+13. Short-maturity COS trap: write c_1, c_2, c_4 for Merton's log-price. Why can a range [a,b] built from c_2 alone be too narrow at small tau, and how does the jump c_4 fix it? (Connect to the Assignment 2 bug.) -> -> (gap?)
+14. State the PIDE for a jump-diffusion option value. Which term is non-local, and why does this motivate Fourier methods over a PIDE grid solve? -> -> (gap?)
+15. Define an affine process and write the AJD SDE with all four affine conditions (mu, sigma sigma^T, lambda(x), R(x)). What is the jump transform theta(c)? -> -> (gap?)
+16. State the AJD result phi = exp(alpha + beta.x) and the Riccati ODEs for (alpha,beta) with boundary conditions. Which term is quadratic, and where does (theta(beta)-1) come from? -> -> (gap?)
+17. Recover the Black-Scholes log-price cf by solving the AJD ODEs with no jumps (X=ln S). Show beta=iu and the alpha you obtain. -> -> (gap?)
+18. The (theta-1) / compensator motif appears at three scales in this lecture (compensated Poisson, drift correction, AJD ODE). State all three and explain why they are "the same idea". -> -> (gap?)
+
 ## Cluster 5 — American options
 ## Cluster 6 — Exotics

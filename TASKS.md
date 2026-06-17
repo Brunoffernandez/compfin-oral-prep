@@ -22,7 +22,7 @@ For each ASSIGNMENT task, produce:
 - [ ] Lecture 04 — Monte Carlo integration, MC for SDEs, variance reduction
 - [ ] Lecture 05 — Binomial, finite differences, BS PDE, binomial-as-FD
 - [ ] Lecture 07 — Heston, CIR variance, affine structure & characteristic function, MC under Heston
-- [ ] Lecture 08 — Poisson, jump diffusion, affine jump diffusion
+- [x] Lecture 08 — Poisson, jump diffusion, affine jump diffusion
 - [ ] Lecture 09 — American options (call/put, Euro/Am equivalence, FD/MC/COS/binomial-tree)
 - [ ] Lecture 11 — exotics overview (barrier/Asian/digital/basket/cliquet)
 
