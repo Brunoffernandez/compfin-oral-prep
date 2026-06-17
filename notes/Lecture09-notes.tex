@@ -1,0 +1,503 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ch}{\varphi}
+\newtheorem{remark}{Remark}
+
+\title{\textbf{Lecture 9 --- American and Bermudan options}\\[2pt]
+\large Study notes: optimal stopping, the free boundary, the LCP, and pricing by tree / FD / LSM / COS}
+\author{Computational Finance (WI4151), TU Delft --- F.\ Fang}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.0em}
+
+\begin{abstract}
+\noindent These notes work through Lecture 9 in full. The early-exercise feature turns a plain expectation
+into an \emph{optimal-stopping} problem with a \emph{free boundary}: at every monitoring instant the holder
+takes the larger of the intrinsic payoff and the continuation value, and the set of states where exercise wins
+is bounded by an unknown curve $S^\ast(t)$. Two facts orient everything. (i) For a \emph{non-dividend}
+underlying the American \emph{call} is worth exactly the European call --- early exercise is never optimal, by
+a clean no-arbitrage argument. (ii) The American \emph{put} has no such equivalence: early exercise can be
+strictly optimal, the price solves a \emph{linear complementarity problem} (LCP), and it must be priced
+numerically. We cover all four pricing routes on the slides --- binomial tree, finite differences with the
+LCP (the projection / PSOR step), Longstaff--Schwartz regression Monte Carlo (LSM), and the COS/Bermudan
+backward recursion (Fang--Oosterlee) --- and close with Richardson extrapolation from Bermudan to American.
+The COS section leans on the Lecture 6 machinery (the cosine coefficients $A_k$ read off the characteristic
+function, and the $\chi_k,\psi_k$ building-block integrals); those derivations are not repeated, only invoked.
+See \texttt{notes/Lecture06-notes.pdf}.
+\end{abstract}
+
+\tableofcontents
+
+\section{The early-exercise problem and the free boundary}\label{sec:problem}
+
+An American option may be exercised at \emph{any} time $t\in[0,T]$; a Bermudan option at a discrete set of
+monitoring dates $\zeta=\{t_1,\dots,t_N\}$ with $t_N=T$. The continuous American case is the limit of the
+Bermudan as the monitoring set fills $[0,T]$; \emph{every numerical method below in fact prices a Bermudan},
+and the American value is obtained by letting $N\to\infty$ (or by Richardson extrapolation, \S\ref{sec:rich}).
+
+At each admissible instant the holder solves a binary decision: \emph{exercise now} for the intrinsic payoff,
+or \emph{hold} and keep the option alive. Writing $\Lambda$ for the intrinsic payoff (a call pays
+$(S_t-K)^+$, a put $(K-S_t)^+$), the value is the larger of the two,
+\begin{equation}\label{eq:bellman}
+v(S,t)=\max\big\{\Lambda(S,t),\;\text{continuation value at }(S,t)\big\}.
+\end{equation}
+The continuation value is the discounted risk-neutral expectation of the option value an instant later. This
+is a \emph{dynamic-programming / optimal-stopping} structure: the price is
+\begin{equation}\label{eq:optstop}
+v(S_0,0)=\sup_{\tau\in\mathcal T_{[0,T]}} \E^{Q}\!\left[e^{-r\tau}\,\Lambda(S_\tau,\tau)\,\middle|\,S_0\right],
+\end{equation}
+the supremum over all stopping times $\tau$ adapted to the price filtration. The hard part is that the optimal
+$\tau^\ast$ is \emph{not known in advance}; it is itself an output of the problem.
+
+\paragraph{The free boundary.} The state space $(S,t)$ splits into two regions:
+\begin{itemize}[leftmargin=*]
+  \item the \textbf{continuation region} $\mathcal C$, where it is optimal to hold and $v(S,t)>\Lambda(S,t)$
+  strictly; here $v$ satisfies the Black--Scholes PDE with equality;
+  \item the \textbf{stopping (exercise) region} $\mathcal S$, where it is optimal to exercise and
+  $v(S,t)=\Lambda(S,t)$.
+\end{itemize}
+The interface between them is the \emph{optimal exercise boundary} $S^\ast(t)$. It is a ``free'' boundary
+because its location is unknown a priori and must be solved for together with $v$ --- in contrast to a fixed
+Dirichlet/Neumann boundary. For the American put (slide 10): if $S$ is large it is never worth exercising (you
+would throw away the remaining optionality and the interest on $K$), so it is optimal to hold; as $S\to0$ the
+payoff $K-S$ approaches its maximum and is best taken immediately. Hence there is a well-defined $S^\ast(t)$
+with
+\begin{equation}
+S_t<S^\ast(t)\ \Rightarrow\ \text{exercise},\ v=K-S_t,
+\qquad
+S_t>S^\ast(t)\ \Rightarrow\ \text{hold},\ v>K-S_t .
+\end{equation}
+Across the boundary $v$ and $\partial_S v$ match continuously (the \emph{smooth-pasting} conditions
+$v(S^\ast,t)=K-S^\ast$, $\partial_S v(S^\ast,t)=-1$); the slides state the existence of $S^\ast(t)$ but do not
+derive smooth pasting. \emph{[Marked as not on the slides --- standard result, stated for completeness.]}
+
+\section{American call on a non-dividend stock equals the European call}\label{sec:callequiv}
+
+\begin{remark}[Claim]
+If the underlying pays no dividends, the American call has the same value as the European call: it is never
+optimal to exercise early.
+\end{remark}
+
+\paragraph{Slide argument (no-arbitrage, dominating strategy).} Suppose at some $t<T$ the holder considers
+exercising the call. This is only conceivably worthwhile if $S_t>K$, giving payoff $S_t-K$. Compare against the
+following \emph{alternative strategy} that keeps the option alive:
+\begin{enumerate}[leftmargin=*]
+  \item At $t$, \textbf{short} the underlying, receiving $S_t$ in cash, and \textbf{keep} the (unexercised)
+  call.
+  \item At maturity $T$, close the short by buying one unit of the asset, choosing the cheaper of:
+  \begin{itemize}
+    \item exercising the call at maturity, paying $K$ (used when $S_T>K$); or
+    \item buying in the open market at $S_T$ (used when $S_T\le K$).
+  \end{itemize}
+  In either case the cash paid at $T$ to acquire the asset is $\min(K,S_T)\le K$.
+\end{enumerate}
+Compare the two cash flows. Early exercise gives $S_t-K$ \emph{at time $t$}. The alternative gives $S_t$ at
+time $t$ and pays out at most $K$ at the later time $T$. Even ignoring the time value of money, $S_t$ now and
+$\le K$ later already weakly dominates $S_t-K$ now (the alternative keeps the full $S_t$ and the cash payment
+$K$ is deferred and possibly smaller). Accounting for interest the dominance is strict: holding $K$ in the bank
+from $t$ to $T$ earns interest, so the present value of the deferred $\le K$ outflow is strictly less than $K$.
+Therefore early exercise is dominated, and since this holds at every $t<T$, the early-exercise feature is
+worthless: the American call equals the European call.
+
+\paragraph{Cleaner version (lower-bound argument).} An equivalent and very quotable proof: for a
+\emph{non-dividend} stock the European call satisfies, by put--call parity and $P^{\text{eur}}\ge0$,
+\begin{equation}\label{eq:callbound}
+C^{\text{eur}}(S,t)=S-Ke^{-r(T-t)}+P^{\text{eur}}(S,t)\;\ge\; S-Ke^{-r(T-t)}\;>\;S-K
+\end{equation}
+whenever $r>0$ and $t<T$. The right-hand side $S-K$ is the intrinsic value (the payoff from exercising now).
+Thus the live European call is worth strictly \emph{more} than its immediate-exercise value: the holder would
+never trade the call for the intrinsic, so the early-exercise right is never used and adds nothing,
+$C^{\text{am}}=C^{\text{eur}}$. The economic content of $-Ke^{-r(T-t)}$ versus $-K$ is exactly the interest
+earned by deferring the strike payment; with dividends, the asset can ``leak'' value before $T$ and the
+inequality \eqref{eq:callbound} can fail, which is why dividend-paying calls \emph{can} be exercised early.
+
+\paragraph{Why the put is different.} For the put, parity gives
+$P^{\text{eur}}=Ke^{-r(T-t)}-S+C^{\text{eur}}$, and $Ke^{-r(T-t)}<K$, so the live European put can be worth
+\emph{less} than its intrinsic value $K-S$. When that happens, exercising immediately and banking $K-S$ (to
+earn interest on the full $K$) beats holding. So early exercise can be strictly optimal: there is no
+European--American equivalence for the put, and we must price it numerically (\S\ref{sec:lcp}
+onward). Intuitively, the put holder \emph{wants} the strike cash $K$ early to earn interest, whereas the call
+holder \emph{wants} to defer paying $K$ --- the asymmetry is entirely in the sign of the strike cash flow.
+
+\section{Black--Scholes for the American put: the LCP / obstacle formulation}\label{sec:lcp}
+
+We write $P_{\mathrm{Am}}(S,t)$ for the American put value. Two inequalities pin it down, and at every point
+\emph{one of them holds with equality}.
+
+\paragraph{(I) Value dominates payoff.} Trivially, by no-arbitrage,
+\begin{equation}\label{eq:ineq1}
+P_{\mathrm{Am}}(S,t)\;\ge\;\max(K-S,0).
+\end{equation}
+If $P_{\mathrm{Am}}<\max(K-S,0)$ one could buy the option and exercise it immediately for an instant riskless
+profit.
+
+\paragraph{(II) The PDE becomes an inequality.} Form the delta-hedged portfolio
+$\Pi=\Delta\,S+D$ with $\Delta=\partial P_{\mathrm{Am}}/\partial S$, exactly as in the European BS derivation.
+For a European option the hedged position is riskless and earns the risk-free rate:
+$\Delta(P-\Pi)=r(P-\Pi)\Delta t$. For the American put this becomes an \emph{inequality}, because delta-hedging
+does not remove the uncertainty contributed by the holder's early-exercise right. The slides argue both
+directions by arbitrage:
+\begin{itemize}[leftmargin=*]
+  \item If $\Delta(P_{\mathrm{Am}}-\Pi)>r(P_{\mathrm{Am}}-\Pi)\Delta t$, the hedged option out-earns cash. An
+  arbitrageur borrows at $r$, buys $(P_{\mathrm{Am}}-\Pi)$ (long the put, short $\Pi$), thereby \emph{owning
+  the exercise right}, and locks in the surplus. This is a genuine arbitrage and is competed away --- so this
+  case cannot persist.
+  \item If $\Delta(P_{\mathrm{Am}}-\Pi)<r(P_{\mathrm{Am}}-\Pi)\Delta t$, the hedged option under-earns cash. To
+  arbitrage it one would \emph{short} $(P_{\mathrm{Am}}-\Pi)$ and deposit cash --- but shorting the put hands
+  the exercise decision to the \emph{counterparty}, who may exercise during $[t,t+\Delta t]$. There is no longer
+  a guaranteed riskless profit, so this case is \emph{not} ruled out.
+\end{itemize}
+Only the second case survives, giving the one-sided relation
+$\Delta(P_{\mathrm{Am}}-\Pi)\le r(P_{\mathrm{Am}}-\Pi)\Delta t$. Expanding $\Delta(P_{\mathrm{Am}}-\Pi)$ with
+It\^o and cancelling the $\Delta t$ yields the \textbf{partial differential inequality}
+\begin{equation}\label{eq:pdineq}
+\mathcal L\,P_{\mathrm{Am}}\;:=\;\frac{\partial P_{\mathrm{Am}}}{\partial t}
++\tfrac12\sigma^2 S^2\frac{\partial^2 P_{\mathrm{Am}}}{\partial S^2}
++rS\frac{\partial P_{\mathrm{Am}}}{\partial S}-rP_{\mathrm{Am}}\;\le\;0 .
+\end{equation}
+(The slides write $\partial P/\partial S\,S$ for the drift term; under the risk-neutral measure the drift
+coefficient is $r$, giving $rS\,\partial_S P$.)
+
+\paragraph{The linear complementarity problem.} Combining \eqref{eq:ineq1} and \eqref{eq:pdineq}, at every
+$(S,t)$ \emph{at least one is an equality}, and they cannot both be strict:
+\begin{equation}\label{eq:lcp}
+\boxed{\;
+\big(P_{\mathrm{Am}}-\Lambda\big)\ge0,\qquad
+\mathcal L\,P_{\mathrm{Am}}\le0,\qquad
+\big(P_{\mathrm{Am}}-\Lambda\big)\cdot\big(\mathcal L\,P_{\mathrm{Am}}\big)=0,
+\;}
+\end{equation}
+with $\Lambda=\max(K-S,0)$. This is the \emph{linear complementarity problem} (equivalently an \emph{obstacle
+problem}: $P_{\mathrm{Am}}$ is the smallest supersolution of the BS operator lying above the obstacle
+$\Lambda$). Reading the complementarity:
+\begin{itemize}[leftmargin=*]
+  \item in the continuation region, $P_{\mathrm{Am}}>\Lambda$ so $\mathcal L P_{\mathrm{Am}}=0$ --- the option
+  satisfies the BS PDE exactly;
+  \item in the stopping region, $P_{\mathrm{Am}}=\Lambda$ so $\mathcal L P_{\mathrm{Am}}\le0$ --- the PDE is
+  violated (the payoff is not a BS solution), and exercise is optimal.
+\end{itemize}
+The boundary where the active constraint switches is precisely the free boundary $S^\ast(t)$ of
+\S\ref{sec:problem}.
+
+\paragraph{Auxiliary conditions.} Terminal condition $P_{\mathrm{Am}}(S,T)=\max(K-S,0)$. Boundary conditions
+$P_{\mathrm{Am}}(0,t)=K$ (deep in the money the put is worth $K$, exercised now) and
+$\lim_{S\to\infty}P_{\mathrm{Am}}(S,t)=0$ (far out of the money it is worthless), for $0\le t\le T$.
+
+\section{Bermudan formulation in log-space (the common backbone)}\label{sec:bermudan}
+
+All numerical methods are cleanest in the log variable. Let $t_0$ be now, $\zeta=\{t_1,\dots,t_N\}$ the
+exercise dates, $\Delta t=t_n-t_{n-1}$, $t_N=T$, and
+\begin{equation}\label{eq:logvar}
+X(t_n)\equiv\ln\!\frac{S(t_n)}{K}.
+\end{equation}
+The payoff is $\Lambda(x,t)=\max\!\big(\alpha K(e^x-1),0\big)$ with $\alpha=+1$ for a call, $\alpha=-1$ for a
+put. The backward recursion, for $n=N,N-1,\dots,2$, reads
+\begin{align}
+c(x,t_{n-1})&=e^{-r\Delta t}\,\E\!\big[v(X(t_n),t_n)\,\big|\,X(t_{n-1})=x\big],\label{eq:cont}\\
+v(x,t_{n-1})&=\max\!\big(\Lambda(x,t_{n-1}),\,c(x,t_{n-1})\big),\label{eq:vmax}
+\end{align}
+terminating at
+\begin{equation}
+v(x,t_0)=e^{-r\Delta t}\,\E\!\big[v(X(t_1),t_1)\,\big|\,X(t_0)=x\big],
+\qquad v(x,T)=\Lambda(x,T).
+\end{equation}
+Here $c$ is the \emph{continuation value} (the conditional expectation \eqref{eq:cont}) and
+$v=\max(\Lambda,c)$ implements \eqref{eq:bellman}. The whole numerical challenge is evaluating the conditional
+expectation \eqref{eq:cont}; the four methods below differ \emph{only} in how they do that.
+
+\section{Binomial tree (the cleanest backward induction)}\label{sec:tree}
+
+The recombining CRR tree carries this structure exactly. Build the tree to expiry $T=N\Delta t$ with
+up/down factors $u,d=1/u$ and risk-neutral probability $p=(e^{r\Delta t}-d)/(u-d)$.
+
+\paragraph{Terminal layer.} At expiry the value is the payoff:
+\begin{equation}
+V_m^N=\max(K-S_m^N,0),\qquad 0\le m\le M\ (\text{put}).
+\end{equation}
+
+\paragraph{Backward step (the early-exercise max).} For $n=N-1$ down to $0$, at each node take the larger of
+intrinsic and discounted expected continuation:
+\begin{equation}\label{eq:treestep}
+V_m^n=\max\!\Big(\underbrace{K-S_m^n}_{\text{intrinsic}},\;
+\underbrace{e^{-r\Delta t}\big[p\,V_{m+1}^{n+1}+(1-p)\,V_m^{n+1}\big]}_{\text{continuation }=\,c}\Big),
+\qquad 0\le m\le n.
+\end{equation}
+The conditional expectation \eqref{eq:cont} is here the two-point binomial average; the $\max$ enforces
+\eqref{eq:vmax}. The price is $V_0^0$, read off in the final step. For a European option one would drop the
+intrinsic from the $\max$ and just discount the expectation --- the single line \eqref{eq:treestep} is the
+entire difference between European and American on a tree, and it is the canonical illustration of
+$\max(\text{continuation},\text{intrinsic})$. A node where the intrinsic wins is in the stopping region; the
+boundary between exercised and held nodes traces the discrete analogue of $S^\ast(t)$.
+
+\section{Finite differences with the LCP (projection / PSOR)}\label{sec:fd}
+
+\paragraph{Grid.} Time lattice $t_n=n\Delta t$, $n=0,\dots,N$; space lattice in $x=\ln(S/K)$,
+$x_m=m\Delta x$, $m=-M,\dots,M$. Let $V_m^n\approx v(x_m,t_n)$.
+
+\paragraph{Terminal and boundary data.}
+\begin{equation}
+V_m^N=\max(K-S_m^N,0),\qquad V_{-M}^n=K,\quad V_M^n=0\ \ (n=1,\dots,N),
+\end{equation}
+matching the put boundary conditions of \S\ref{sec:lcp}.
+
+\paragraph{Discretised operator.} Discretise the BS PDE; the slides use a backward-time, centred-space (BTCS,
+i.e.\ implicit) stencil, abbreviated by a stencil function $g(\cdot,\cdot,\cdot)$ acting on the three
+neighbouring nodes of the next time level:
+\begin{equation}\label{eq:stencil}
+g\big(V_{m+1}^{n+1},V_m^{n+1},V_{m-1}^{n+1}\big)\ \ \text{(the implicit BS update at node }m).
+\end{equation}
+Implicit time-stepping is preferred here for unconditional stability and because the LCP projection (below)
+composes cleanly with it.
+
+\paragraph{The early-exercise projection.} At each interior node, after (or within) the implicit solve, project
+the value back up onto the payoff:
+\begin{equation}\label{eq:fdproj}
+V_m^n=\max\!\Big(K-S_m^n,\;\; g\big(V_{m+1}^{n+1},V_m^{n+1},V_{m-1}^{n+1}\big)\Big),
+\qquad m=-M+1,\dots,M-1.
+\end{equation}
+This is the discrete form of the LCP \eqref{eq:lcp}: the implicit operator enforces $\mathcal L V\le0$, the
+$\max$ enforces $V\ge\Lambda$, and at each node exactly one is active --- the complementarity. The price is
+$V_0$ at $x_0$ in the final backward step.
+
+\paragraph{Why a naive ``solve-then-clip'' is not enough; PSOR.} For an \emph{explicit} scheme the right-hand
+side is known, so \eqref{eq:fdproj} is a literal solve-then-clip. For an \emph{implicit} scheme the update at
+node $m$ couples to its neighbours \emph{at the same time level} through a tridiagonal system, and the
+constraint $V\ge\Lambda$ must hold simultaneously with the linear solve. The standard remedy is \emph{Projected
+SOR (PSOR)}: run successive over-relaxation on the tridiagonal system, but after each Gauss--Seidel/SOR sweep
+update of node $m$, immediately project,
+\begin{equation}\label{eq:psor}
+V_m^{n,(\text{new})}=\max\!\Big(\Lambda_m,\; V_m^{n,(\text{SOR})}\Big),
+\end{equation}
+and iterate the sweeps to convergence. Projecting \emph{inside} the iteration (not once at the end) is what
+makes PSOR converge to the true LCP solution rather than to the unconstrained solve clipped afterwards.
+\emph{[The slides give the projected update \eqref{eq:fdproj} explicitly but do not name PSOR or the implicit
+coupling subtlety; added here because it is the natural deep-dive and Fang may push on ``why can't you just
+solve the linear system and then take the max''.]}
+
+\section{Longstaff--Schwartz regression Monte Carlo (LSM)}\label{sec:lsm}
+
+\subsection{Why plain Monte Carlo fails}
+The Bellman recursion \eqref{eq:cont}--\eqref{eq:vmax} needs the conditional expectation $c(x,t_{n-1})$ at
+every node of every path. A naive MC would have to launch a \emph{nested} simulation from each node to estimate
+it --- combinatorially infeasible. The Longstaff--Schwartz (2001) insight: \emph{estimate the continuation
+value by cross-sectional least-squares regression} of realised discounted future cash flows onto basis
+functions of the current state, using the \emph{same} set of paths. One outer simulation, no nesting.
+
+\subsection{The regression mechanics}
+Simulate $P$ risk-neutral paths $\{S^p_{t_n}\}$. Work \emph{backwards}. At the final date $t_N=T$ the cash
+flow is the terminal payoff. At each earlier exercise date $t_n$:
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Select in-the-money paths.} Only ITM paths face a real exercise decision (an OTM path has zero
+  intrinsic, so it would never exercise); restricting the regression to ITM paths is both cheaper and more
+  accurate (it fits the conditional expectation only where the decision matters).
+  \item \textbf{Build the regression data.} For each selected path $p$, let $X_p=S^p_{t_n}$ (the current
+  state) and $Y_p=$ the realised \emph{discounted} cash flow obtained from that path by following the
+  \emph{already-determined} optimal policy from $t_{n+1}$ onward (discounted back to $t_n$). Since the option
+  is exercised at most once, $Y_p$ is the discount of the single future cash flow on that path.
+  \item \textbf{Regress.} Fit $Y$ on a small basis in $X$ --- the slides use a constant, $X$, $X^2$ (low-order
+  polynomials; Laguerre polynomials in the original paper):
+  \begin{equation}\label{eq:reg}
+  \E[Y\mid X]\approx \sum_{j=0}^{J} a_j L_j(X),\qquad
+  \hat a=\arg\min_a\sum_{p\in\text{ITM}}\Big(Y_p-\sum_j a_j L_j(X_p)\Big)^2 .
+  \end{equation}
+  The fitted function $\hat c(x)=\sum_j\hat a_j L_j(x)$ is the estimated continuation value.
+  \item \textbf{Exercise decision per path.} For each ITM path compare intrinsic against fitted continuation:
+  exercise at $t_n$ iff $\Lambda(X_p)>\hat c(X_p)$. Where exercise wins, set that path's cash flow to the
+  intrinsic at $t_n$ and \emph{zero out} any later cash flows (the option is now spent); where it loses, keep
+  the future cash flow.
+\end{enumerate}
+Roll back to $t_{n-1}$ and repeat. After reaching $t_1$ each path has a single stopping time. The price is the
+average over paths of the cash flow discounted to $t_0$,
+\begin{equation}\label{eq:lsmprice}
+\hat v_0=\frac1P\sum_{p=1}^{P} e^{-r\tau_p}\,\Lambda\!\big(S^p_{\tau_p},\tau_p\big).
+\end{equation}
+
+\subsection{The worked 8-path example (slides 13--19)}
+American put, $K=1.10$, $r=6\%$, three dates $t=1,2,3$; one-period discount $e^{-0.06}=0.94176$.
+\begin{itemize}[leftmargin=*]
+  \item \textbf{$t=2$ regression.} Five ITM paths; $Y$ = discounted ($\times0.94176$) $t=3$ payoff, $X=S_{t=2}$.
+  The least-squares fit is $\E[Y\mid X]=-1.070+2.983X-1.813X^2$. Comparing intrinsic vs.\ fitted continuation,
+  exercise is optimal at $t=2$ on paths $4,6,7$.
+  \item \textbf{$t=1$ regression.} Five ITM paths; $Y$ now the discounted value of the \emph{subsequent} cash
+  flow (which by the $t=2$ decision occurs at either $t=2$ or $t=3$, discounted back to $t=1$). The fit is
+  $\E[Y\mid X]=2.038-3.335X+1.356X^2$, and exercise is optimal at $t=1$ on paths $4,6,7,8$.
+  \item \textbf{Stopping rule and price.} The exercise-indicator matrix has a single $1$ per exercised path (at
+  the \emph{first} optimal date). Discount each path's realised cash flow to time $0$ and average:
+  $\hat v_{\text{Am}}=0.1144$, versus the European put $0.0564$ from discounting only the $t=3$ payoffs --- the
+  American put is worth roughly twice the European, the entire value of the early-exercise right.
+\end{itemize}
+
+\subsection{Mathematical statement and a caution}
+No-arbitrage gives the continuation value as a conditional expectation of remaining discounted cash flows under
+$Q$,
+\begin{equation}
+F(\omega;t_k)=\E^{Q}\!\left[\sum_{j=k+1}^{N}\exp\!\Big(-\!\int_{t_k}^{t_j}\! r(\omega,s)\dd s\Big)
+\,C(\omega,t_j;t_k,T)\,\middle|\,\mathcal F_{t_k}\right],
+\end{equation}
+and LSM replaces this by the least-squares projection \eqref{eq:reg} onto finitely many
+$\mathcal F_{t_k}$-measurable basis functions, backwards from $t_{N-1}$ to $t_1$.
+
+\begin{remark}[Why LSM is low-biased, and the in-sample subtlety]
+The estimated policy is suboptimal (a finite basis cannot represent the true continuation surface exactly), so
+\eqref{eq:lsmprice} is in principle a \emph{lower} bound on the true price --- a suboptimal stopping rule can
+only lose value. There is a competing \emph{upward} bias if the price is read off the \emph{same} cash flows
+used to fit the regression (in-sample foresight). The clean practice is to use the regression only for the
+\emph{exercise decision} and then evaluate the realised cash flows along each path's stopping time (as in
+\eqref{eq:lsmprice}); for a strictly out-of-sample estimate one re-simulates fresh paths and applies the frozen
+policy. \emph{[Not on the slides; standard and a likely follow-up.]}
+\end{remark}
+
+\section{The COS / Bermudan early-exercise method (Fang--Oosterlee)}\label{sec:cos}
+
+This is the priority section. COS evaluates the conditional expectation \eqref{eq:cont} with no nested
+simulation and no quadrature, because it uses the \emph{density} directly via the characteristic function. It
+reuses the entire Lecture 6 apparatus; \textbf{see \texttt{notes/Lecture06-notes.pdf}} for the derivations of
+the cosine coefficients and the $\chi_k,\psi_k$ integrals, which are only invoked here.
+
+\subsection{From the recursion to a cosine recursion}
+Write the continuation value \eqref{eq:cont} as an integral against the transition density $f(y\mid x)$ of the
+log-state:
+\begin{equation}\label{eq:cosc}
+c(x,t_{n-1})=e^{-r\Delta t}\int_{-\infty}^{\infty} v(y,t_n)\,f(y\mid x)\dd y .
+\end{equation}
+This is \emph{exactly} the European COS integral of Lecture 6, but with the European payoff replaced by the
+\emph{next-step option value} $v(\cdot,t_n)$. Approximate it by the COS quadrature (insert the cosine expansion
+of $f$, whose coefficients are read off the characteristic function $\ch$):
+\begin{equation}\label{eq:chat}
+c(x,t_{n-1})\approx\hat c(x,t_{n-1})\equiv e^{-r\Delta t}\,{\sum_{k=0}^{K-1}}'
+\Re\!\left\{\ch\!\Big(\frac{k\pi}{b-a}\Big)\,e^{\,\ii k\pi\frac{x-a}{b-a}}\right\}V_k(t_n),
+\end{equation}
+where the prime halves the $k=0$ term and $\ch(\,\cdot\,)$ is the characteristic function of the increment
+$X(t_n)-X(t_{n-1})$ over one step $\Delta t$ (for L\'evy/BS models the conditional density is
+shift-invariant, so a single set of coefficients serves every $x$). The objects $V_k(t_n)$ are the
+\emph{cosine coefficients of the option value at $t_n$}:
+\begin{equation}\label{eq:Vkrec}
+V_k(t_n)=\frac{2}{b-a}\int_a^b v(y,t_n)\cos\!\Big(k\pi\frac{y-a}{b-a}\Big)\dd y .
+\end{equation}
+At maturity these are just the payoff coefficients of Lecture 6; for $n<N$ they are built from the previous
+step. This is the key structural fact: \eqref{eq:chat}--\eqref{eq:Vkrec} is a \emph{backward recursion on the
+coefficient vector} $\{V_k(t_n)\}_k$, not on a grid of prices.
+
+\subsection{Splitting at the early-exercise point}
+Because $v(y,t_n)=\max(\Lambda(y,t_n),c(y,t_n))$, the integral \eqref{eq:Vkrec} splits at the
+\emph{early-exercise point} $x_n^\ast$ --- the log-state at $t_n$ where continuation equals intrinsic,
+\begin{equation}\label{eq:xstar}
+c(x_n^\ast,t_n)=\Lambda(x_n^\ast,t_n).
+\end{equation}
+This $x_n^\ast$ is the discrete-time avatar of the free boundary $S^\ast(t)$ of \S\ref{sec:problem}. On one
+side of $x_n^\ast$ the option value equals the payoff $\Lambda$; on the other side it equals the continuation
+$c$. Hence, with the building-block coefficient integrals
+\begin{align}
+G_k(x_1,x_2)&\equiv\frac{2}{b-a}\int_{x_1}^{x_2}\Lambda(y,t_n)\cos\!\Big(k\pi\frac{y-a}{b-a}\Big)\dd y,
+\label{eq:Gk}\\
+C_k(x_1,x_2,t_n)&\equiv\frac{2}{b-a}\int_{x_1}^{x_2} c(y,t_n)\cos\!\Big(k\pi\frac{y-a}{b-a}\Big)\dd y,
+\label{eq:Ck}
+\end{align}
+the coefficients split as
+\begin{equation}\label{eq:Vksplit}
+V_k(t_n)=
+\begin{cases}
+C_k(a,x_n^\ast,t_n)+G_k(x_n^\ast,b), & \text{call }(\alpha=+1),\\[1ex]
+G_k(a,x_n^\ast)+C_k(x_n^\ast,b,t_n), & \text{put }(\alpha=-1).
+\end{cases}
+\end{equation}
+The geometry: a \emph{put} is exercised for small $y$ (low asset price), so $\Lambda$ is active on $[a,x_n^\ast]$
+and continuation on $[x_n^\ast,b]$ --- giving $G_k(a,x_n^\ast)+C_k(x_n^\ast,b,t_n)$. A \emph{call} is the mirror
+image. The $G_k$ pieces are elementary: $\Lambda(y)=\alpha K(e^y-1)$ on its active region, so $G_k$ is exactly a
+combination of the Lecture-6 closed forms $\chi_k$ (the $e^y\cos$ integral) and $\psi_k$ (the $\cos$ integral) ---
+\textbf{the same $\chi_k,\psi_k$ as in \texttt{Lecture06-notes.pdf}}, evaluated on the sub-interval cut at
+$x_n^\ast$.
+
+\subsection{The $C_k$ piece: where the previous step's coefficients re-enter}
+The non-trivial piece is $C_k$, the cosine coefficient of the \emph{continuation function} $c(\cdot,t_n)$ over
+the hold region. Substitute the COS form $\hat c$ from \eqref{eq:chat} (with $t_{n-1}\to t_n$, i.e.\ written in
+terms of the \emph{already-known} $V_\ell(t_{n+1})$) into the defining integral \eqref{eq:Ck}. Then $C_k$
+becomes a sum over $\ell$ of integrals of $\cos(k\cdots)\cos(\ell\cdots)$ and $\cos(k\cdots)\sin(\ell\cdots)$
+over $[x_1,x_2]$ --- all elementary, all available in closed form. Collecting them, $C_k$ is a matrix--vector
+product acting on $\{V_\ell(t_{n+1})\}$:
+\begin{equation}\label{eq:Ckmat}
+C_k(x_1,x_2,t_n)=\frac{e^{-r\Delta t}}{\pi}\,\Im\!\left\{\sum_{\ell=0}^{K-1}{}'
+\ch\!\Big(\tfrac{\ell\pi}{b-a}\Big)\,V_\ell(t_{n+1})\,
+\big[\mathcal M_{k,\ell}(x_1,x_2)\big]\right\},
+\end{equation}
+where $\mathcal M_{k,\ell}$ is the (analytically known) integral of the product of trig factors. \emph{The
+crucial efficiency point}: the kernel matrix $\mathcal M$ has a Hankel-plus-Toeplitz structure, so the
+matrix--vector product \eqref{eq:Ckmat} is computed by \textbf{FFT} in $O(K\log_2 K)$ rather than $O(K^2)$.
+\emph{[The slides state the $\chi/\psi$-type integrals, the FFT acceleration, and the complexity but do not
+print the explicit Toeplitz/Hankel split of $\mathcal M_{k,\ell}$; I have summarised it as
+\eqref{eq:Ckmat} --- the load-bearing facts (closed-form trig integrals, FFT, $O(K\log K)$) are on the slides,
+the matrix labels are from Fang--Oosterlee (2009).]}
+
+\subsection{The algorithm and its cost}
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Initialise} at $t_N=T$ with the pure payoff coefficients: $V_k(t_N)=G_k(0,b)$ for a call,
+  $G_k(a,0)$ for a put (the payoff is active on the whole ITM half-range; these are the European $V_k$ of
+  Lecture 6).
+  \item \textbf{Backward loop}, $n=N-1,\dots,1$:
+  \begin{enumerate}[label=(\alph*)]
+    \item \emph{Find the early-exercise point} $x_n^\ast$ by solving \eqref{eq:xstar},
+    $\hat c(x_n^\ast,t_n)=\Lambda(x_n^\ast,t_n)$, with \textbf{Newton's method} (one scalar root-find; the
+    derivative of $\hat c$ is available analytically by differentiating the cosine sum).
+    \item \emph{Form $V_k(t_n)$} via the split \eqref{eq:Vksplit}: the $G_k$ pieces in closed form
+    ($\chi_k,\psi_k$), the $C_k$ piece by the FFT-accelerated product \eqref{eq:Ckmat} acting on
+    $\{V_\ell(t_{n+1})\}$.
+  \end{enumerate}
+  \item \textbf{Final step}: evaluate $\hat v(x_0,t_0)=e^{-r\Delta t}\sum_k{}'\Re\{\ch(\tfrac{k\pi}{b-a})
+  e^{\ii k\pi(x_0-a)/(b-a)}\}V_k(t_1)$ --- one European-style COS sum against the $t_1$ coefficients.
+\end{enumerate}
+\textbf{Complexity} $O\big(N\,K\log_2 K\big)$: $N$ time steps, each an FFT of length $K$. The slide-24 picture:
+under both BS and CGMY, COS reaches $\sim\!10^{-9}$ error in $\sim\!10$--$15$ ms, sweeping past the CONV (FFT-based)
+method, which plateaus near $10^{-4}$--$10^{-5}$. The exponential convergence of European COS survives into the
+Bermudan recursion because each step's integrand inherits the smoothness of the density.
+
+\begin{remark}[Range caveat carries over --- the Assignment-2 trap]
+The truncation range is still set from the cumulants of $X_T$,
+$[a,b]=[c_1-L\sqrt{c_2+\sqrt{c_4}},\,c_1+L\sqrt{c_2+\sqrt{c_4}}]$ (\texttt{Lecture06-notes.pdf}, \S range), but
+now it must contain the support over the \emph{whole} backward recursion, and the Newton search for $x_n^\ast$
+must land inside $[a,b]$. At short maturities (or short $\Delta t$ per step) $c_2=\sigma^2\Delta t\to0$, the box
+collapses toward $c_1$, and (Gaussian: $c_4=0$) there is no $\sqrt{c_4}$ floor --- the same failure mode as my
+Assignment-2 bug. Adding cosine terms $K$ does not cure a range error; the fix is a wider $L$ or a minimum
+half-width floor. This is exactly the kind of point Fang presses on.
+\end{remark}
+
+\section{Richardson extrapolation: Bermudan $\to$ American}\label{sec:rich}
+
+Every method above prices a \emph{Bermudan} (finite monitoring set). The American value is the
+$N\to\infty$ limit, which converges but slowly. Let $v(M)$ be the Bermudan price with $M$ exercise dates.
+Rather than push $M$ very large, take a handful of Bermudan prices at $M=2^d,2^{d+1},2^{d+2},2^{d+3}$ and
+combine them with the $4$-point Richardson scheme
+\begin{equation}\label{eq:richardson}
+v_{\mathrm{Am}}(d)=\frac{1}{21}\Big(64\,v(2^{d+3})-56\,v(2^{d+2})+14\,v(2^{d+1})-v(2^{d})\Big),
+\end{equation}
+which cancels leading error terms in the monitoring spacing and accelerates convergence to the continuous
+American limit. This is the standard, cheap way to get an American price from a small number of fast Bermudan
+COS computations.
+
+\section{One-paragraph reconstruction (to be able to say out loud)}
+
+An American option is an optimal-stopping problem: at each instant the holder takes $\max(\text{intrinsic},
+\text{continuation})$, and the states where exercise wins are bounded by a free boundary $S^\ast(t)$. For a
+non-dividend call early exercise is never optimal --- the live call $C^{\text{eur}}=S-Ke^{-r(T-t)}+P^{\text{eur}}
+>S-K$ already beats its intrinsic, because deferring the strike payment earns interest --- so American
+$=$ European. The put is the opposite ($Ke^{-r(T-t)}<K$ makes banking the strike early attractive), so it
+solves the linear complementarity problem $\{v-\Lambda\ge0,\ \mathcal L v\le0,\ (v-\Lambda)\mathcal L v=0\}$ and
+must be priced numerically. All methods run the same backward Bellman recursion $c=e^{-r\Delta t}\E[v(\cdot)]$,
+$v=\max(\Lambda,c)$, differing only in how they get the conditional expectation: the tree averages two child
+nodes; FD inverts an implicit BS stencil and projects onto the payoff (PSOR); LSM regresses realised discounted
+cash flows on basis functions to estimate continuation; and COS expands the value at each step in a cosine
+series whose coefficients $V_k(t_n)$ are recursed backward, split at the early-exercise point $x_n^\ast$
+(found by Newton from $c=\Lambda$) into a closed-form payoff piece $G_k$ (the Lecture-6 $\chi_k,\psi_k$) and a
+continuation piece $C_k$ computed by FFT in $O(NK\log K)$. Finally, since all of these price a Bermudan,
+Richardson extrapolation on a few monitoring counts recovers the American limit.
+
+\end{document}

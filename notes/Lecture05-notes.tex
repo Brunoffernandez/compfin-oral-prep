@@ -1,0 +1,364 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newtheorem{remark}{Remark}
+
+\title{Lecture 05 --- Binomial Trees, Finite Differences, and the Black--Scholes PDE}
+\author{Computational Finance (WI4151), TU Delft --- Prof.\ Fang Fang}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent\emph{Scope.} This note covers the binomial (CRR) tree and its convergence to Black--Scholes; the finite-difference discretisation of the heat equation (FTCS, BTCS, Crank--Nicolson) with stencils, update equations, local truncation error and von Neumann stability; the application of these schemes to the Black--Scholes PDE; the reduction of the BS PDE to the heat equation; and the identification of the binomial method as a particular explicit finite-difference scheme. The cluster sits inside Cluster~1 (lattice / PDE methods). Index-based algebra is used throughout.
+
+\tableofcontents
+
+\section{The binomial method}
+
+\subsection{Discrete asset model}
+Fix a maturity $T$ and a number of steps $M$. Set the time increment $\delta t = T/M$ and the time nodes $t_i = i\,\delta t$, $0\le i\le M$. Between two consecutive time slices the asset is assumed to move multiplicatively: it goes \emph{up} by a factor $u$ with probability $p$, or \emph{down} by a factor $d$ with probability $1-p$. The tree is taken to be \emph{recombining} (an up-then-down move lands at the same node as down-then-up), so at time step $i$ there are exactly $i+1$ distinct nodes. Labelling by the number $n$ of up-moves so far,
+\begin{equation}
+S^i_n = d^{\,i-n}\,u^{\,n}\,S_0,\qquad 0\le n\le i.
+\label{eq:nodeprice}
+\end{equation}
+A recombining tree has $O(M^2)$ nodes rather than $O(2^M)$, which is what makes the method computationally cheap.
+
+\subsection{Risk-neutral backward induction}
+In an arbitrage-free market the option value is the discounted expected payoff under the risk-neutral measure, and this principle holds slice by slice in the tree. Writing $\Lambda(\cdot)$ for the payoff and $V^i_n$ for the option value at node $(i,n)$:
+\begin{align}
+V^M_n &= \Lambda\!\left(S^M_n\right), && 0\le n\le M, \label{eq:treeinit}\\
+V^i_n &= e^{-r\delta t}\Big( p\,V^{i+1}_{n+1} + (1-p)\,V^{i+1}_{n}\Big), && 0\le n\le i,\ \ i=M-1,\dots,0. \label{eq:treerec}
+\end{align}
+The price at $t=0$ is $V^0_0$. For a European option this is all there is. For an American option one inserts an early-exercise comparison $V^i_n = \max\!\big(\Lambda(S^i_n),\,\text{continuation}\big)$ at every node --- this is precisely why the lattice is the simplest American pricer, a point developed in Lecture~9.
+
+\subsection{Derivation of the CRR parameters \texorpdfstring{$u,d,p$}{u,d,p}}
+The parameters are fixed by \emph{moment matching}: the one-period log-return of the tree is forced to share its mean and variance with the Black--Scholes log-return.
+
+Introduce indicators $R_i\in\{0,1\}$, where $R_i=1$ if step $i$ is an up-move. The $R_i$ are i.i.d.\ Bernoulli$(p)$. From \eqref{eq:nodeprice}, after $n$ steps,
+\[
+S(n\,\delta t) = S_0\, u^{\sum_{i=1}^n R_i}\, d^{\,n-\sum_{i=1}^n R_i},
+\qquad\Longrightarrow\qquad
+\ln\frac{S(n\,\delta t)}{S_0} = n\ln d + \ln\!\Big(\tfrac{u}{d}\Big)\sum_{i=1}^n R_i .
+\]
+Hence the log-price is an affine function of a Binomial$(n,p)$ variable. Using $\E[R_i]=p$ and $\operatorname{Var}(R_i)=p(1-p)$,
+\begin{align}
+\E\!\left[\ln\frac{S(n\,\delta t)}{S_0}\right] &= n\big(p\ln u + (1-p)\ln d\big), \label{eq:treemean}\\
+\operatorname{Var}\!\left[\ln\frac{S(n\,\delta t)}{S_0}\right] &= n\,p(1-p)\Big(\ln\tfrac{u}{d}\Big)^2. \label{eq:treevar}
+\end{align}
+By the CLT the sum $\sum R_i$ is asymptotically Gaussian, so for large $n$ the log-price is approximately normal --- the correct distributional shape to match Black--Scholes. Under the risk-neutral measure the BS log-return over a horizon $t$ has
+\begin{equation}
+\E\!\left[\ln\frac{S_t}{S_0}\right] = \Big(r-\tfrac12\sigma^2\Big)t,
+\qquad
+\operatorname{Var}\!\left[\ln\frac{S_t}{S_0}\right] = \sigma^2 t.
+\label{eq:bsmoments}
+\end{equation}
+Matching \eqref{eq:treemean}--\eqref{eq:treevar} (per single step, $n=1$, $t=\delta t$) against \eqref{eq:bsmoments} gives the two moment equations
+\begin{align}
+p\ln u + (1-p)\ln d &= \Big(r-\tfrac12\sigma^2\Big)\delta t, \label{eq:match1}\\
+\ln\!\Big(\frac{u}{d}\Big) &= \frac{\sigma\sqrt{\delta t}}{\sqrt{p(1-p)}}. \label{eq:match2}
+\end{align}
+Equation \eqref{eq:match2} follows because $\operatorname{Var}=\big(\ln\tfrac ud\big)^2 p(1-p)=\sigma^2\delta t$, so $\ln\tfrac ud = \sigma\sqrt{\delta t}/\sqrt{p(1-p)}$.
+
+\paragraph{Closing the system.} We have two equations in the three unknowns $(p,u,d)$, so one degree of freedom remains. The lecture's choice is the symmetric one,
+\begin{equation}
+p=\tfrac12,
+\label{eq:phalf}
+\end{equation}
+which gives $\sqrt{p(1-p)}=\tfrac12$ and hence, from \eqref{eq:match2}, $\ln\tfrac ud = 2\sigma\sqrt{\delta t}$, i.e.
+\begin{equation}
+\ln u - \ln d = 2\sigma\sqrt{\delta t}.
+\label{eq:diff}
+\end{equation}
+From \eqref{eq:match1} with $p=\tfrac12$, $\tfrac12(\ln u + \ln d) = (r-\tfrac12\sigma^2)\delta t$, i.e.
+\begin{equation}
+\ln u + \ln d = 2\Big(r-\tfrac12\sigma^2\Big)\delta t.
+\label{eq:sum}
+\end{equation}
+Adding and subtracting \eqref{eq:diff} and \eqref{eq:sum},
+\begin{equation}
+\boxed{\;
+u = \exp\!\Big(\sigma\sqrt{\delta t} + \big(r-\tfrac12\sigma^2\big)\delta t\Big),
+\qquad
+d = \exp\!\Big(-\sigma\sqrt{\delta t} + \big(r-\tfrac12\sigma^2\big)\delta t\Big).\;}
+\label{eq:crr}
+\end{equation}
+This is the form used in the slides. (Note that with $p=\tfrac12$ the tree is \emph{not} the original Cox--Ross--Rubinstein parameterisation, in which one instead imposes $d=1/u$ and solves for the implied $p$, yielding $u=e^{\sigma\sqrt{\delta t}}$, $d=e^{-\sigma\sqrt{\delta t}}$, $p=\tfrac{e^{r\delta t}-d}{u-d}$. Both match the first two moments to $O(\delta t)$; they differ only in the higher-order/free-parameter choice. The exam name ``CRR'' is used loosely here for the moment-matched binomial tree.)
+
+\begin{remark}
+The matching is on the \emph{log} of the price, not the price. Matching the variance of $\ln S$ to $\sigma^2\delta t$ is exactly the statement that the tree reproduces the diffusion coefficient of the GBM. The drift slot absorbs $(r-\tfrac12\sigma^2)$, the Itô-corrected drift of $\ln S$, which is why $r-\tfrac12\sigma^2$ (not $r$) appears in $u,d$.
+\end{remark}
+
+\subsection{Convergence to Black--Scholes}
+For fixed $T$, as $M\to\infty$ (so $\delta t\to0$) the per-step matching \eqref{eq:match1}--\eqref{eq:match2} plus the CLT force the terminal log-price distribution of the tree to converge to $\mathcal N\big((r-\tfrac12\sigma^2)T,\ \sigma^2 T\big)$, which is the exact Black--Scholes terminal law. Since both prices are discounted expectations of the same payoff against converging laws, the binomial price converges to the BS price.
+
+The convergence is \emph{first order}, $|\text{error}|\le K/M$ for some constant $K$, but it is \emph{not monotone}: the error oscillates in sign as $M$ increases (e.g.\ the slide's European put: $\text{diff}=-0.0012,\ +0.0034,\ -0.0002$ at $M=100,200,400$ against BS value $1.4728$). The oscillation comes from how the discrete set of terminal nodes \eqref{eq:nodeprice} straddles the strike $K$: the position of $K$ relative to the lattice changes irregularly with $M$, so the payoff-region sampling error wobbles. This non-smoothness is why one cannot naively Richardson-extrapolate a raw binomial tree, and it motivates the smoother PDE/Fourier methods.
+
+\paragraph{Pros / cons.} Pros: trivial to describe and implement; readily extended to American and other early-exercise / path features for which no closed form exists. Cons: tied to GBM-type dynamics (more precisely, to models whose first moments of the log-return drive the price); irregular convergence.
+
+\section{Finite-difference methods for the heat equation}
+
+\subsection{Model problem}
+Let $u(x,t)$ solve the (forward) heat equation on $x\in[0,L]$, $t\in[0,T]$,
+\begin{equation}
+\frac{\partial u}{\partial t} = \frac{\partial^2 u}{\partial x^2},
+\qquad u(0,t)=a(t),\ \ u(L,t)=b(t),\qquad u(x,0)=g(x).
+\label{eq:heat}
+\end{equation}
+A standard test case (used in the slides and in \texttt{finite-difference-heat\_eqn.py}) is $L=\pi$, $g(x)=\sin x$, $a=b=0$, with exact solution $u(x,t)=e^{-t}\sin x$.
+
+\subsection{Difference operators}
+For a smooth $y$ sampled at spacing $h$, $y_m=y(mh)$, Taylor expansion gives the operators
+\[
+\begin{array}{llll}
+\text{forward } \Delta y_m = y_{m+1}-y_m &= hy'+\tfrac12 h^2 y''+\cdots,
+&\text{backward } \nabla y_m = y_m-y_{m-1} &= hy'-\tfrac12 h^2 y''+\cdots,\\[2pt]
+\text{central } \Delta_0 y_m = \tfrac12(y_{m+1}-y_{m-1}) &= hy'+\tfrac16 h^3 y'''+\cdots,
+&\text{2nd central } \delta^2 y_m = y_{m+1}-2y_m+y_{m-1} &= h^2 y''-\tfrac1{12}h^4 y''''+\cdots.
+\end{array}
+\]
+The two we need are the central second difference $\delta_x^2$ (for $u_{xx}$, second-order accurate, $O(h^2)$) and a first time difference $\Delta_t$ (for $u_t$).
+
+\subsection{Grid}
+Discretise $x$ into $N_x+1$ points $x_j=jh$, $h=L/N_x$, and $t$ into $N_t+1$ points $t_i=ik$, $k=T/N_t$. Write $U^i_j\approx u(jh,ik)$. The \emph{mesh ratio}
+\begin{equation}
+\nu := \frac{k}{h^2}
+\label{eq:nu}
+\end{equation}
+governs both accuracy and stability.
+
+\subsection{FTCS (explicit): Forward in Time, Central in Space}
+Forward difference in $t$, central second difference in $x$:
+\begin{equation}
+\frac{U^{i+1}_j-U^i_j}{k} = \frac{U^i_{j+1}-2U^i_j+U^i_{j-1}}{h^2}
+\ \Longrightarrow\
+\boxed{\,U^{i+1}_j = \nu\,U^i_{j+1} + (1-2\nu)\,U^i_j + \nu\,U^i_{j-1}.}
+\label{eq:ftcs}
+\end{equation}
+The new value depends only on old values: the scheme is \emph{explicit}. The stencil couples three space points at the old level and one at the new level. Collecting the $N_x-1$ interior unknowns into $\mathbf U^i=(U^i_1,\dots,U^i_{N_x-1})^{\mathsf T}$,
+\begin{equation}
+\mathbf U^{i+1} = F\,\mathbf U^i + \mathbf p^i,\qquad
+F = \begin{pmatrix}
+1-2\nu & \nu & & \\
+\nu & 1-2\nu & \nu & \\
+ & \ddots & \ddots & \ddots \\
+ & & \nu & 1-2\nu
+\end{pmatrix},\qquad
+\mathbf p^i=\begin{pmatrix}\nu a(ik)\\ 0\\ \vdots\\ 0\\ \nu b(ik)\end{pmatrix},
+\label{eq:ftcsmat}
+\end{equation}
+with $\mathbf U^0=(g(h),\dots,g((N_x-1)h))^{\mathsf T}$. The boundary terms enter only the first and last components of $\mathbf p^i$ because the stencil for $j=1$ and $j=N_x-1$ reaches into the known boundary nodes $U_0,U_{N_x}$. ($F$ is symmetric tridiagonal Toeplitz; in the code \texttt{finite-difference-heat\_eqn.py} this is the explicit loop \texttt{u[n,i]=u\_1[i]+nu*(u\_1[i-1]-2u\_1[i]+u\_1[i+1])}.)
+
+\subsection{BTCS (implicit): Backward in Time, Central in Space}
+Backward difference in $t$ (equivalently, evaluate the space operator at the \emph{new} level):
+\begin{equation}
+\frac{U^{i+1}_j-U^i_j}{k} = \frac{U^{i+1}_{j+1}-2U^{i+1}_j+U^{i+1}_{j-1}}{h^2}
+\ \Longrightarrow\
+U^i_j = -\nu U^{i+1}_{j+1} + (1+2\nu)U^{i+1}_j - \nu U^{i+1}_{j-1}.
+\label{eq:btcs}
+\end{equation}
+Now the three unknowns sit at the new level: there is no explicit formula, one must solve a linear system each step,
+\begin{equation}
+B\,\mathbf U^{i+1} = \mathbf U^i + \mathbf q^i,\qquad
+B = \begin{pmatrix}
+1+2\nu & -\nu & & \\
+-\nu & 1+2\nu & -\nu & \\
+ & \ddots & \ddots & \ddots \\
+ & & -\nu & 1+2\nu
+\end{pmatrix},\qquad
+\mathbf q^i=\begin{pmatrix}\nu a((i{+}1)k)\\ 0\\ \vdots\\ 0\\ \nu b((i{+}1)k)\end{pmatrix}.
+\label{eq:btcsmat}
+\end{equation}
+$B$ is tridiagonal and strictly diagonally dominant, so the Thomas algorithm solves each step in $O(N_x)$. The boundary data are taken at the new time $(i{+}1)k$ because the space stencil lives at the new level.
+
+\subsection{Crank--Nicolson}
+Centre the scheme at the half time level $i+\tfrac12$ and average the space operator over the two surrounding levels (the time-averaging operator $\mu_t$):
+\begin{equation}
+\frac{U^{i+1}_j-U^i_j}{k} = \frac{1}{h^2}\,\delta_x^2\Big(\tfrac12 U^{i+1}_j + \tfrac12 U^i_j\Big).
+\label{eq:cn}
+\end{equation}
+Multiplying out the interior stencil,
+\begin{equation}
+-\tfrac{\nu}{2}U^{i+1}_{j-1} + (1+\nu)U^{i+1}_j - \tfrac{\nu}{2}U^{i+1}_{j+1}
+= \tfrac{\nu}{2}U^{i}_{j-1} + (1-\nu)U^{i}_j + \tfrac{\nu}{2}U^{i}_{j+1},
+\label{eq:cnstencil}
+\end{equation}
+i.e.\ in matrix form $B\,\mathbf U^{i+1}=F\,\mathbf U^i+\mathbf r^i$ with
+\[
+B = \operatorname{tridiag}\!\big(-\tfrac\nu2,\ 1+\nu,\ -\tfrac\nu2\big),\qquad
+F = \operatorname{tridiag}\!\big(\tfrac\nu2,\ 1-\nu,\ \tfrac\nu2\big),\qquad
+r^i_1 = \tfrac\nu2\big(a(ik)+a((i{+}1)k)\big),\ \text{etc.}
+\]
+CN is implicit (one tridiagonal solve per step) but is the average of FTCS and BTCS, and as we see below it gains an order in time.
+
+\subsection{Local truncation error}
+Substitute the exact solution into the scheme and Taylor-expand; the residual measures consistency. Using
+\[
+\frac{u(x,t+k)-u(x,t)}{k}=u_t+\tfrac12 k\,u_{tt}+O(k^2),
+\qquad
+\frac{u(x{+}h,t)-2u(x,t)+u(x{-}h,t)}{h^2}=u_{xx}+\tfrac{1}{12}h^2 u_{xxxx}+O(h^4),
+\]
+and the PDE $u_t=u_{xx}$ (which cancels the leading terms), the FTCS residual is
+\begin{equation}
+R^i_j = \tfrac12 k\,u_{tt} - \tfrac1{12}h^2 u_{xxxx} + O(k^2)+O(h^4)
+\ \Longrightarrow\ \text{FTCS: } O(k)\ \text{in time},\ O(h^2)\ \text{in space}.
+\label{eq:ftcstrunc}
+\end{equation}
+For BTCS the time term flips sign, $R^i_j = -\tfrac12 k\,u_{tt} - \tfrac1{12}h^2 u_{xxxx}+\cdots$, again $O(k)+O(h^2)$. For Crank--Nicolson the symmetric (midpoint) time-centring kills the $O(k)$ term, leaving
+\[
+R^i_j = O(k^2)+O(h^2)\quad\Longrightarrow\quad \text{CN: } O(k^2)\ \text{in time},\ O(h^2)\ \text{in space}.
+\]
+This second-order-in-time accuracy at the same per-step cost as BTCS is the practical reason CN is preferred.
+
+\subsection{Von Neumann stability analysis}
+Consistency alone is not enough; the scheme must be stable. \emph{Lax equivalence}: for a consistent linear scheme, convergence $\iff$ stability. Von Neumann tests stability by Fourier mode analysis. Because the schemes are linear and shift-invariant in space, the error $e^i_j=U^i_j-u^i_j$ decomposes into independent Fourier modes
+\[
+e^i_j=\sum_\beta \hat e^i_\beta\,e^{\mathrm i\beta jh},
+\]
+and each mode is multiplied per step by an \emph{amplification factor} $\xi(\beta)$. Substituting the single mode $U^i_j=\xi^i e^{\mathrm i\beta jh}$ into the scheme, the scheme is stable iff
+\begin{equation}
+|\xi(\beta)|\le 1\qquad\text{for all }\beta h\in[-\pi,\pi].
+\label{eq:vncond}
+\end{equation}
+
+\paragraph{FTCS.} Insert $U^i_j=\xi^i e^{\mathrm i\beta jh}$ into \eqref{eq:ftcs} and divide by $\xi^i e^{\mathrm i\beta jh}$:
+\[
+\xi = \nu e^{\mathrm i\beta h} + (1-2\nu) + \nu e^{-\mathrm i\beta h}
+= 1 + \nu\big(e^{\mathrm i\beta h}-2+e^{-\mathrm i\beta h}\big).
+\]
+Using $e^{\mathrm i\theta}-2+e^{-\mathrm i\theta} = \big(e^{\mathrm i\theta/2}-e^{-\mathrm i\theta/2}\big)^2 = \big(2\mathrm i\sin\tfrac\theta2\big)^2 = -4\sin^2\tfrac\theta2$ with $\theta=\beta h$,
+\begin{equation}
+\xi(\beta) = 1 - 4\nu\sin^2\!\Big(\tfrac{\beta h}{2}\Big).
+\label{eq:ftcsxi}
+\end{equation}
+This $\xi$ is real, with $\xi\le 1$ automatically. The binding constraint is $\xi\ge -1$:
+\[
+1-4\nu\sin^2\!\Big(\tfrac{\beta h}{2}\Big)\ge -1
+\iff 4\nu\sin^2\!\Big(\tfrac{\beta h}{2}\Big)\le 2
+\iff \nu\sin^2\!\Big(\tfrac{\beta h}{2}\Big)\le \tfrac12 .
+\]
+The worst mode is $\sin^2=1$ (the highest frequency, $\beta h=\pi$), giving the \textbf{CFL-type stability restriction}
+\begin{equation}
+\boxed{\ \nu = \frac{k}{h^2}\le \frac12 \quad\Longleftrightarrow\quad k\le \frac{h^2}{2}.\ }
+\label{eq:cfl}
+\end{equation}
+This is exactly the slide's statement ``FTCS is stable when $\nu\le0.5$'' and is visible in the code: $\nu\approx0.30$ gives a clean surface (error $\sim10^{-3}$), $\nu\approx0.63$ blows up (the highest-frequency saw-tooth mode is amplified, $|\xi|>1$). The cost of explicitness is the quadratic coupling $k\le h^2/2$: halving $h$ forces a fourfold cut in $k$.
+
+\paragraph{BTCS.} Insert the mode into \eqref{eq:btcs}: $\xi-1 = \nu\xi\big(e^{\mathrm i\beta h}-2+e^{-\mathrm i\beta h}\big)=-4\nu\xi\sin^2\tfrac{\beta h}{2}$, hence
+\begin{equation}
+\xi(\beta) = \frac{1}{1+4\nu\sin^2\!\big(\tfrac{\beta h}{2}\big)} \in (0,1]\qquad\text{for all }\nu>0.
+\label{eq:btcsxi}
+\end{equation}
+Thus BTCS is \textbf{unconditionally stable}: no restriction on $k$. Crank--Nicolson, with $\xi=\dfrac{1-2\nu\sin^2(\beta h/2)}{1+2\nu\sin^2(\beta h/2)}$, has $|\xi|\le1$ for all $\nu>0$ and is also unconditionally stable (and, since $\xi\to-1$ for large $\nu$ on high modes, it is only damped, not strongly dissipative --- the reason CN can show mild oscillations on non-smooth initial data such as an option payoff kink).
+
+\section{Solving the Black--Scholes PDE}
+
+\subsection{Reverse-time form}
+The Black--Scholes PDE carries a \emph{final}-time condition (the payoff at $t=T$). Substituting $\tau=T-t$ turns it into an initial-value problem (now $\partial_\tau$ replaces $-\partial_t$):
+\begin{equation}
+\frac{\partial V}{\partial\tau} - \tfrac12\sigma^2 S^2\frac{\partial^2 V}{\partial S^2} - rS\frac{\partial V}{\partial S} + rV = 0 .
+\label{eq:bspde}
+\end{equation}
+The domain $S\in[0,\infty)$ is truncated at a large $L$. For a European put ($E$ the strike),
+\[
+V(S,0)=\max(E-S,0),\qquad V(0,\tau)=Ee^{-r\tau},\qquad V(L,\tau)=0,
+\]
+and for a call $V(S,0)=\max(S-E,0)$, $V(0,\tau)=0$, $V(L,\tau)=L-Ee^{-r\tau}$.
+
+\subsection{FTCS for Black--Scholes}
+On the uniform $S$-grid $S_j=jh$ the variable coefficients $S^2\to(jh)^2$ and $S\to(jh)$ enter explicitly. Central differences for both space derivatives:
+\[
+\frac{V^{i+1}_j-V^i_j}{k}
+-\tfrac12\sigma^2 (jh)^2\frac{V^i_{j+1}-2V^i_j+V^i_{j-1}}{h^2}
+- r(jh)\frac{V^i_{j+1}-V^i_{j-1}}{2h}
++ rV^i_j = 0 .
+\]
+The $h^2$ in the diffusion term cancels against $(jh)^2/h^2 = j^2$, and $h$ cancels in the convection term, leaving the explicit update
+\begin{equation}
+\boxed{\,V^{i+1}_j = (1-rk)V^i_j + \tfrac12 k\sigma^2 j^2\big(V^i_{j+1}-2V^i_j+V^i_{j-1}\big) + \tfrac12 krj\big(V^i_{j+1}-V^i_{j-1}\big).}
+\label{eq:bsftcs}
+\end{equation}
+In matrix form $\mathbf V^{i+1}=F\mathbf V^i+\mathbf p^i$ with $F=(1-rk)I + \tfrac12 k\sigma^2 D_2 T_2 + \tfrac12 kr\, D_1 T_1$, where
+\[
+D_1=\operatorname{diag}(1,2,\dots,N_x-1),\quad D_2=\operatorname{diag}(1^2,2^2,\dots,(N_x-1)^2),
+\]
+$T_2=\operatorname{tridiag}(1,-2,1)$ is the second-difference matrix and $T_1=\operatorname{tridiag}(-1,0,1)$ the central-first-difference matrix. The diagonal weights $j$ and $j^2$ are the discrete images of the $S$ and $S^2$ coefficients --- this is exactly the structure built in \texttt{ftcs\_bs\_put.py} (there written on the log-grid; see Remark below). BTCS evaluates the same spatial operator at level $i{+}1$, giving $B\mathbf V^{i+1}=\mathbf V^i+\mathbf q^i$ with $B=(1+rk)I-\tfrac12 k\sigma^2 D_2 T_2-\tfrac12 kr D_1 T_1$; Crank--Nicolson is the average,
+\[
+\big(\tfrac12 I + B\big)\mathbf V^{i+1} = \big(\tfrac12 I + F\big)\mathbf V^i + \tfrac12(\mathbf p^i+\mathbf q^i).
+\]
+
+\begin{remark}[The $S$-grid vs.\ the $\ln S$-grid, and the Assignment-2 truncation issue]
+On the raw $S$-grid the diffusion weight $\tfrac12 k\sigma^2 j^2$ grows like $j^2$. For explicit FTCS the von Neumann condition therefore reads, mode by mode, $\sigma^2 j^2 k/1 \lesssim 1$ at the largest active $j=N_x-1$, i.e.\ stability degrades quadratically near the upper boundary $S=L$. The companion file \texttt{ftcs\_bs\_put.py} sidesteps this by working in $x=\ln S$ on $[-L/2,L/2]$, where the PDE has \emph{constant} coefficients (Section~4) and the stencil reduces to a constant-coefficient advection--diffusion stencil. This is the same lesson that bit me in Assignment~2 (COS): a numerical method built on a finite spatial window is only as good as the window. There the COS truncation range $[a,b]=[c_1\pm L\sqrt{c_2+\sqrt{c_4}}]$ collapsed at short maturity because the variance cumulant $c_2\propto T$ becomes tiny, so $[a,b]$ became too narrow and the density support was clipped. The FD analogue is exactly choosing $L$ (and the grid) so the truncated domain still contains essentially all of the relevant payoff/density mass; the difference is only that FD truncates the state space directly whereas COS truncates the Fourier-cosine integration range.
+\end{remark}
+
+\section{Reduction of the BS PDE to the heat equation}
+This is the transformation that links Part~3 to Part~2 and underlies the next section.
+
+\paragraph{Step 1: log-price.} Set $X=\ln S$. Then $\partial_S = \tfrac1S\partial_X$ and $\partial_{SS}=\tfrac1{S^2}(\partial_{XX}-\partial_X)$, so $S^2\partial_{SS}=\partial_{XX}-\partial_X$ and $S\partial_S=\partial_X$. Equation \eqref{eq:bspde} becomes a \emph{constant-coefficient} equation,
+\begin{equation}
+\frac{\partial V}{\partial\tau} - \tfrac12\sigma^2\frac{\partial^2 V}{\partial X^2} - \Big(r-\tfrac12\sigma^2\Big)\frac{\partial V}{\partial X} + rV = 0 .
+\label{eq:logbs}
+\end{equation}
+
+\paragraph{Step 2: remove the reaction term.} Put $V=e^{-r\tau}W$ (equivalently the slide's $V=e^{rt}W$). Then $\partial_\tau V = e^{-r\tau}(\partial_\tau W - rW)$, and the $rV$ and $-rW$ terms cancel:
+\begin{equation}
+\frac{\partial W}{\partial\tau} - \tfrac12\sigma^2\frac{\partial^2 W}{\partial X^2} - \Big(r-\tfrac12\sigma^2\Big)\frac{\partial W}{\partial X} = 0 .
+\label{eq:advdiff}
+\end{equation}
+This is a pure advection--diffusion equation with constant drift $r-\tfrac12\sigma^2$ and diffusivity $\tfrac12\sigma^2$.
+
+\paragraph{Step 3 (to a pure heat equation).} A further change to a moving frame, $\xi = X + (r-\tfrac12\sigma^2)\tau$, removes the advection term and a rescaling $\tau\mapsto \tfrac12\sigma^2\tau$ normalises the diffusivity to $1$, yielding $\partial_\tau W = \partial_{\xi\xi}W$, the model heat equation \eqref{eq:heat}. \emph{(The slides stop at \eqref{eq:advdiff}; Step~3 is standard and is included here for completeness --- it is what justifies importing the heat-equation FD theory wholesale.)}
+
+\section{Binomial method as an explicit finite-difference scheme}
+The closing result of the lecture: the binomial recursion \eqref{eq:treerec} \emph{is} a finite-difference scheme applied to \eqref{eq:advdiff}, with the grid and time step chosen in a special way.
+
+Start from the constant-coefficient log-equation \eqref{eq:advdiff} and apply BTCS in $\tau$ with central space differences (here I follow the slide's discretisation, which evaluates the space operator at the new level):
+\begin{equation}
+\frac{W^{i+1}_j-W^i_j}{k} + \frac{\sigma^2}{2}\frac{W^{i+1}_{j+1}-2W^{i+1}_j+W^{i+1}_{j-1}}{h^2}
++ \Big(r-\tfrac12\sigma^2\Big)\frac{W^{i+1}_{j+1}-W^{i+1}_{j-1}}{2h} = 0 .
+\label{eq:btcsW}
+\end{equation}
+(The signs follow from moving the diffusion/convection terms of \eqref{eq:advdiff} to evaluate the recursion backward in $\tau$.) The key trick is the \emph{coupling of the two grid spacings}:
+\begin{equation}
+h^2 = \sigma^2 k .
+\label{eq:couple}
+\end{equation}
+With this choice the coefficient of the centre value $W^{i+1}_j$ collapses. The $\tfrac{\sigma^2}{2}\cdot\tfrac{-2}{h^2}W^{i+1}_j = -\tfrac{\sigma^2}{h^2}W^{i+1}_j$ from the diffusion term is, by \eqref{eq:couple}, $=-\tfrac{1}{k}W^{i+1}_j$, which exactly cancels the $\tfrac{1}{k}W^{i+1}_j$ produced by the time difference. The centre node disappears and we are left with a two-point (up/down) recursion linking level $i$ to level $i{+}1$:
+\begin{equation}
+W^i_j = p^\ast\,W^{i+1}_{j+1} + (1-p^\ast)\,W^{i+1}_{j-1},
+\label{eq:Wrec}
+\end{equation}
+a convex combination of the up-neighbour $j{+}1$ and the down-neighbour $j{-}1$ --- structurally identical to the binomial backward step \eqref{eq:treerec}. Collecting the coefficients of $W^{i+1}_{j+1}$ (diffusion $\tfrac{\sigma^2}{2h^2}=\tfrac{1}{2k}$ plus convection $+\tfrac{r-\sigma^2/2}{2h}$) and multiplying through by $k$, the up-weight is
+\begin{equation}
+p^\ast = \tfrac12\Big(1 + \tfrac{(r-\tfrac12\sigma^2)k}{h}\Big)
+= \tfrac12\Big(1 + \tfrac{(r-\tfrac12\sigma^2)\sqrt{k}}{\sigma}\Big),
+\label{eq:pstar}
+\end{equation}
+using $h=\sigma\sqrt k$ from \eqref{eq:couple}. Undoing the discounting substitution $V=e^{-r\tau}W$ (one step of $\tau$ multiplies by $e^{-rk}$) restores the discount factor and gives
+\begin{equation}
+\boxed{\,V^i_j = e^{-rk}\big(p^\ast\,V^{i+1}_{j+1} + (1-p^\ast)\,V^{i+1}_{j-1}\big).}
+\label{eq:VrecFD}
+\end{equation}
+This is precisely the risk-neutral binomial backward induction \eqref{eq:treerec}, with up-probability $p^\ast$ and an up/down log-spacing of $\pm h=\pm\sigma\sqrt k$ (i.e.\ $u/d = e^{\pm\sigma\sqrt k}$ in the moving log-frame). The binomial method is therefore an explicit FD scheme on the transformed heat equation, ``customised'' (via $h^2=\sigma^2 k$) so that the centre node drops out and only the two outer branches survive --- and tuned to deliver the single time-zero value $V^0_0$ rather than the whole grid. A general FD scheme instead returns the option value at \emph{every} grid point $\{jh,ik\}$, hence prices for all initial spots $S_0\in\{0,h,2h,\dots,L\}$ at once.
+
+\begin{remark}[Honesty: a typo in the slide's $p^\ast$]
+Slide~57 prints $p^\ast=\tfrac12\big(1+\sqrt{k}/\sigma\cdot r-\sigma^2\big)$, which is dimensionally inconsistent (the $-\sigma^2$ is not divided by anything and a factor is missing). The correct algebra, carried out above, gives \eqref{eq:pstar}, $p^\ast=\tfrac12\big(1+\tfrac{(r-\sigma^2/2)\sqrt k}{\sigma}\big)$, which is dimensionless and reduces to $\tfrac12$ as $k\to0$ --- consistent with the symmetric $p=\tfrac12$ choice \eqref{eq:phalf} of the tree. I treat the slide formula as a transcription error.
+\end{remark}
+
+\section*{Honest gaps / things the slides leave implicit}
+\addcontentsline{toc}{section}{Honest gaps}
+\begin{itemize}[leftmargin=1.4em]
+\item The slides assert first-order non-monotone binomial convergence and quote Higham's numbers but give no proof of the $K/M$ bound; the oscillation mechanism (strike position relative to lattice) is my added explanation, standard but not on the slides.
+\item Step~3 of the heat-equation reduction (moving frame + time rescale to reach $\partial_\tau W=\partial_{\xi\xi}W$) is mine; the deck stops at the constant-coefficient advection--diffusion form \eqref{eq:advdiff}.
+\item The $p^\ast$ formula on Slide~57 is garbled; \eqref{eq:pstar} is the corrected version.
+\item The BS-PDE FTCS stability condition is only stated qualitatively in the deck. A full mode analysis on the variable-coefficient $S$-grid is more delicate than the constant-coefficient $\nu\le\tfrac12$; the practical rule is that the largest diffusion weight $\sigma^2 (N_x-1)^2 k \lesssim 1$ controls it. I flag this as a likely deeper-probe question.
+\item ``CRR'' nomenclature: the deck's $p=\tfrac12$ tree is moment-matched but is not the classical $d=1/u$ CRR tree; I noted both parameterisations.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,480 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newtheorem{remark}{Remark}
+
+\title{Lecture 02 --- Option Pricing Theory}
+\author{Computational Finance (WI4151), TU Delft --- Prof.\ Fang Fang}
+\date{Study notes}
+
+\begin{document}
+\maketitle
+
+\noindent
+These notes follow Lecture~2 (\emph{Option Pricing Theory}). The logical spine is:
+It\^o's lemma $\to$ the Black--Scholes PDE through delta-hedging $\to$ the martingale
+(risk-neutral) formulation $\to$ the Feynman--Kac bridge between the two $\to$ the closed-form
+European call price. The two pricing philosophies (replication/PDE and change-of-measure/expectation)
+are made to coincide. Where the slides are thin (put--call parity, the full Greek table) I derive the
+material myself and flag it.
+
+\tableofcontents
+
+\section{It\^o's lemma}
+
+\subsection{Statement}
+Let $X_t$ be a one-dimensional It\^o diffusion,
+\begin{equation}
+\dd X_t = \mu_t \dd t + \sigma_t \dd W_t,
+\qquad
+X_t = X_0 + \int_0^t \mu_s \dd s + \int_0^t \sigma_s \dd W_s,
+\end{equation}
+with drift $\mu_t$ and diffusion coefficient $\sigma_t$, and $W_t$ a standard Brownian motion under
+the relevant measure. Let $g(t,x)$ be once continuously differentiable in $t$ and twice in $x$. Then
+$Y_t := g(t,X_t)$ is again an It\^o process and
+\begin{equation}\label{eq:ito}
+\dd Y_t = \left(\frac{\partial g}{\partial t}
++ \mu_t \frac{\partial g}{\partial x}
++ \tfrac{1}{2}\sigma_t^2 \frac{\partial^2 g}{\partial x^2}\right)\dd t
++ \sigma_t \frac{\partial g}{\partial x}\,\dd W_t.
+\end{equation}
+A companion identity is the \emph{It\^o product rule}: for two It\^o processes $Y_t,Z_t$,
+\begin{equation}\label{eq:product}
+\dd(Y_t Z_t) = Z_t\,\dd Y_t + Y_t\,\dd Z_t + \dd Y_t\,\dd Z_t,
+\end{equation}
+where the cross term $\dd Y_t\,\dd Z_t$ is the quadratic covariation increment and is the feature that
+distinguishes It\^o calculus from ordinary calculus.
+
+\subsection{Heuristic derivation: why the second-order term survives}
+The non-classical term in \eqref{eq:ito} comes from the quadratic variation of Brownian motion.
+Over $[t,t+\dd t]$ the increment satisfies $W_{t+\dd t}-W_t \sim \mathcal N(0,\dd t)$, so
+$\dd W_t$ is of order $\sqrt{\dd t}$ and $(\dd W_t)^2$ is of order $\dd t$. The formal multiplication
+table is
+\begin{equation}
+(\dd W_t)^2 = \dd t,
+\qquad
+\dd W_t\,\dd t = 0,
+\qquad
+(\dd t)^2 = 0,
+\end{equation}
+where the last two are higher order and vanish faster than $\dd t$. Performing an informal Taylor
+expansion of $g$ to second order,
+\begin{equation}
+\dd g
+= \frac{\partial g}{\partial t}\dd t
++ \frac{\partial g}{\partial x}\dd X_t
++ \tfrac12\frac{\partial^2 g}{\partial t^2}(\dd t)^2
++ \tfrac12\frac{\partial^2 g}{\partial x^2}(\dd X_t)^2
++ \frac{\partial^2 g}{\partial x\,\partial t}\dd X_t\,\dd t + \cdots
+\end{equation}
+Keeping only terms of order $\dd t$ or lower, the $(\dd t)^2$ and $\dd X_t\,\dd t$ terms drop. The
+quadratic term reduces using the table:
+\begin{equation}
+(\dd X_t)^2
+= (\mu_t \dd t + \sigma_t \dd W_t)^2
+= \mu_t^2 (\dd t)^2 + 2\mu_t\sigma_t \dd t\,\dd W_t + \sigma_t^2 (\dd W_t)^2
+= \sigma_t^2 \dd t + o(\dd t).
+\end{equation}
+Substituting $\dd X_t = \mu_t\dd t + \sigma_t \dd W_t$ and $(\dd X_t)^2 = \sigma_t^2\dd t$ and
+collecting the $\dd t$ and $\dd W_t$ pieces yields \eqref{eq:ito}.
+
+\begin{remark}
+The extra $\tfrac12 \sigma_t^2 g_{xx}$ drift is purely an artefact of the non-vanishing quadratic
+variation. It is the same term that, in the PDE derivation below, generates the
+$\tfrac12\sigma^2 S^2 V_{SS}$ diffusion term, and convexity (sign of $g_{xx}$, i.e.\ Gamma) is exactly
+what it measures.
+\end{remark}
+
+\subsection{Worked example: geometric Brownian motion}
+Let $\dd S_t = \mu S_t \dd t + \sigma S_t \dd W_t$ and take $g(t,S) = \ln S$, so $g_t = 0$,
+$g_S = 1/S$, $g_{SS} = -1/S^2$. Then
+\begin{align}
+\dd \ln S_t
+&= \frac{1}{S_t}\dd S_t + \tfrac12\left(-\frac{1}{S_t^2}\right)\sigma^2 S_t^2 \dd t \nonumber\\
+&= \frac{1}{S_t}\bigl(\mu S_t \dd t + \sigma S_t \dd W_t\bigr) - \frac{\sigma^2}{2}\dd t
+= \left(\mu - \frac{\sigma^2}{2}\right)\dd t + \sigma \dd W_t.
+\end{align}
+Integrating from $t_0$ to $t$,
+\begin{equation}\label{eq:gbmsol}
+\ln S_t = \ln S_{t_0} + \left(\mu - \frac{\sigma^2}{2}\right)(t-t_0) + \sigma (W_t - W_{t_0}).
+\end{equation}
+The $-\tfrac12\sigma^2$ correction is the It\^o term: $\E[S_t] = S_{t_0}e^{\mu(t-t_0)}$ grows at rate
+$\mu$, but $\E[\ln S_t]$ grows at the lower rate $\mu-\tfrac12\sigma^2$ because of Jensen's inequality
+applied to the concave logarithm.
+
+\subsection{Resulting distributions}
+From \eqref{eq:gbmsol}, $X := \ln S_t$ is Gaussian,
+\begin{equation}
+X = \ln S_t \sim \mathcal N\!\left(\ln S_{t_0} + \bigl(\mu - \tfrac12\sigma^2\bigr)(t-t_0),\;
+\sigma^2 (t-t_0)\right),
+\end{equation}
+with density
+\begin{equation}
+f_X(x) = \frac{1}{\sigma\sqrt{2\pi(t-t_0)}}
+\exp\!\left(-\frac{\bigl(x - \ln S_{t_0} - (\mu-\tfrac12\sigma^2)(t-t_0)\bigr)^2}{2\sigma^2(t-t_0)}\right).
+\end{equation}
+The price $S_t = e^{X}$ is therefore \emph{log-normal}: for $y>0$,
+$F_S(y) = \mathbb P(S_t\le y) = \mathbb P(X \le \ln y) = \int_{-\infty}^{\ln y} f_X(x)\dd x$, and the
+log-normal density (by the change of variables $s=e^x$, with extra factor $1/s$) is
+\begin{equation}
+f_S(s) = \frac{1}{s\,\sigma\sqrt{2\pi(t-t_0)}}
+\exp\!\left(-\frac{\bigl(\ln\tfrac{s}{S_{t_0}} - (\mu-\tfrac12\sigma^2)(t-t_0)\bigr)^2}{2\sigma^2(t-t_0)}\right),
+\quad s>0.
+\end{equation}
+This is the density that the pricing integral in Section~\ref{sec:closedform} integrates the payoff
+against.
+
+\section{The Black--Scholes PDE via delta-hedging}\label{sec:pde}
+
+\subsection{Set-up}
+Assume the underlying obeys geometric Brownian motion under the real-world (physical) measure $P$,
+and a risk-free bank account $M_t$:
+\begin{equation}
+\dd S_t = \mu S_t \dd t + \sigma S_t \dd W_t^{P},
+\qquad
+\dd M_t = r M_t \dd t.
+\end{equation}
+Let $V(t,S_t)$ denote the option price. Build a \emph{self-financing} hedging portfolio that is long
+one option and short $\Delta(t,S_t)$ units of the underlying:
+\begin{equation}
+\Pi(t,S_t) = V(t,S_t) - \Delta(t,S_t)\,S_t.
+\end{equation}
+Self-financing means no capital is injected or withdrawn; over $[t,t+\dd t]$ the position $\Delta$ is
+held fixed (it is $\mathcal F_t$-measurable, chosen on current information), so
+\begin{equation}\label{eq:dPi}
+\dd \Pi_t = \dd V_t - \Delta(t,S_t)\,\dd S_t.
+\end{equation}
+
+\subsection{Apply It\^o to the option value}
+By It\^o's lemma applied to $V(t,S_t)$, with $(\dd S_t)^2 = \sigma^2 S_t^2 \dd t$,
+\begin{equation}
+\dd V_t = V_t\,\dd t + V_S\,\dd S_t + \tfrac12 V_{SS}(\dd S_t)^2
+= \left(V_t + \mu S_t V_S + \tfrac12\sigma^2 S_t^2 V_{SS}\right)\dd t + \sigma S_t V_S\,\dd W_t^{P},
+\end{equation}
+where subscripts denote partial derivatives ($V_t = \partial V/\partial t$, $V_S=\partial V/\partial S$,
+$V_{SS}=\partial^2 V/\partial S^2$).
+
+\subsection{Eliminate the risk}
+Substituting $\dd V_t$ and $\dd S_t = \mu S_t\dd t + \sigma S_t \dd W_t^P$ into \eqref{eq:dPi}:
+\begin{equation}
+\dd \Pi_t
+= \left(V_t + \mu S_t V_S + \tfrac12\sigma^2 S_t^2 V_{SS} - \Delta\,\mu S_t\right)\dd t
++ \bigl(\sigma S_t V_S - \Delta\,\sigma S_t\bigr)\dd W_t^{P}.
+\end{equation}
+The portfolio is \emph{locally riskless} if and only if the stochastic ($\dd W^P$) term vanishes,
+which forces the hedge ratio
+\begin{equation}\label{eq:delta}
+\boxed{\;\Delta(t,S_t) = V_S\;}
+\end{equation}
+Note that the drift $\mu$ also disappears from the remaining $\dd t$ term once $\Delta=V_S$ is
+substituted: the $\mu S_t V_S$ and $-\Delta \mu S_t = -\mu S_t V_S$ terms cancel. This is the precise
+reason $\mu$ never enters the price. With \eqref{eq:delta},
+\begin{equation}
+\dd \Pi_t = \left(V_t + \tfrac12\sigma^2 S_t^2 V_{SS}\right)\dd t.
+\end{equation}
+
+\subsection{Impose no-arbitrage}
+A locally riskless portfolio must earn the risk-free rate (otherwise an arbitrage exists):
+$\dd \Pi_t = r\Pi_t\dd t$. Using $\Pi_t = V - V_S S_t$,
+\begin{equation}
+V_t + \tfrac12\sigma^2 S_t^2 V_{SS} = r\bigl(V - S_t V_S\bigr).
+\end{equation}
+Rearranging gives the \textbf{Black--Scholes PDE},
+\begin{equation}\label{eq:bspde}
+\boxed{\;V_t + r S V_S + \tfrac12 \sigma^2 S^2 V_{SS} - r V = 0\;}
+\end{equation}
+a second-order, linear, parabolic PDE, solved backward from the terminal payoff $V(S,T)=g(S)$.
+
+\subsection{Modelling assumptions}
+The derivation rests on: (i) GBM dynamics for $S$; (ii) constant, known $r$ and $\sigma$;
+(iii) no transaction costs in the continuous hedge; (iv) no dividends over the option's life;
+(v) no arbitrage (and implicitly continuous trading / market completeness). Relaxing any of these
+breaks either the constant-coefficient PDE or the perfect replication argument.
+
+\begin{remark}[The five pricing parameters, and the absent one]
+The European call price solves \eqref{eq:bspde} and is a function of $S$, $t$, $\sigma$, $K$, $T$,
+$r$. The growth rate $\mu$ is conspicuously \emph{absent} from \eqref{eq:bspde} and hence from the
+price. Economically: risk preferences are hedged away; only the volatility and the cost of carry $r$
+matter. This is the seed of risk-neutral valuation.
+\end{remark}
+
+\section{Martingales and risk-neutral valuation}
+
+\subsection{Martingale definition}
+A process $X=\{X_t : t\ge0\}$ is a \emph{martingale} with respect to a filtration $\{\mathcal F_t\}$ if
+$X_t$ is adapted, $\E|X_t|<\infty$, and for all $0\le s<t$,
+\begin{equation}
+\E[X_t \mid \mathcal F_s] = X_s.
+\end{equation}
+Two examples used repeatedly:
+\begin{enumerate}[label=(\alph*)]
+\item Brownian motion itself. For $s<t$,
+$\E[W_t\mid\mathcal F_s] = \E[W_t - W_s \mid \mathcal F_s] + W_s = W_s$,
+because the increment $W_t-W_s$ is independent of $\mathcal F_s$ and has mean zero.
+\item The \emph{stochastic (Dol\'eans) exponential} $X_t = \exp(\sigma W_t - \tfrac12\sigma^2 t)$.
+Using the Gaussian exponential moment $\E[e^{\sigma Z - \frac12\sigma^2}]=1$ for $Z\sim\mathcal N(0,1)$,
+\begin{equation}
+\E[X_t\mid\mathcal F_s]
+= e^{\sigma W_s - \frac12\sigma^2 s}\,
+\E\!\left[e^{\sigma(W_t-W_s) - \frac12\sigma^2(t-s)}\right]
+= X_s,
+\end{equation}
+since $W_t-W_s\sim\mathcal N(0,t-s)$ makes the conditional expectation equal to one.
+\item Any It\^o integral $X_t = \int_0^t g(s)\dd W_s$ with $\E\int_0^T g^2\dd s<\infty$ is a
+martingale. This is the workhorse fact: \emph{a drift-free It\^o process (one with no $\dd t$ term)
+is a martingale.}
+\end{enumerate}
+
+\subsection{Risk-neutral (equivalent martingale) measure}
+A \emph{risk-neutral measure} $Q$ is a probability measure equivalent to $P$ under which the
+\emph{discounted} asset price $e^{-rt}S_t$ is a martingale:
+\begin{equation}
+S_t = \E^{Q}\!\left[e^{-r(T-t)} S_T \mid \mathcal F_t\right].
+\end{equation}
+Suppose under $Q$ the asset still follows a GBM but with unknown drift $\mu'$,
+$\dd S_t = \mu' S_t \dd t + \sigma S_t \dd W_t^Q$. We determine $\mu'$ by demanding the martingale
+property. By the product rule \eqref{eq:product}, with $\dd(e^{-rt}) = -r e^{-rt}\dd t$ and the
+cross term vanishing (the bank account is finite variation),
+\begin{align}
+\dd\bigl(e^{-rt}S_t\bigr)
+&= S_t\,\dd(e^{-rt}) + e^{-rt}\dd S_t + \dd(e^{-rt})\dd S_t \nonumber\\
+&= -r e^{-rt}S_t\dd t + e^{-rt}(\mu' S_t\dd t + \sigma S_t\dd W_t^Q)
+= (\mu'-r)e^{-rt}S_t\dd t + e^{-rt}\sigma S_t \dd W_t^Q.
+\end{align}
+Integrating,
+\begin{equation}
+e^{-rt}S_t = S_0 + \int_0^t (\mu'-r)e^{-rv}S_v\dd v + \int_0^t e^{-rv}\sigma S_v \dd W_v^Q.
+\end{equation}
+The stochastic integral is a martingale; the Lebesgue integral (the $\dd v$ drift) is not, unless it
+vanishes. Hence $e^{-rt}S_t$ is a martingale \emph{iff} $\mu' - r = 0$. Therefore under $Q$,
+\begin{equation}\label{eq:Qdyn}
+\boxed{\;\dd S_t = r S_t \dd t + \sigma S_t \dd W_t^Q\;}
+\end{equation}
+The change of measure shifts the drift from $\mu$ to $r$ while leaving $\sigma$ untouched (Girsanov:
+only the drift is affected). Equivalence means $P$ and $Q$ agree on which events are impossible
+($Q(A)=0 \Leftrightarrow P(A)=0$), so $\sigma$ --- a path/quadratic-variation property --- is
+preserved.
+
+\subsection{Discounted option price is a $Q$-martingale}
+By the same no-arbitrage logic, the discounted \emph{option} price $e^{-rt}V(t,S_t)$ is a
+$Q$-martingale. Using the product rule and It\^o under the $Q$-dynamics \eqref{eq:Qdyn},
+\begin{equation}
+\dd V = \left(V_t + rS V_S + \tfrac12\sigma^2 S^2 V_{SS}\right)\dd t + \sigma S V_S\,\dd W_t^Q,
+\end{equation}
+and therefore
+\begin{equation}
+\dd\bigl(e^{-rt}V\bigr)
+= e^{-rt}\left(V_t + rSV_S + \tfrac12\sigma^2 S^2 V_{SS} - rV\right)\dd t
++ e^{-rt}\sigma S V_S\,\dd W_t^Q.
+\end{equation}
+For $e^{-rt}V$ to be a martingale the drift must vanish, which is again exactly the Black--Scholes PDE
+\eqref{eq:bspde}. So the martingale route reproduces the PDE route. Conversely, applying the
+martingale property between $t$ and $T$ gives the \textbf{risk-neutral valuation formula}
+\begin{equation}\label{eq:rnv}
+\boxed{\;V(t,S_t) = \E^{Q}\!\left[e^{-r(T-t)} g(S_T)\mid \mathcal F_t\right]\;}
+\end{equation}
+
+\section{Feynman--Kac: the bridge}
+
+\subsection{Statement}
+The Feynman--Kac theorem links a terminal-value parabolic PDE to a discounted expectation. Consider
+\begin{equation}\label{eq:fkpde}
+\frac{\partial V}{\partial t} + b(x,t)\frac{\partial V}{\partial x}
++ \tfrac12\sigma^2(x,t)\frac{\partial^2 V}{\partial x^2} - r(x,t)V = 0,
+\qquad V(x,T) = g(x).
+\end{equation}
+Let $X_s$ solve $\dd X_s = b(X_s,s)\dd s + \sigma(X_s,s)\dd W_s$, $s\ge t$, with $X_t = x$. Then
+\begin{equation}\label{eq:fk}
+V(x,t) = \E\!\left[e^{-\int_t^T r(X_u,u)\dd u}\,g(X_T)\,\Big|\, X_t = x\right].
+\end{equation}
+
+\subsection{Proof sketch}
+Define the discounted process $Y_s = e^{-\int_t^s r(X_u,u)\dd u}V(X_s,s)$ for $s\ge t$. Applying
+It\^o's lemma (the discount factor contributes $-rV$),
+\begin{align}
+\dd Y_s
+&= e^{-\int_t^s r\,\dd u}\left(V_t + b(X_s,s)V_x + \tfrac12\sigma^2(X_s,s)V_{xx} - r(X_s,s)V\right)\dd s
+\nonumber\\
+&\quad + e^{-\int_t^s r\,\dd u}\,\sigma(X_s,s) V_x \,\dd W_s.
+\end{align}
+By the PDE \eqref{eq:fkpde} the entire $\dd s$ drift vanishes, leaving $Y_s$ a (local) martingale.
+Taking expectations of $Y_T - Y_t$ and using $Y_t = V(x,t)$, $Y_T = e^{-\int_t^T r\,\dd u}g(X_T)$
+gives \eqref{eq:fk}. So \emph{solving the PDE} and \emph{computing the discounted expectation} are the
+same operation, viewed from two sides.
+
+\subsection{Worked example}
+Solve $V_t + \tfrac12\sigma^2 V_{xx}=0$ with $V(x,T)=x^2$, $\sigma$ constant. Here $b\equiv0$,
+$r\equiv0$, so $\dd X_s = \sigma\dd W_s$, $X_t=x$, giving $X_T = x + \sigma(W_T-W_t)\sim
+\mathcal N(x,\sigma^2(T-t))$. By Feynman--Kac, $V(x,t) = \E[X_T^2]$, and using
+$\E[X_T^2] = \mathrm{Var}(X_T) + (\E X_T)^2$,
+\begin{equation}
+V(x,t) = \sigma^2(T-t) + x^2.
+\end{equation}
+One checks directly that $V_t = -\sigma^2$ and $\tfrac12\sigma^2 V_{xx} = \tfrac12\sigma^2\cdot 2 =
+\sigma^2$ sum to zero, and $V(x,T)=x^2$.
+
+\subsection{Applied to Black--Scholes}
+For the Black--Scholes PDE \eqref{eq:bspde} with $V(S,T)=g(S)$, Feynman--Kac (under the $Q$-dynamics
+\eqref{eq:Qdyn}, where $b=rS$ and the discount rate is the constant $r$) gives
+\begin{equation}
+V(S_t,t) = e^{-r(T-t)}\E^{Q}\!\left[g(S_T)\mid\mathcal F_t\right],
+\end{equation}
+equivalently $e^{-rt}V(S_t,t) = \E^Q[e^{-rT}g(S_T)\mid\mathcal F_t]$, i.e.\ the discounted price is a
+$Q$-martingale with the bank account $B_t = e^{rt}$ as \emph{numeraire}.
+
+\subsection{Equivalent martingale measure (EMM) and numeraire}
+More generally, $Q$ is an EMM relative to numeraire $B_t$ if it is equivalent to $P$ and
+$S_t/B_t = \E^Q[S_T/B_T\mid\mathcal F_t]$. Prices are then
+\begin{equation}
+V_t = B_t\,\E^Q\!\left[\frac{g(S_T)}{B_T}\,\Big|\,\mathcal F_t\right].
+\end{equation}
+This abstraction matters later in the course: changing the numeraire (e.g.\ to the stock or to a bond)
+changes the convenient measure but not the price.
+
+\begin{remark}[Two roads, same destination]
+The replication/PDE road chooses $\Delta=V_S$ to kill local risk and invokes no-arbitrage to fix the
+return. The change-of-measure road posits an EMM $Q$ under which discounted prices are martingales.
+Feynman--Kac shows the two are mathematically identical: PDE drift $=0$ $\Leftrightarrow$ discounted
+price is a $Q$-martingale. Computationally this hands us several tools: solve the PDE (analytic /
+finite differences), Monte Carlo the expectation \eqref{eq:rnv}, or---when the risk-neutral density or
+characteristic function is known---numerically integrate
+$V = e^{-r(T-t)}\int g(s) f_{S_T\mid S_t}(s)\dd s$. The last is the gateway to the Fourier/COS methods
+that dominate the rest of the course.
+\end{remark}
+
+\section{Closed-form European call: solving the PDE by expectation}\label{sec:closedform}
+
+\subsection{Risk-neutral terminal law}
+Under $Q$, by It\^o on $\ln S_t$ (identical to the GBM example but with $\mu\to r$),
+\begin{equation}
+S_T = S_0\exp\!\left(\Bigl(r - \tfrac{\sigma^2}{2}\Bigr)T + \sigma W_T^Q\right),
+\qquad
+S_T = S_0 e^{Z},\quad Z\sim\mathcal N\!\Bigl(\bigl(r-\tfrac{\sigma^2}{2}\bigr)T,\;\sigma^2 T\Bigr).
+\end{equation}
+The time-0 European call price with strike $K$, maturity $T$, payoff $(S_T-K)^+$ is
+\begin{equation}
+C_0 = e^{-rT}\,\E^Q\!\left[(S_T-K)^+\right]
+= e^{-rT}\int_{\ln(K/S_0)}^{\infty}\bigl(S_0 e^{z} - K\bigr) f_Z(z)\dd z,
+\end{equation}
+the lower limit $z=\ln(K/S_0)$ being where $S_0 e^z = K$, i.e.\ where the call enters the money. Split
+into two integrals, $C_0 = e^{-rT}(I_1 - I_2)$ with $I_1 = \int S_0 e^z f_Z\dd z$ and
+$I_2 = \int K f_Z\dd z$.
+
+\subsection{The $K\,N(d_2)$ term}
+The second (easy) integral is just $K$ times a tail probability:
+\begin{equation}
+I_2 = \int_{\ln(K/S_0)}^{\infty} K f_Z(z)\dd z = K\,\mathbb P\!\left(Z \ge \ln\frac{K}{S_0}\right).
+\end{equation}
+Standardize $Z = (r-\tfrac{\sigma^2}{2})T + \sigma\sqrt{T}\,\xi$ with $\xi\sim\mathcal N(0,1)$:
+\begin{equation}
+I_2 = K\,\mathbb P\!\left(\xi \ge \frac{\ln(K/S_0) - (r-\tfrac{\sigma^2}{2})T}{\sigma\sqrt T}\right)
+= K\,\mathbb P(\xi \le d_2) = K\,N(d_2),
+\end{equation}
+using symmetry of the standard normal $\mathbb P(\xi\ge -a) = \mathbb P(\xi\le a)$, where
+\begin{equation}
+d_2 = \frac{\ln(S_0/K) + \bigl(r-\tfrac{\sigma^2}{2}\bigr)T}{\sigma\sqrt T}.
+\end{equation}
+
+\subsection{The $S_0 e^{rT} N(d_1)$ term}
+For $I_1$ insert the Gaussian density of $Z$ and complete the square in the exponent. With
+$m = (r-\tfrac{\sigma^2}{2})T$ and $v^2=\sigma^2 T$,
+\begin{equation}
+S_0 e^{z}\,f_Z(z)
+= \frac{S_0}{\sqrt{2\pi v^2}}\exp\!\left(z - \frac{(z-m)^2}{2v^2}\right).
+\end{equation}
+Completing the square, $z - \tfrac{(z-m)^2}{2v^2} = -\tfrac{(z-(m+v^2))^2}{2v^2} + m + \tfrac12 v^2$,
+and $m + \tfrac12 v^2 = rT$. Hence
+\begin{equation}
+S_0 e^{z} f_Z(z) = S_0 e^{rT}\,\tilde f(z),
+\end{equation}
+where $\tilde f$ is the $\mathcal N(m+v^2,\,v^2)$ density (the original mean shifted up by $v^2$ ---
+this is the Girsanov/measure-change-to-stock-numeraire shift). Therefore
+\begin{equation}
+I_1 = S_0 e^{rT}\,\mathbb P\!\left(\tilde Z \ge \ln\frac{K}{S_0}\right)
+= S_0 e^{rT}\,\mathbb P(\xi \le d_1) = S_0 e^{rT} N(d_1),
+\end{equation}
+where, standardizing the shifted variable, the only change versus $d_2$ is that the mean now carries
+$+\tfrac{\sigma^2}{2}$ instead of $-\tfrac{\sigma^2}{2}$:
+\begin{equation}
+d_1 = \frac{\ln(S_0/K) + \bigl(r+\tfrac{\sigma^2}{2}\bigr)T}{\sigma\sqrt T}
+= d_2 + \sigma\sqrt T.
+\end{equation}
+
+\subsection{The Black--Scholes formula}
+Combining $C_0 = e^{-rT}(I_1 - I_2)$,
+\begin{equation}\label{eq:bscall}
+\boxed{\;C_0 = S_0\,N(d_1) - K e^{-rT} N(d_2),
+\qquad
+d_{1,2} = \frac{\ln(S_0/K) + (r\pm\tfrac{\sigma^2}{2})T}{\sigma\sqrt T}\;}
+\end{equation}
+The two terms have a clean reading: $S_0 N(d_1)$ is the (discounted, in numeraire terms) value of
+receiving the stock conditional on exercise, and $Ke^{-rT}N(d_2)$ is the present value of paying the
+strike, weighted by the risk-neutral exercise probability $N(d_2) = \mathbb Q(S_T>K)$.
+
+\subsection{European put and put--call parity}
+\emph{The slides obtain the put only by quoting put--call parity; the parity itself is not derived
+there. The derivation below is mine.} Consider the static portfolio: long one call, short one put,
+both struck at $K$ with maturity $T$. Its terminal payoff is
+\begin{equation}
+(S_T-K)^+ - (K-S_T)^+ = S_T - K
+\end{equation}
+for every $S_T$ (check the two regimes $S_T\gtrless K$). A payoff $S_T - K$ at time $T$ is replicated
+today by holding one unit of stock and shorting $K$ zero-coupon bonds, with present value
+$S_0 - Ke^{-rT}$. By no-arbitrage the prices must match:
+\begin{equation}\label{eq:parity}
+\boxed{\;C_0 - P_0 = S_0 - K e^{-rT}\;}
+\end{equation}
+Hence $P_0 = C_0 - S_0 + Ke^{-rT}$. Substituting \eqref{eq:bscall} and using $N(-x) = 1-N(x)$,
+\begin{equation}
+P_0 = K e^{-rT} N(-d_2) - S_0 N(-d_1),
+\end{equation}
+the Black--Scholes put formula. Parity is model-free: it uses only no-arbitrage and a constant rate,
+not the GBM assumption.
+
+\section{The Greeks}
+\emph{The slides name only Delta and Gamma explicitly and mention Theta in passing; the closed forms
+below for the call I supply for completeness.} Greeks are sensitivities of the price to inputs and are
+the hedging coefficients.
+
+\paragraph{Delta} $\displaystyle \Delta = \frac{\partial V}{\partial S}$ is the number of units of
+underlying needed to hedge --- exactly the $\Delta=V_S$ of \eqref{eq:delta}. For the call,
+$\Delta_{\text{call}} = N(d_1) \in (0,1)$.
+
+\paragraph{Gamma} $\displaystyle \Gamma = \frac{\partial^2 V}{\partial S^2}$ measures how fast Delta
+moves. Small $\Gamma$ $\Rightarrow$ Delta is stable and one can re-hedge infrequently; large $\Gamma$
+$\Rightarrow$ frequent rebalancing. For the call,
+$\Gamma = \dfrac{N'(d_1)}{S_0\sigma\sqrt T}>0$, with $N'$ the standard normal density. Gamma is the
+discrete cost of the continuous-hedging idealization.
+
+\paragraph{Theta} $\Theta = \partial V/\partial t$, the time decay (the slides call it sensitivity to
+time to maturity). Note that \eqref{eq:bspde} can be read as an algebraic relation among the Greeks:
+$\Theta + rS\Delta + \tfrac12\sigma^2 S^2\Gamma = rV$, so the Greeks are not independent --- the PDE
+ties them together. Vega ($\partial V/\partial\sigma$) and Rho ($\partial V/\partial r$) complete the
+usual set but lie outside the lecture's scope.
+
+\section{Coverage check and likely exam targets}
+\textbf{Covered by the slides and derived here:} It\^o's lemma and the order-counting heuristic; GBM
+solution and (log-)normal densities; the delta-hedging derivation of the BS PDE; the martingale /
+risk-neutral derivation and why $\mu\to r$; Feynman--Kac with proof and the BS specialization; EMM /
+numeraire; the closed-form call via the log-normal expectation; put--call parity (derived here, only
+quoted on the slides).
+
+\textbf{Thin on the slides / supplied here:} put--call parity proof; the put formula; closed-form
+Greeks beyond the verbal Delta/Gamma. These are standard and exam-likely, so they are included rather
+than left blank.
+
+\textbf{Most probable oral questions.} (1) ``Where does the $\tfrac12\sigma^2 S^2 V_{SS}$ term come
+from?'' --- the quadratic variation $(\dd W)^2=\dd t$. (2) ``Why does $\mu$ disappear?'' --- the
+$\mu S V_S$ terms cancel once $\Delta=V_S$; equivalently the drift is replaced by $r$ under $Q$.
+(3) ``Show the PDE and the expectation give the same price'' --- Feynman--Kac, drift $=0$
+$\Leftrightarrow$ discounted price is a $Q$-martingale. (4) ``Interpret $N(d_2)$'' --- the
+risk-neutral probability of finishing in the money, $\mathbb Q(S_T>K)$. (5) ``Derive parity'' ---
+the static $S_T-K$ replication argument.
+
+\end{document}

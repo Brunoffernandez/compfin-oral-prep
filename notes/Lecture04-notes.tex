@@ -1,0 +1,521 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newtheorem{remark}{Remark}
+
+\title{Lecture 04 --- Monte Carlo Simulation for Option Pricing}
+\author{Computational Finance (WI4151), TU Delft --- Prof.\ Fang Fang}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+These notes cover Cluster 2: Monte Carlo (MC) integration, MC simulation of SDEs
+(Euler--Maruyama, Milstein), strong/weak convergence orders, and the four variance
+reduction techniques (antithetic variates, control variates, quasi-MC, importance
+sampling). The guiding theme: MC is the slow but dimension-robust benchmark against
+which the fast deterministic methods of this course --- COS (Lectures 6, 10) and
+Carr--Madan FFT --- are measured. MC converges at the model-independent rate
+$O(N^{-1/2})$; COS converges \emph{exponentially} in the number of terms for smooth
+densities. Knowing precisely why MC is $O(N^{-1/2})$ is the way to articulate why COS
+is worth the trouble.
+
+\tableofcontents
+
+%==================================================================
+\section{Monte Carlo integration and the $O(N^{-1/2})$ error}
+%==================================================================
+
+\subsection{The estimator}
+
+Let $I=\int_a^b f(x)\dd x$ be a one-dimensional integral. Write it as an expectation by
+multiplying and dividing by the length $b-a$:
+\[
+I=(b-a)\int_a^b f(x)\,\frac{1}{b-a}\dd x=(b-a)\,\E[f(U)],\qquad U\sim\mathcal U[a,b],
+\]
+since $\tfrac{1}{b-a}\mathbf 1_{[a,b]}$ is exactly the density of the uniform law on
+$[a,b]$. Drawing i.i.d.\ $u_1,\dots,u_N\sim\mathcal U[a,b]$, the estimator is
+\[
+\widehat I_N=\frac{b-a}{N}\sum_{i=1}^N f(u_i).
+\]
+The general (multi-dimensional) form factorises the integrand $f(\mathbf x)=h(\mathbf
+x)g(\mathbf x)$ with $g$ a probability density on $\Omega\subseteq\R^d$, so that
+$I=\int_\Omega h\,g\dd\mathbf x=\E_g[h(X)]$, estimated by
+$\widehat I_N=\frac1N\sum_{i=1}^N h(x_i)$ with $x_i\sim g$. This factorisation is the
+whole game: \emph{any} integral becomes an average of i.i.d.\ samples once you identify
+a density to sample from.
+
+\subsection{Unbiasedness, consistency, and the standard error}
+
+Let $X_i=h(x_i)$, $\mu=\E[h(X)]=I$, $\sigma^2=\Var(h(X))$ (assume $\sigma^2<\infty$).
+The estimator $\bar X_N=\frac1N\sum_{i=1}^N X_i$ satisfies:
+
+\paragraph{Unbiasedness.} $\E[\bar X_N]=\frac1N\sum_{i=1}^N\E[X_i]=\mu=I$.
+
+\paragraph{Consistency.} The Strong Law of Large Numbers gives
+$\bar X_N\xrightarrow{\text{a.s.}}\mu$, so the estimator converges to the true integral
+for almost every realisation of the random stream. (The Weak Law gives the same in
+probability; a.s.\ is the stronger statement and is what the slides assert.)
+
+\paragraph{Variance of the estimator.} Using independence,
+\[
+\Var(\bar X_N)=\Var\!\Bigl(\frac1N\sum_{i=1}^N X_i\Bigr)
+=\frac{1}{N^2}\sum_{i=1}^N\Var(X_i)
+=\frac{1}{N^2}\cdot N\sigma^2=\frac{\sigma^2}{N}.
+\]
+The cross terms vanish because $\Cov(X_i,X_j)=0$ for $i\ne j$. Hence the
+\emph{standard error} is
+\[
+\operatorname{se}(\bar X_N)=\sqrt{\Var(\bar X_N)}=\frac{\sigma}{\sqrt N}=O(N^{-1/2}).
+\]
+This is the central fact of the whole lecture: \textbf{the MC error decays like
+$N^{-1/2}$, independent of the dimension $d$}. To gain one decimal digit (factor $10$
+in accuracy) you need $100\times$ the samples. By contrast, a tensor-product quadrature
+rule of order $k$ in $d$ dimensions costs $N=m^d$ points for $m$ points per axis and
+achieves $O(m^{-k})=O(N^{-k/d})$ --- the rate \emph{degrades with $d$} (curse of
+dimensionality). MC's rate does not. This is why MC dominates in high dimension (basket
+options, many time steps) despite its slowness in low dimension.
+
+\subsection{Confidence intervals from the CLT}
+
+The Central Limit Theorem sharpens the standard error into a probabilistic error bar.
+With $\mu=I$ and $\sigma^2=\Var(X)$,
+\[
+\frac{\bar X_N-I}{\sigma/\sqrt N}\xrightarrow{d}\mathcal N(0,1).
+\]
+Therefore, for large $N$, $\bar X_N\approx\mathcal N(I,\sigma^2/N)$, and an
+asymptotic $(1-\alpha)$ confidence interval for $I$ is
+\[
+\Bigl[\,\bar X_N-z_{1-\alpha/2}\,\frac{\sigma}{\sqrt N},\;\;
+\bar X_N+z_{1-\alpha/2}\,\frac{\sigma}{\sqrt N}\,\Bigr],
+\]
+where $z_{1-\alpha/2}$ is the standard normal quantile (e.g.\ $1.96$ for $95\%$). In
+practice $\sigma$ is unknown and is replaced by the sample standard deviation
+\[
+s_N^2=\frac{1}{N-1}\sum_{i=1}^N(X_i-\bar X_N)^2,
+\]
+(the $N-1$ gives an unbiased variance estimate). The half-width
+$z_{1-\alpha/2}\,s_N/\sqrt N$ is the quantity actually reported alongside an MC price; a
+variance-reduction technique is "good" precisely when it shrinks this half-width for
+fixed $N$ (equivalently, the same accuracy at fewer samples).
+
+\begin{remark}
+The three convergence modes in the slides form a strict hierarchy:
+$\xrightarrow{\text{a.s.}}\Rightarrow\xrightarrow{p}\Rightarrow\xrightarrow{d}$, with
+no reverse implications in general. The SLLN is a.s., the WLLN is in probability, the
+CLT is in distribution. The CLT does \emph{not} say $\bar X_N\to I$ in distribution
+(that would be degenerate); it says the \emph{rescaled} error
+$\sqrt N(\bar X_N-I)/\sigma$ is asymptotically standard normal.
+\end{remark}
+
+%==================================================================
+\section{Pseudo-random vs.\ quasi-random (QMC)}
+%==================================================================
+
+\subsection{Why QMC can beat $O(N^{-1/2})$}
+
+Standard MC uses pseudo-random points that mimic i.i.d.\ uniforms; its error is
+\emph{random} and decays at $O(N^{-1/2})$ by the CLT. Quasi-Monte Carlo (QMC) replaces
+the random points by a \emph{deterministic} low-discrepancy sequence
+$u_1,\dots,u_N\in[0,1]^d$ (Sobol, Halton, Faure, lattice rules) that fills the cube more
+evenly than random points, which clump and leave gaps. Both methods compute the
+\emph{same} estimator $\frac1N\sum_i f(x_i)$; they differ only in how the $x_i$ are
+chosen.
+
+The error is governed not by the CLT but by the deterministic \textbf{Koksma--Hlawka
+inequality}:
+\[
+\Bigl|\frac1N\sum_{i=1}^N f(x_i)-\int_{[0,1]^d}f(x)\dd x\Bigr|\le V(f)\,D_N^\ast,
+\]
+a product of two factors that separate the integrand from the point set:
+\begin{itemize}[leftmargin=2em]
+\item $V(f)$ is the variation of $f$ in the sense of Hardy--Krause, measuring the
+total magnitude of all mixed partial derivatives across coordinate subsets --- how
+"rough" $f$ is. It depends only on the integrand.
+\item $D_N^\ast$ is the \emph{star discrepancy} of the point set
+$P_N=\{x_1,\dots,x_N\}$,
+\[
+D_N^\ast(P_N)=\sup_{t\in[0,1]^d}\Bigl|\frac1N\sum_{i=1}^N
+\mathbf 1_{\{x_i\in[0,t)\}}-\prod_{j=1}^d t_j\Bigr|,
+\]
+the worst-case gap, over all origin-anchored boxes $[0,t)=[0,t_1)\times\cdots\times
+[0,t_d)$, between the empirical fraction of points in the box and its Lebesgue volume
+$\prod_j t_j$. It depends only on the points.
+\end{itemize}
+For a low-discrepancy sequence one has
+\[
+D_N^\ast=O\!\Bigl(\frac{(\log N)^d}{N}\Bigr),
+\]
+so for sufficiently smooth (bounded-variation) $f$ the QMC error is
+$O((\log N)^d/N)$. For fixed $d$ this is \emph{essentially $O(N^{-1})$} up to the
+logarithmic factor --- a full power of $N$ faster than the $O(N^{-1/2})$ of plain MC.
+
+\subsection{Caveats}
+
+\begin{itemize}[leftmargin=2em]
+\item The rate $(\log N)^d/N$ carries the dimension in the exponent of the logarithm.
+For large $d$, $(\log N)^d$ is enormous and the asymptotic advantage only appears at
+impractically large $N$. In practice the \emph{effective dimension} (how much each
+coordinate actually matters) is what governs QMC performance; Brownian-bridge or PCA
+constructions of the path lower the effective dimension and are what make QMC work for
+option pricing.
+\item QMC is biased-free but \emph{deterministic}, so a plain QMC run gives no error
+estimate. \emph{Randomised QMC} (e.g.\ random shifts of a lattice rule,
+$x_n=\{nz/N+\Delta\}\bmod 1$ with random $\Delta$) restores an unbiased estimator and
+lets you estimate the error from independent shifts, while keeping most of the
+discrepancy advantage.
+\item Mapping to non-unit / unbounded domains: scale $[0,1]^d$ linearly to
+$[a,b]^d$ via $x^{\text{new}}_i=a+(b-a)x_i$, and map to a target law by the inverse CDF,
+$x_i=\Phi^{-1}(u_i)$ (for Gaussians). The inverse-CDF transform preserves
+low-discrepancy structure better than Box--Muller.
+\end{itemize}
+
+\begin{remark}[Connection to COS/FFT]
+QMC, like COS, exploits \emph{smoothness} to beat $O(N^{-1/2})$ --- but QMC trades on
+smoothness/low variation of the integrand whereas COS trades on smoothness of the
+\emph{density}, which it never touches directly, working instead with its Fourier-cosine
+coefficients (the characteristic function). When the characteristic function is known in
+closed form (Heston, Lévy models), COS achieves exponential convergence, far beyond
+even QMC's near-$O(N^{-1})$.
+\end{remark}
+
+%==================================================================
+\section{Discretising SDEs}
+%==================================================================
+
+When the terminal law of $X_T$ is not available in closed form, MC pricing requires
+simulating paths of the SDE
+\[
+\dd X_t=\mu(t,X_t)\dd t+\sigma(t,X_t)\dd W_t.
+\]
+On a uniform grid $t_k=kh$, $k=0,\dots,K$, $Kh=T$, with i.i.d.\ $Z_k\sim\mathcal N(0,1)$,
+the increments $W_{t_k}-W_{t_{k-1}}\stackrel{d}{=}\sqrt h\,Z_k$.
+
+\subsection{Euler--Maruyama}
+
+The simplest scheme freezes the coefficients at the left endpoint of each interval:
+\[
+\widehat X_{t_k}=\widehat X_{t_{k-1}}+\mu(t_{k-1},\widehat X_{t_{k-1}})\,h
++\sigma(t_{k-1},\widehat X_{t_{k-1}})\,\sqrt h\,Z_k,
+\qquad \widehat X_0=X_0.
+\]
+This is the Itô (left-endpoint) discretisation of
+$X_{t_k}=X_{t_{k-1}}+\int_{t_{k-1}}^{t_k}\mu\dd t+\int_{t_{k-1}}^{t_k}\sigma\dd W$,
+with each integral approximated by its left-point value times the increment. The
+left-endpoint choice is not cosmetic: it is what makes the stochastic integral a
+martingale (the Itô convention), as the $\int W\dd W$ example in the slides shows.
+
+\subsection{Milstein: deriving the extra term from the Itô--Taylor expansion}
+
+Euler ignores the variation of $\sigma$ \emph{within} a step. Milstein restores the
+leading correction. Work on one step $[t_{k-1},t_k]$, write $t_{k-1}=s$, freeze
+$X_s=x$, and consider (for clarity) the autonomous scalar case
+$\dd X_t=\mu(X_t)\dd t+\sigma(X_t)\dd W_t$. The exact increment is
+\[
+X_{t_k}-X_s=\int_s^{t_k}\mu(X_u)\dd u+\int_s^{t_k}\sigma(X_u)\dd W_u.
+\]
+Euler replaces $\mu(X_u)\approx\mu(x)$ and $\sigma(X_u)\approx\sigma(x)$. The
+$\dd t$ integral is already $O(h)$ and its error is higher order, so the gain must come
+from the diffusion integral. Expand $\sigma(X_u)$ around $X_s=x$ by Itô's lemma applied
+to the function $\sigma$:
+\[
+\dd\,\sigma(X_t)=\sigma'(X_t)\dd X_t+\tfrac12\sigma''(X_t)(\dd X_t)^2
+=\Bigl[\sigma'\mu+\tfrac12\sigma''\sigma^2\Bigr]\dd t+\sigma'\sigma\,\dd W_t,
+\]
+using the Itô multiplication rule $(\dd W_t)^2=\dd t$. Integrating from $s$ to $u$,
+\[
+\sigma(X_u)=\sigma(x)+\int_s^u\sigma'(X_r)\sigma(X_r)\dd W_r+\big(\text{$O(\dd t)$ terms}\big).
+\]
+Substitute the \emph{leading} stochastic correction back into the diffusion integral and
+freeze the inner coefficient at $x$ (the rest is higher order):
+\[
+\int_s^{t_k}\sigma(X_u)\dd W_u
+\approx\sigma(x)\,(W_{t_k}-W_s)
++\sigma'(x)\sigma(x)\int_s^{t_k}\!\!\int_s^u \dd W_r\,\dd W_u.
+\]
+The iterated Itô integral evaluates in closed form. With $\Delta W:=W_{t_k}-W_s$,
+\[
+\int_s^{t_k}\!\!\int_s^u \dd W_r\,\dd W_u
+=\int_s^{t_k}(W_u-W_s)\dd W_u
+=\tfrac12\bigl[(\Delta W)^2-(t_k-s)\bigr]
+=\tfrac12\bigl[(\Delta W)^2-h\bigr],
+\]
+where the $-\tfrac12 h$ is exactly the Itô correction (the $\int W\,\dd W=\tfrac12(W^2-t)$
+identity from the martingale example). Writing $\Delta W=\sqrt h\,Z_k$, so
+$(\Delta W)^2-h=h(Z_k^2-1)$, the one-step update becomes
+\[
+\boxed{\;\widehat X_{t_k}=\widehat X_{t_{k-1}}+\mu\,h+\sigma\,\sqrt h\,Z_k
++\tfrac12\,\sigma\,\frac{\partial\sigma}{\partial x}\,(Z_k^2-1)\,h\;}
+\]
+with all coefficients evaluated at $(t_{k-1},\widehat X_{t_{k-1}})$. The extra term
+$\tfrac12\sigma\,\partial_x\sigma\,(Z_k^2-1)h$ is the Milstein correction: it captures
+the curvature of the diffusion ($\partial_x\sigma\ne0$) over the step. Note it vanishes
+for \emph{additive} noise ($\sigma$ constant), where Euler and Milstein coincide --- and
+indeed for additive noise Euler already has strong order $1$.
+
+\begin{remark}
+Milstein needs the derivative $\partial_x\sigma$ in closed form, and the
+multidimensional version requires iterated integrals
+$\int\!\int\dd W^{(i)}\dd W^{(j)}$ (Lévy areas) for $i\ne j$ that cannot be written in
+terms of the increments alone --- this is why the slides note that Milstein "is not
+trivial to generalise to multi-dimensional SDEs." For the Heston variance process
+$\dd v_t=\kappa(\bar v-v_t)\dd t+\gamma\sqrt{v_t}\dd W_t$, $\sigma(v)=\gamma\sqrt v$,
+$\partial_v\sigma=\gamma/(2\sqrt v)$, so $\sigma\,\partial_v\sigma=\gamma^2/2$ and the
+Milstein term is $\tfrac14\gamma^2(Z^2-1)h$ --- this is the standard full-truncation /
+Milstein scheme that mitigates (but does not eliminate) the negative-variance problem of
+plain Euler on Heston.
+\end{remark}
+
+%==================================================================
+\section{Strong vs.\ weak convergence}
+%==================================================================
+
+There are two error measures for a discretisation scheme with step $h$, depending on
+whether we care about the pathwise value or only a distributional functional.
+
+\paragraph{Strong order $\beta$.} Pathwise (root-mean / $L^1$) accuracy:
+\[
+\E\bigl[\,|\widehat X_{Kh}-X_T|\,\bigr]\le c\,h^\beta
+\]
+for some constant $c$ and all small $h$. This requires the simulated path and the true
+path (driven by the \emph{same} Brownian motion) to stay close.
+
+\paragraph{Weak order $\beta$.} Distributional accuracy: for all sufficiently smooth
+test functions $f$ (formally $f\in C_P^{2\beta+2}$, derivatives up to order $2\beta+2$
+of polynomial growth),
+\[
+\bigl|\E[f(\widehat X_{Kh})]-\E[f(X_T)]\bigr|\le c\,h^\beta.
+\]
+Only the \emph{laws} of $\widehat X_{Kh}$ and $X_T$ need to match, not the paths.
+
+\paragraph{Orders.}
+\[
+\text{Euler--Maruyama: strong }\beta=\tfrac12,\ \text{weak }\beta=1;\qquad
+\text{Milstein: strong }\beta=1,\ \text{weak }\beta=1.
+\]
+Milstein's payoff is the \emph{strong} rate ($\tfrac12\to1$); its weak rate equals
+Euler's. So if all you want is a European price --- an expectation $\E[f(X_T)]$ --- Euler
+already gives weak order $1$ and Milstein buys you nothing distributionally. Milstein
+matters for \emph{pathwise} accuracy: path-dependent payoffs (barriers, Asians,
+lookbacks) where the whole trajectory enters, and for any scheme where the same noise is
+reused (e.g.\ multilevel MC, which exploits strong convergence to couple coarse and fine
+levels).
+
+\begin{remark}[The $h^{1/3}$ reality check]
+The weak-order-$1$ statement requires the test function $f$ to be smooth. Option
+payoffs like $(S_T-K)^+$ are \emph{not} differentiable at the strike, so the theoretical
+$\beta=1$ is not guaranteed. Broadie--Kaya (2006) report empirical rates of
+$O(h^{1/3})$ or worse for Euler on European prices under stochastic volatility. The
+slides' heuristic: balance bias $\sim h$ against MC noise $\sim N^{-1/2}$ at total cost
+$s\sim N/h$. Eliminating $N=sh$ gives error $\sim h+ (sh)^{-1/2}$; optimising over $h$
+(setting $h\sim(sh)^{-1/2}$, i.e.\ $h\sim s^{-1/3}$) yields overall error $O(s^{-1/3})$
+in the computational budget $s$. This is much worse than the deterministic methods of
+this course and is the practical motivation for COS/FFT on models with a known
+characteristic function: they sidestep path discretisation entirely.
+\end{remark}
+
+%==================================================================
+\section{Variance reduction}
+%==================================================================
+
+All four techniques attack the same target: shrink $\Var(\bar X_N)=\sigma^2/N$ by
+lowering the effective $\sigma^2$, keeping the estimator unbiased (or correcting the
+bias). A method giving variance $\rho\,\sigma^2$ with $\rho<1$ delivers the accuracy of
+$N/\rho$ plain samples at cost $N$ --- a speed-up of $1/\rho$.
+
+\subsection{Antithetic variates}
+
+\paragraph{Construction (uniform case).} To estimate $I=\E[f(U)]$, $U\sim\mathcal
+U(0,1)$, pair each draw $U_i$ with its reflection $1-U_i$ (also $\mathcal U(0,1)$):
+\[
+\widehat I_M=\frac1M\sum_{i=1}^M\frac{f(U_i)+f(1-U_i)}{2}.
+\]
+Since $1-U_i\sim\mathcal U(0,1)$, each summand has mean $I$, so $\E[\widehat I_M]=I$:
+the estimator is unbiased.
+
+\paragraph{Variance.} For one pair,
+\[
+\Var\!\Bigl(\frac{f(U)+f(1-U)}2\Bigr)
+=\tfrac14\Var(f(U))+\tfrac14\Var(f(1-U))+\tfrac12\Cov(f(U),f(1-U)).
+\]
+Because $U$ and $1-U$ have the same law, $\Var(f(U))=\Var(f(1-U))$, so this collapses to
+\[
+\Var\!\Bigl(\frac{f(U)+f(1-U)}2\Bigr)
+=\tfrac12\Var(f(U))+\tfrac12\Cov(f(U),f(1-U)),
+\]
+hence $\Var(\widehat I_M)=\frac1M\bigl[\tfrac12\Var(f(U))+\tfrac12\Cov(f(U),f(1-U))\bigr]$.
+
+\paragraph{When it helps.} Compare with the variance of the \emph{plain} estimator
+using the same $2M$ function evaluations, $\frac{1}{2M}\Var(f(U))$. Antithetic wins iff
+\[
+\Cov(f(U),f(1-U))<0.
+\]
+This is guaranteed when $f$ is monotone. The argument: if $f$ is monotone increasing,
+then $g(x):=-f(1-x)$ is also monotone increasing; by the FKG/correlation lemma (two
+comonotone functions of the same random variable have nonnegative covariance),
+$\Cov(f(U),-f(1-U))\ge0$, i.e.\ $\Cov(f(U),f(1-U))\le0$. (The lemma: if $f,g$ are both
+increasing, $\Cov(f(X),g(X))\ge0$.) The Gaussian version is identical with the
+reflection $U\mapsto-U$ (both $\mathcal N(0,1)$): along a path one runs the mirror path
+$-Z_0,\dots,-Z_{N-1}$ and averages the two payoffs. For a vanilla call the discounted
+payoff is monotone in the driving normal, so antithetic always reduces variance there.
+
+\begin{remark}
+Antithetic can \emph{fail} (raise variance) when $f$ is strongly non-monotone, e.g.\ a
+symmetric straddle or a payoff symmetric about the forward, where $f(U)$ and $f(1-U)$
+become positively correlated. The monotonicity condition is the safe guarantee.
+\end{remark}
+
+\subsection{Control variates: the optimal coefficient $c^\star$}
+
+\paragraph{Setup.} We want $\E[X]$ (e.g.\ the arithmetic-Asian price). Suppose we can
+simulate, on the same paths, a correlated $Y$ (e.g.\ the geometric-Asian payoff) whose
+mean $\E[Y]$ is \emph{known} in closed form. For any coefficient $\theta$ define
+\[
+Z_\theta=X+\theta\bigl(\E[Y]-Y\bigr).
+\]
+Then $\E[Z_\theta]=\E[X]+\theta(\E[Y]-\E[Y])=\E[X]$ for every $\theta$: unbiased
+regardless of $\theta$. Only the variance depends on $\theta$:
+\[
+\Var(Z_\theta)=\Var(X)-2\theta\Cov(X,Y)+\theta^2\Var(Y).
+\]
+
+\paragraph{Optimisation.} This is a quadratic in $\theta$, minimised by setting the
+derivative $-2\Cov(X,Y)+2\theta\Var(Y)=0$:
+\[
+\boxed{\;\theta^\star=\frac{\Cov(X,Y)}{\Var(Y)}\;}
+\]
+(Completing the square,
+$\Var(Z_\theta)=\Var(Y)\bigl(\theta-\tfrac{\Cov(X,Y)}{\Var(Y)}\bigr)^2
++\Var(X)-\tfrac{\Cov(X,Y)^2}{\Var(Y)}$, exposing both the minimiser and the minimum.)
+Note: with the slides' sign convention $Z=X+\theta(\E Y-Y)$, the optimum is
+$\theta^\star=+\Cov(X,Y)/\Var(Y)$; if instead one writes $Z=X+c(Y-\E Y)$, the same
+algebra gives $c^\star=-\Cov(X,Y)/\Var(Y)$ --- the textbook "$c^\star=-\Cov/\Var$." They
+are the same estimator; only the sign convention differs.
+
+\paragraph{Resulting variance reduction.} Substituting $\theta^\star$,
+\[
+\Var(Z_{\theta^\star})=\Var(X)-\frac{\Cov(X,Y)^2}{\Var(Y)}
+=\bigl(1-\rho_{XY}^2\bigr)\Var(X),
+\qquad
+\rho_{XY}=\frac{\Cov(X,Y)}{\sqrt{\Var(X)\Var(Y)}}.
+\]
+The variance is reduced by the factor $1-\rho_{XY}^2$. The reduction is dramatic exactly
+when $X$ and $Y$ are highly correlated: a control variate with $|\rho|=0.99$ cuts
+variance by $\approx 50\times$. The classic example: price the arithmetic-average Asian
+call (no formula) using the geometric-average Asian call (closed form for equally spaced
+fixings) as $Y$; the two payoffs are nearly perfectly correlated along each path.
+
+\paragraph{Practical point.} $\Cov(X,Y)$ and $\Var(Y)$ are usually unknown and are
+\emph{estimated from the same simulation} (a regression of $X$ on $Y$ gives
+$\widehat\theta^\star$). Plugging in an estimated $\widehat\theta^\star$ introduces a
+small $O(1/N)$ bias, negligible against the $O(N^{-1/2})$ statistical error; a clean fix
+is to estimate $\theta^\star$ on a pilot run and apply it on an independent run.
+
+\subsection{Importance sampling}
+
+\paragraph{Idea and the likelihood ratio.} To estimate
+$\E_p[f(X)]=\int f(x)p(x)\dd x$ when the "important" region (where $f\,p$ is large) is
+rarely hit by $p$ --- the canonical case being deep out-of-the-money options, where the
+payoff is nonzero only on a low-probability set --- sample instead from a proposal $q$
+and reweight:
+\[
+\E_p[f(X)]=\int f(x)\,\frac{p(x)}{q(x)}\,q(x)\dd x
+=\E_q\!\Bigl[f(X)\,\frac{p(X)}{q(X)}\Bigr].
+\]
+The factor $p(X)/q(X)$ is the \emph{likelihood ratio} (Radon--Nikodym derivative
+$\dd p/\dd q$); it corrects the bias from sampling under the "wrong" measure, leaving the
+estimator unbiased. The estimator is
+$\frac1N\sum_i f(X_i)\,\tfrac{p(X_i)}{q(X_i)}$ with $X_i\sim q$.
+
+\paragraph{Gaussian drift shift.} For $V=\E[f(X)]$ with $X\sim\mathcal N(0,I_d)$, the
+natural proposal is a mean shift $X=Z+\theta$, $Z\sim\mathcal N(0,I_d)$. The
+likelihood ratio of $\mathcal N(0,I)$ w.r.t.\ $\mathcal N(\theta,I)$ evaluated at the
+sampled point is $\exp(-\theta^\top Z-\tfrac12\|\theta\|^2)$, so
+\[
+V=\E\Bigl[f(Z+\theta)\,\exp\bigl(-\theta^\top Z-\tfrac12\|\theta\|^2\bigr)\Bigr].
+\]
+(Scalar derivation: with $f_{0}(z)=\tfrac1{\sqrt{2\pi}}e^{-z^2/2}$ and
+$g_\mu(z)=\tfrac1{\sqrt{2\pi}}e^{-(z-\mu)^2/2}$, the ratio is
+$f_0(z)/g_\mu(z)=\exp(-\tfrac{z^2}2+\tfrac{(z-\mu)^2}2)=\exp(-\mu z+\tfrac12\mu^2)$.) The
+shift $\theta$ is chosen to move mass into the payoff region (e.g.\ for a call, shift the
+driving normal so that $S_T>K$ becomes typical). Optimal $\theta^\star$ minimises the
+second moment
+$M(\theta)=\E[f(Z+\theta)^2\exp(-2\theta^\top Z-\|\theta\|^2)]$, solving
+$\nabla_\theta M(\theta^\star)=0$.
+
+\paragraph{The double-edged sword.} A well-chosen $q$ can reduce variance by orders of
+magnitude; a poorly chosen one (light tails relative to $f\,p$, so the ratio
+$p/q$ blows up) gives an estimator with \emph{infinite} variance --- worse than plain
+MC. Importance sampling is the only one of the four techniques that can backfire
+catastrophically. Choosing $q$ is "the art of importance sampling."
+
+\begin{remark}[Girsanov / change of numeraire]
+In continuous time the change of measure is the Girsanov theorem: shifting the drift of
+$W$ by $Y_s$ corresponds to the density process $Z_t^{P\to Q}=\exp(\int_0^t Y_s\dd
+W_s^P-\tfrac12\int_0^t Y_s^2\dd s)$, a martingale (under Novikov) with $\E^P[Z_t]=1$.
+\emph{Change of numeraire} is a special, financially-motivated change of measure: using
+the stock $S_t$ as numeraire turns $\E^Q[S_T\mathbf 1_{\{S_T>K\}}]$ into $e^{rT}S_0
+Q^S(S_T>K)=e^{rT}S_0 N(d_1)$, recovering the $N(d_1)$ term of Black--Scholes by a measure
+change rather than by integration. Importance sampling does not require the proposal to
+come from a numeraire, but the two share the Radon--Nikodym machinery.
+\end{remark}
+
+%==================================================================
+\section{Where this sits in the course}
+%==================================================================
+
+\begin{itemize}[leftmargin=2em]
+\item \textbf{MC is the benchmark.} Every fast method in this course --- COS (L6, L10),
+Carr--Madan FFT, finite differences (L3, L5), trees (L1) --- is validated against a
+brute-force MC price with a CLT confidence interval. When the oral asks "how do you know
+your COS price is right," the honest answer is: it agrees with MC to within the MC
+standard error, and MC is unbiased by construction.
+\item \textbf{Rate comparison.} MC: $O(N^{-1/2})$, dimension-free. QMC:
+$O((\log N)^d/N)$, near-$O(N^{-1})$ in low effective dimension. Quadrature: $O(N^{-k/d})$,
+cursed in $d$. COS: \emph{exponential} in the number of cosine terms for densities with
+known, smooth characteristic functions. This ordering is exactly why the course pivots
+to Fourier methods: for a 1-D European option under an affine model, COS reaches machine
+precision with a few hundred terms, where MC would need $\sim10^{12}$ paths.
+\item \textbf{When MC still wins.} High-dimensional baskets, path-dependent payoffs with
+no transform structure, and American/Bermudan via Longstaff--Schwartz (L9) --- MC's
+dimension-robustness keeps it indispensable. Variance reduction is what makes it
+competitive in those regimes.
+\end{itemize}
+
+%==================================================================
+\section*{Honest gaps / what the slides do \emph{not} prove}
+%==================================================================
+\addcontentsline{toc}{section}{Honest gaps}
+
+\begin{itemize}[leftmargin=2em]
+\item \textbf{The slides do not derive Milstein from the Itô--Taylor expansion.} They
+state the scheme and the convergence orders but only \emph{assert} that the extra term
+"accounts for the curvature of the diffusion." The full derivation (Section~3.2 above) is
+mine, filling that gap; an examiner could reasonably ask for it.
+\item \textbf{The strong/weak orders are stated, not proved.} The slides give the
+definitions and quote $\beta_{\text{Euler}}=(\tfrac12,1)$,
+$\beta_{\text{Milstein}}=(1,1)$ without proof. Proofs (Kloeden--Platen) are out of scope
+but worth knowing exist.
+\item \textbf{The optimal importance-sampling drift is left implicit.} The slides reduce
+to the first-order condition $\nabla_\theta M(\theta^\star)=0$ but do not solve it in
+closed form (there is none in general; for a call one uses the asymptotically optimal
+shift placing the mode of the shifted integrand at the strike).
+\item \textbf{No explicit confidence-interval slide.} The CLT and standard error are on
+the slides, but the confidence-interval formula and the sample-variance estimator
+$s_N^2$ (Section~1.3) are standard background I have added.
+\item \textbf{QMC's effective-dimension story is absent.} The slides give the
+Koksma--Hlawka bound and the $(\log N)^d/N$ rate but do not discuss why QMC works in
+practice for high-dimensional path simulation (Brownian bridge / PCA path construction
+to lower effective dimension).
+\end{itemize}
+
+\end{document}

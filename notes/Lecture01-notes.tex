@@ -1,0 +1,332 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newtheorem{remark}{Remark}
+
+\title{Lecture 1 --- Introduction, Asset Classes, Options and Stochastics}
+\author{Computational Finance (WI4151), TU Delft --- study notes}
+\date{}
+
+\begin{document}
+\maketitle
+
+These notes cover Lecture 1A (\emph{Introduction and overview of asset classes}) and Lecture 1B (\emph{Options and Stochastics}). Lecture 1A is almost entirely descriptive and sets up vocabulary; the only piece of genuine mathematics in it is the continuously-compounded interest argument and the covered interest-rate parity relation, both of which we work out below. Lecture 1B is where the course's conceptual spine begins: the no-arbitrage / replication idea, put--call parity, the modelling of randomness, the Wiener process, geometric Brownian motion (GBM), the Markov property and the efficient market hypothesis, and finally the statement of It\^o's lemma. I derive the things that are stated without proof on the slides (the GBM closed-form solution, It\^o applied to the log-price, the risk-neutral pricing identity that the one-step replication argument is secretly computing) because those are exactly the points a strict examiner will press on, even though Lecture 1 itself stops short of them.
+
+\section{Asset classes and the language of the market (1A)}
+
+A \emph{financial instrument} is a contract over a monetary asset that can be bought, sold, created, modified or settled, carrying a contractual obligation between the parties. The slides split the universe two ways. By \emph{trading venue}: \emph{listed} products (equities, listed options, bonds, futures and options on futures, credit default swaps) traded on a regulated exchange with standardised terms, versus \emph{over-the-counter} (OTC) products (forwards, swaps and swaptions, exotic options, structured products, securitisations) negotiated bilaterally with a counterparty. By \emph{asset type}: equity; interest rate and inflation; foreign exchange (FX); commodity and energy; credit; and structured products.
+
+The pedagogical point Fang makes early is the one to memorise: \emph{equities are a tiny fraction of the total notional outstanding} (the bar chart is dominated by interest-rate products), \emph{yet the pricing theory of equity options is the foundation for everything with optionality}. This is why a course centred on the COS method spends its first lecture on stocks: the European equity call/put is the canonical test case, and every later extension (Heston, jumps, barriers, American/Bermudan exercise) is built on the same scaffolding.
+
+A \emph{stock} (equity, share) represents fractional ownership of a company. Its price reflects the present value of the firm plus the market's expectation of future performance; those expectations are revealed in the bid and ask quotes, and the gap between expectation and realisation is precisely the randomness we will model. Stocks pay \emph{dividends}: lump-sum payments (e.g.\ semi-annual) decided by the board, varying with profitability. The detail worth keeping is the \emph{cum/ex} distinction: a stock bought \emph{cum-dividend} carries the right to the next dividend, \emph{ex-dividend} does not, and on the ex-dividend date the price drops by (approximately) the dividend amount. This matters later because a known dividend is a deterministic downward jump in $S$ and must be subtracted from the forward; it is the simplest example of why $S$ is not a pure GBM in practice.
+
+\emph{Volatility} $\sigma$ is the standard deviation of returns, \emph{not} the variance $\sigma^2$ --- Fang flags this explicitly and it is a trivial but real way to lose face in an oral. Empirically, volatility is negatively correlated with the return of the underlying (the ``leverage effect''); the S\&P~500 versus VIX plot is the visual of this anticorrelation. Keep $\sigma$ versus $\sigma^2$ straight: in COS the truncation range $[a,b]$ is built from cumulants, and $c_2$ is a \emph{variance} ($\propto\sigma^2 T$), so a factor-of-two or square confusion there is fatal.
+
+Why value instruments at all? The slides give three motives: mark-to-market (MtM) reporting (daily for the trading book, periodically for the banking book), price indication for traders, and risk management (sensitivities and portfolio-level risk). The pricing \emph{philosophy} is the part to internalise. When market quotes exist, you \emph{calibrate}: choose model parameters so the model reproduces quoted prices, then freeze the parameters and shock the risk factors to read off sensitivities. When quotes do not exist, you extract market information from simpler liquid instruments (interest-rate curves, volatility surfaces) and feed that into the pricing function. The recurring slogan is that \emph{the market decides the price}; a model is a consistent interpolation/extrapolation device, not a truth claim about the real-world dynamics. This is the conceptual seed of risk-neutral pricing: we will price by matching, not by forecasting.
+
+\subsection{Time value of money and continuous compounding}
+
+The simplest quantitative fact in finance is that one euro today is worth more than one euro later. With a discrete annual rate $r$, one euro grows in a year to $1\cdot(1+r)$. The slides then derive the continuous-compounding limit directly from a differential argument, which is worth reproducing because it is the prototype for every ``$\dd(\cdot)$'' manipulation later.
+
+Let $M(t)$ be the bank-account balance. Over a short interval the change is, to first order,
+\[
+M(t+\dd t)-M(t)\;\approx\;\frac{\dd M}{\dd t}\,\dd t,
+\]
+and the interest credited must be proportional to the balance, the rate, and the elapsed time, so $\dd M = r\,M(t)\,\dd t$, i.e.
+\[
+\frac{\dd M}{\dd t}=r\,M(t).
+\]
+This is linear with constant coefficient; separating variables, $\dd M/M = r\,\dd t$, and integrating from $0$ to $t$ gives $\ln M(t)-\ln M(0)=rt$, hence
+\[
+\boxed{\,M(t)=M(0)\,e^{rt}.\,}
+\]
+Conversely, a single euro to be received at a future time $T$ is worth at time $t\le T$ its \emph{discount factor}
+\[
+D(t,T)=e^{-r(T-t)}.
+\]
+The object $M(t)=e^{rt}$ (taking $M(0)=1$) is the \emph{money-market account} or num\'eraire; discounting by $e^{-r(T-t)}$ and the requirement that discounted tradeables be martingales under the pricing measure is the engine of everything that follows. Note that constant $r$ is an idealisation: the EUR/USD yield curves shown in the slides are not flat, so in general $D(t,T)=\exp(-\int_t^T r(s)\dd s)$ with a deterministic (or stochastic) short rate. For Lecture~1 and for European COS pricing we take $r$ constant.
+
+\subsection{Covered interest-rate parity}
+
+The one genuine no-arbitrage relation in 1A is \emph{covered interest-rate parity} (CIP) in FX. Under capital mobility and perfect substitutability of domestic and foreign deposits, the slide states
+\[
+(1+i_s)=\frac{F_t}{S_t}\,(1+i_c),
+\]
+where $S_t$ is the spot exchange rate, $F_t$ the forward rate for the same horizon, $i_s$ the foreign deposit rate and $i_c$ the domestic deposit rate. The logic is a static replication. Take one unit of domestic currency. Route A: invest domestically, ending with $1+i_c$ domestic units. Route B: convert to foreign at spot, invest abroad earning $i_s$, and lock in the reconversion now at the forward $F_t$. Both routes are riskless and use the same capital, so by no-arbitrage they must return the same amount; equating them gives the boxed relation (the slide's $\$5{,}000{,}000$ example is exactly this with numbers). In practice CIP fails slightly, and the residual that quants add to one leg to restore equality is the \emph{FX basis}; it is itself treated as calibrated market information and fed back into OTC FX pricing. The takeaway for the oral is structural: \emph{a forward price is pinned by no-arbitrage from spot and the two funding rates, with no probabilistic model needed} --- the same model-free flavour as put--call parity below.
+
+Cryptocurrencies are presented as just another (very volatile) FX rate, e.g.\ BTC/USD, on which options also trade. Nothing new mathematically; the point is that the same optionality framework applies across asset classes.
+
+\section{Options: definitions, payoffs, and the value decomposition (1B)}
+
+An \emph{option} is a contract giving the holder the \emph{right but not the obligation} to buy or sell an underlying at a specified price by/at a specified date (Hull's definition). Its terms fix the underlying, the strike $K$, the exercise date(s), the direction, and any knock-in/knock-out features. The taxonomy to have cold:
+\begin{itemize}[nosep]
+\item \textbf{Call vs.\ put}: a call is the right to \emph{buy}; a put the right to \emph{sell}.
+\item \textbf{Exercise style}: \emph{European} (exercise only at maturity $T$), \emph{American} (any time up to $T$), \emph{Bermudan} (a finite set of pre-specified dates). This trichotomy is the spine of Lectures 9 (American) and the COS extensions: European is a single integral, Bermudan is a backward recursion over exercise dates, American is the continuous-monitoring limit.
+\item \textbf{Payoff structure}: \emph{vanilla} (plain call/put), \emph{barrier} (knock-in/out, Lecture 10), \emph{Asian} (payoff on an average), plus swaptions, options on futures, etc.
+\end{itemize}
+Historically, standardised listed options began on the CBOE on 26 April 1973 (calls on 16 stocks; puts only in 1977) --- the same year as Black--Scholes--Merton, which is not a coincidence the slides dwell on but is worth noting.
+
+The terminal payoffs are the boundary conditions for all later PDE/integral methods:
+\[
+V_C(T,S(T))=\max\!\big(S(T)-K,\,0\big),
+\qquad
+V_P(T,S(T))=\max\!\big(K-S(T),\,0\big).
+\]
+The call payoff is the ``hockey stick'' kinked up at $S=K$; the put is its mirror image. These are continuous, piecewise-linear and non-smooth at $S=K$, and that single kink is responsible for a great deal of numerical pain later (it is why naive Fourier/COS pricing of the payoff itself can ring, and why one prefers to expand the \emph{density} and integrate the smooth-enough payoff coefficients analytically).
+
+What drives an option's value before maturity? Three inputs: the current spot $S(t)$, the time to expiry $T-t$, and the volatility $\sigma$ of the underlying. The qualitative principles: more time to expiry and more volatility both raise the chance of finishing deep in the money, and (because the payoff is convex and floored at zero) increase value. The slides illustrate with two one-step trees, both starting at $S=100$ with strike $K=100$: case A goes to $\{120,80\}$, case B to $\{120,75\}$. Case B has a wider spread of outcomes, hence more value in the convex payoff --- and indeed it prices higher, as we now compute.
+
+\subsection{Intrinsic value, time value, moneyness}
+
+The slides decompose
+\[
+\text{option price}=\text{intrinsic value}+\text{time value}.
+\]
+Intrinsic value is what you would get exercising now: $\max(S_t-K,0)$ for a call, $\max(K-S_t,0)$ for a put. Time value is the remainder, attributable to the time left and the uncertainty in $S_T$. An \emph{out-of-the-money} option has zero intrinsic value and is pure time value; an \emph{in-the-money} option has both. (Moneyness language: in/at/out of the money according to whether immediate exercise pays, breaks even, or loses.) Time value is always $\ge 0$ for a European option on a non-dividend asset and decays to zero as $t\to T$ --- ``theta decay''. The Apple example on the slides is a deep-in-the-money call (spot $143.61$, strike $100$), almost all intrinsic value, which is why its quoted price ($\approx 44$) tracks $S-K\approx 43.6$ closely.
+
+\section{No-arbitrage and the one-step replication argument}
+
+This is the heart of Lecture~1 and the first place the examiner will probe, so I work it fully.
+
+\subsection{The principle}
+
+\emph{No-arbitrage}: there is never a way to make a risk-free profit exceeding the bank rate; equivalently, two portfolios with identical payoffs in every future state must have identical prices today, and a portfolio that dominates another (pays at least as much in every state, more in some) must cost at least as much. This is the only ``law'' invoked; it is weaker than assuming any particular model for $S$, which is exactly why the conclusions it yields (put--call parity, the price bounds, the one-step option value) are \emph{model-free}.
+
+\subsection{Delta-hedging a one-step binomial}
+
+A writer who is short one call hedges by holding $\Delta$ shares. The hedged portfolio today is
+\[
+\Pi(t)=V_{c,0}-\Delta\, S_0,
+\]
+(written as ``long the premium received, short the stock position'' in the slide's sign convention; the call has been sold so $V_{c,0}$ is cash in, $\Delta S_0$ is spent on shares). At $T$ the stock is either $S_{\mathrm{up}}$ or $S_{\mathrm{dn}}$ and the short call pays out $-\max(S_T-K,0)$. With $K=100$ and an up-state $S_{\mathrm{up}}=120$, the call costs the writer $S_{\mathrm{up}}-K=20$; in the down-state ($S_{\mathrm{dn}}<K$) the call expires worthless. The terminal portfolio values are
+\[
+\Pi_{\mathrm{up}}=V_{c,0}-\Delta S_0+\Delta S_{\mathrm{up}}-(S_{\mathrm{up}}-K)
+=V_{c,0}-\Delta S_0+\Delta S_{\mathrm{up}}-20,
+\]
+\[
+\Pi_{\mathrm{dn}}=V_{c,0}-\Delta S_0+\Delta S_{\mathrm{dn}}.
+\]
+The writer wants \emph{no risk}: choose $\Delta$ so the two states coincide and (here) so the hedged value is zero in both. Setting $\Pi_{\mathrm{up}}=\Pi_{\mathrm{dn}}$ eliminates $V_{c,0}-\Delta S_0$ and gives
+\[
+\Delta S_{\mathrm{up}}-20=\Delta S_{\mathrm{dn}}
+\quad\Longrightarrow\quad
+\boxed{\;\Delta=\dfrac{20}{S_{\mathrm{up}}-S_{\mathrm{dn}}}\;}
+=\frac{\max(S_{\mathrm{up}}-K,0)-\max(S_{\mathrm{dn}}-K,0)}{S_{\mathrm{up}}-S_{\mathrm{dn}}}.
+\]
+The last form is the general statement: $\Delta$ is the \emph{ratio of the spread in option payoff to the spread in stock payoff}, the discrete analogue of $\partial V/\partial S$. Now impose $\Pi_{\mathrm{up}}=\Pi_{\mathrm{dn}}=0$ and solve for the premium:
+\[
+V_{c,0}=\Delta S_0-\Delta S_{\mathrm{dn}}=\Delta\,(S_0-S_{\mathrm{dn}}).
+\]
+With the slide's numbers and $S_0=100$:
+\begin{itemize}[nosep]
+\item Case A, $\{S_{\mathrm{up}},S_{\mathrm{dn}}\}=\{120,80\}$: $\Delta=\tfrac{20}{40}=\tfrac12$, $V_{c,0}=\tfrac12(100-80)=10$.
+\item Case B, $\{120,75\}$: $\Delta=\tfrac{20}{45}=\tfrac49$, $V_{c,0}=\tfrac49(100-75)=\tfrac49\cdot 25=11.\overline{1}$.
+\end{itemize}
+Case B is dearer, confirming the qualitative claim: a wider outcome spread (more ``volatility'') means a more expensive call.
+
+\begin{remark}[The slide ignores discounting]
+The numbers above are computed without discounting (equivalently, $r=0$ or one treats everything as undiscounted time-$T$ money). With a non-zero rate, $\Pi_{\mathrm{up}}=\Pi_{\mathrm{dn}}=0$ at $T$ means the cost of setting up the hedge today, $\Delta S_0-V_{c,0}$, must be financed and the correct relation is $V_{c,0}=\Delta(S_0-e^{-r\Delta t}S_{\mathrm{dn}})$ after carrying the bond. The slide suppresses this. Be ready to add the $e^{-r\Delta t}$ if asked --- it is the difference between the toy and the real binomial of Lecture~3.
+\end{remark}
+
+\subsection{What this is really computing: risk-neutral valuation}
+
+The crucial conceptual point, which the slides make in words (``the option value is determined by replication and no-arbitrage, not by the real-world probabilities $p$'') and which I now make precise. Rearrange the replication price. Define the \emph{risk-neutral} probability of the up-move (with $r=0$ for the slide's setup)
+\[
+q=\frac{S_0-S_{\mathrm{dn}}}{S_{\mathrm{up}}-S_{\mathrm{dn}}},\qquad 1-q=\frac{S_{\mathrm{up}}-S_0}{S_{\mathrm{up}}-S_{\mathrm{dn}}}.
+\]
+This $q$ is constructed so that $\E^{\mathbb{Q}}[S_T]=q\,S_{\mathrm{up}}+(1-q)S_{\mathrm{dn}}=S_0$, i.e.\ the stock is a martingale under $\mathbb{Q}$ (with discounting, $\E^{\mathbb{Q}}[S_T]=e^{r\Delta t}S_0$). Then a direct substitution gives
+\[
+V_{c,0}=\Delta(S_0-S_{\mathrm{dn}})
+= q\cdot(S_{\mathrm{up}}-K)+(1-q)\cdot 0
+=\E^{\mathbb{Q}}\!\big[\max(S_T-K,0)\big].
+\]
+So the replication price \emph{equals the expected payoff under the artificial measure $\mathbb{Q}$, not under the real-world $p$}. The real-world probabilities $p=0.7$ (case A) and $p=0.4$ (case B) printed on the trees \emph{never enter the price}. This is the single most important idea seeded in Lecture~1: \emph{prices are risk-neutral expectations of discounted payoffs},
+\[
+V(t)=e^{-r(T-t)}\,\E^{\mathbb{Q}}\big[\,\text{payoff}(S_T)\mid \mathcal{F}_t\,\big],
+\]
+and the entire COS method is a fast way to evaluate exactly this expectation as $\int \text{payoff}(y)\,f(y)\dd y$ by expanding the (risk-neutral) density $f$ in a cosine series. The slides do not write $\mathbb{Q}$ explicitly, but the ``no profit at the fair price'' discussion is this fact in disguise.
+
+\subsection{Why does a hedged writer make money?}
+
+The slides answer their own provocation. At the replication price $V_{c,0}$, the perfectly hedged terminal portfolio is zero in every state: the writer takes \emph{no risk and makes no profit}. A profit arises only if the option is \emph{sold above} the replication value,
+\[
+V^{\text{sell}}_{c,0}>V^{\text{replication}}_{c,0},
+\]
+in which case the surplus $V^{\text{sell}}_{c,0}-V^{\text{replication}}_{c,0}$ can be invested at the risk-free rate and is a guaranteed profit under perfect hedging. In reality writers earn from bid--ask spreads and fees, discrete (imperfect) rebalancing, transaction costs and liquidity, and from volatility/jump risk not in the simple model. The exam-ready sentence: \emph{at the fair (no-arbitrage) price a perfectly hedged writer breaks even; the fair price is the cost of replication.}
+
+\section{Put--call parity and price bounds}
+
+\subsection{Put--call parity}
+
+This is the model-free identity to be able to derive in two lines. Consider two portfolios held to maturity $T$:
+\[
+\Pi_A:\ \text{one call}+K\text{ cash (bond maturing to }K),\qquad
+\Pi_B:\ \text{one put}+\text{one share}.
+\]
+At $T$, using $\max(S_T-K,0)+K=\max(S_T,K)$ and $\max(K-S_T,0)+S_T=\max(S_T,K)$, both are worth $\max(S_T,K)$ in every state. Equal payoffs in all states $\Rightarrow$ equal value at every earlier time (no-arbitrage). The cash leg worth $K$ at $T$ is worth $Ke^{-r(T-t)}$ at $t$, so
+\[
+\boxed{\,C(t,S_t)+Ke^{-r(T-t)}=P(t,S_t)+S_t.\,}
+\]
+\emph{No assumption was made about the dynamics of $S$} --- this holds for any underlying, any model, dividends aside (with continuous dividend yield $\delta$ replace $S_t$ by $S_t e^{-\delta(T-t)}$). Parity is the standard sanity check on any pricer: a correct European call and put must satisfy it to machine precision, and Fang has been known to ask you to verify your code does. It also lets you price a put from a call (and vice versa) for free, which halves the work and is used as a cross-check in COS implementations.
+
+\subsection{Static price bounds for a European call}
+
+From the dominance form of no-arbitrage: the portfolio (long call $+$ bond worth $Ke^{-r(T-t)}$) is worth $\max(S_T,K)\ge S_T$ at maturity, so it must cost at least as much as one share today:
+\[
+C(t)+Ke^{-r(T-t)}\ge S(t)\quad\Longrightarrow\quad C(t)\ge S(t)-Ke^{-r(T-t)}.
+\]
+Since a call cannot be worth less than zero, we sharpen this to
+\[
+C(t)\ge \max\!\big(S(t)-Ke^{-r(T-t)},\,0\big),
+\]
+and on the other side a call can never be worth more than the share it lets you buy,
+\[
+C(t)\le S(t).
+\]
+These bound any model output. A subtlety worth flagging in the oral: the lower bound $C(t)\ge S(t)-Ke^{-r(T-t)}> S(t)-K$ exceeds the intrinsic value $S(t)-K$ for $r>0$; this is precisely why it is \emph{never optimal to early-exercise an American call on a non-dividend stock} (you would throw away the time value $Ke^{-r(T-t)}\!-\!K$ embedded in the bound), so an American call equals its European counterpart. That fact reappears in Lecture~9. The corresponding statement fails for puts, which is why American puts genuinely need the early-exercise machinery.
+
+\subsection{The two routes to a price}
+
+The slides close the option-theory section by naming the two equivalent valuation routes and the bridge between them. \emph{Route 1}: form the hedging portfolio in continuous time, demand it be riskless, and obtain a \emph{partial differential equation} (the Black--Scholes PDE; Lecture~2/3). \emph{Route 2}: the \emph{martingale / risk-neutral} approach, $V(t)=e^{-r(T-t)}\E^{\mathbb{Q}}[\text{payoff}]$, the continuous-time version of the binomial computation above. The \emph{Feynman--Kac theorem} is the bridge: the solution of the pricing PDE admits a representation as a discounted risk-neutral expectation, so the two routes give the same price. COS, being an evaluation of $\E^{\mathbb{Q}}[\text{payoff}]$ via the characteristic function, lives squarely on Route~2; finite differences (Lecture~3, 5) live on Route~1; both must agree.
+
+\section{Modelling randomness: from data to the Wiener process}
+
+\subsection{Returns and the stylised facts}
+
+Asset prices are dominated by randomness, but randomness is modellable in a probabilistic sense. The natural object is the \emph{simple return} over $[t,t+\Delta]$,
+\[
+\text{Return}=\frac{S(t+\Delta)-S(t)}{S(t)}.
+\]
+The S\&P data shown (2002--2007 daily) has near-zero mean ($-0.000172$) and small daily standard deviation ($0.0121$); the empirical distribution of standardised returns is approximately symmetric and bell-shaped but \emph{not} exactly Gaussian. The QQ-plot diagnostic is the punchline: the sample quantiles ($\approx[-3,3]$) are wider than the theoretical normal quantiles ($\approx[-2.3,2.3]$), so the empirical law has \emph{fatter tails} than the normal --- large up and down moves occur more often than a Gaussian predicts. This single observation is the motivation for the whole second half of the course: GBM (Gaussian log-returns) is the baseline, and Heston (stochastic volatility, Lecture~7) and jump models (Lecture~8) are the corrections that put weight back in the tails and reproduce the implied-volatility smile. The slides also note that drift is invisible on short horizons (volatility dominates) and only matters over years/decades.
+
+\subsection{Stochastic processes and the Wiener process}
+
+A \emph{stochastic process} $X(t)$ is a family of random variables indexed by time, a function of two arguments $X(t)(\omega)$: fix $t$ and it is a random variable; fix the scenario $\omega\in\Omega$ and it is a sample path in time. The fundamental building block is the \emph{Wiener process} (Brownian motion) $W(t)$, $t\ge0$, defined by:
+\begin{enumerate}[nosep,label=(\roman*)]
+\item $W(0)=0$;
+\item \emph{independent, stationary increments}: $W(t)-W(s)$ depends only on $t-s$ and is independent of the past $\{W(u):u\le s\}$;
+\item $W(t)\sim\mathcal{N}(0,t)$ for each $t>0$ --- mean $0$, variance $t$;
+\item almost surely continuous paths, with no jumps.
+\end{enumerate}
+Two consequences I will use repeatedly. First, the increment over $[t,t+\dd t]$ satisfies $\dd W\sim\mathcal{N}(0,\dd t)$, so $\E[\dd W]=0$ and $\E[(\dd W)^2]=\dd t$; the heuristic that makes It\^o calculus work is the rule $(\dd W)^2=\dd t$ (and $\dd W\,\dd t=0$, $(\dd t)^2=0$) in the mean-square sense. Second, Brownian paths are continuous but nowhere differentiable and have \emph{unbounded variation but finite quadratic variation} $[W]_t=t$; that is exactly why $(\dd W)^2$ contributes at first order in $\dd t$ and ordinary calculus must be replaced by It\^o's.
+
+\subsection{The Markov property and the efficient market hypothesis}
+
+A process is \emph{Markov} if the conditional law of the future given the present equals the conditional law of the future given the entire past:
+\[
+\mathbb{P}\big(S_{t+1}\le \bar S\mid S_t\big)=\mathbb{P}\big(S_{t+1}\le \bar S\mid S_t,S_{t-1},S_{t-2},\dots\big).
+\]
+Economically this is the \emph{weak form of the efficient market hypothesis} (Fama 1970): the current price already reflects all past price information, so the full price history gives no predictive advantage over the current price alone. Fama's three forms: \emph{weak} (prices reflect past prices), \emph{semi-strong} (also all public information --- earnings, splits --- so technical and fundamental analysis cannot beat the market, but private information can), \emph{strong} (also private information, so even insiders cannot profit). The slide's careful logical remark, which is exam bait: \emph{i.i.d.\ returns} $\Rightarrow$ weak-form EMH (independence of increments certainly makes history useless), but \emph{not conversely} --- weak-form/Markov requires only that the one-step conditional distribution be unchanged by deeper history, which is much weaker than full independence and constant law. So Markov is necessary-ish for the modelling but i.i.d.\ normal returns are a strictly stronger (and empirically false, per the fat tails) assumption.
+
+\section{Geometric Brownian motion (Samuelson's model)}
+
+\subsection{The SDE and its discretisation}
+
+The baseline asset-price model is \emph{geometric Brownian motion}:
+\[
+\dd S(t)=\mu\,S(t)\,\dd t+\sigma\,S(t)\,\dd W(t),
+\]
+read as shorthand for the integral equation
+\[
+S(t)=S_0+\int_{t_0}^{t}\bar\mu(s,S(s))\,\dd s+\int_{t_0}^{t}\bar\sigma(s,S(s))\,\dd W(s),
+\quad \bar\mu=\mu S,\ \bar\sigma=\sigma S.
+\]
+Here $\mu\,\dd t$ is the deterministic drift (expected return) and $\sigma\,\dd W$ the random fluctuation. The Euler--Maruyama discretisation, which is what you actually simulate, is
+\[
+S(t+\Delta t)=S(t)+\mu S(t)\,\Delta t+\sigma S(t)\big(W(t+\Delta t)-W(t)\big),
+\]
+with the increment $W(t+\Delta t)-W(t)\sim\mathcal{N}(0,\Delta t)$ drawn i.i.d.\ across steps. Two parametrisations on the slides ($\mu=1,\sigma=0.2$ versus $\mu=0.5,\sigma=0.5$) show the higher-$\sigma$ path is visibly rougher.
+
+\subsection{Conditional moments and the Markov check}
+
+Compute the first two conditional moments of the increment, conditioning on $\mathcal{F}_t$ (so $S(t)$ is known):
+\[
+\E_t[\dd S]=\mu\,\E_t[S\,\dd t]+\sigma\,\E_t[S\,\dd W]=\mu S(t)\,\dd t,
+\]
+because $\dd W$ has mean zero and is independent of $S(t)$ (so $\E_t[S\,\dd W]=S(t)\E_t[\dd W]=0$). For the variance, using $(\dd W)^2=\dd t$ and that $\dd S-\E_t[\dd S]=\sigma S\,\dd W$,
+\[
+\mathrm{Var}_t(\dd S)=\E_t[(\dd S)^2]-(\E_t[\dd S])^2=\sigma^2 S^2(t)\,\E_t[(\dd W)^2]=\sigma^2 S^2(t)\,\dd t.
+\]
+Both moments depend on the present state $S(t)$ only, never on the path that led there: the SDE has \emph{no memory}, i.e.\ GBM is Markov, consistent with weak-form efficiency. Note the variance scales as $\sigma^2 S^2\,\dd t$ --- volatility enters squared, the $\sigma$-vs-$\sigma^2$ point again. The model fits equity/index data well, fits FX less well (especially long-term), and its central discrepancy versus data is precisely the missing fat tails; the fixes are jumps and stochastic volatility.
+
+\subsection{Solving the GBM SDE via It\^o (the derivation to own)}
+
+The slides state It\^o's lemma but do not solve GBM; solving it is the canonical exam derivation, so here it is in full. \textbf{It\^o's lemma:} if $\dd X=\bar\mu\,\dd t+\bar\sigma\,\dd W$ and $g(t,x)$ is $C^{1,2}$, then $Y(t)=g(t,X(t))$ obeys
+\[
+\dd Y=\Big(\frac{\partial g}{\partial t}+\bar\mu\frac{\partial g}{\partial x}+\tfrac12\bar\sigma^2\frac{\partial^2 g}{\partial x^2}\Big)\dd t+\bar\sigma\frac{\partial g}{\partial x}\,\dd W.
+\]
+The extra term $\tfrac12\bar\sigma^2 g_{xx}\,\dd t$ relative to the chain rule is the It\^o correction, coming entirely from $(\dd W)^2=\dd t$ in the second-order Taylor expansion
+\[
+\dd g=g_t\,\dd t+g_x\,\dd X+\tfrac12 g_{xx}(\dd X)^2,\qquad (\dd X)^2=\bar\sigma^2(\dd W)^2=\bar\sigma^2\,\dd t.
+\]
+
+Apply this with $X=S$, $\bar\mu=\mu S$, $\bar\sigma=\sigma S$, and the change of variables $g(t,S)=\ln S$, so $g_t=0$, $g_x=1/S$, $g_{xx}=-1/S^2$. Writing $Y=\ln S$,
+\[
+\dd Y=\Big(0+\mu S\cdot\frac1S+\tfrac12\sigma^2 S^2\cdot\big(-\tfrac1{S^2}\big)\Big)\dd t+\sigma S\cdot\frac1S\,\dd W
+=\Big(\mu-\tfrac12\sigma^2\Big)\dd t+\sigma\,\dd W.
+\]
+This is the key intermediate fact: \emph{the log-price follows arithmetic Brownian motion with drift $\mu-\tfrac12\sigma^2$ and volatility $\sigma$}, both constant. Hence the log-price increment is exactly Gaussian. Integrating the constant-coefficient SDE for $Y$ from $0$ to $t$ (this is now an ordinary integral plus an It\^o integral of a constant, both trivial),
+\[
+\ln S(t)-\ln S_0=\Big(\mu-\tfrac12\sigma^2\Big)t+\sigma W(t),
+\]
+and exponentiating gives the closed-form solution
+\[
+\boxed{\,S(t)=S_0\,\exp\!\Big[\big(\mu-\tfrac12\sigma^2\big)t+\sigma W(t)\Big].\,}
+\]
+So $S(t)$ is \emph{lognormal}: $\ln(S(t)/S_0)\sim\mathcal{N}\big((\mu-\tfrac12\sigma^2)t,\ \sigma^2 t\big)$. Two checks worth stating aloud. The mean: using $\E[e^{\sigma W(t)}]=e^{\sigma^2 t/2}$ (the Gaussian MGF, since $\sigma W(t)\sim\mathcal{N}(0,\sigma^2 t)$),
+\[
+\E[S(t)]=S_0 e^{(\mu-\sigma^2/2)t}\,\E[e^{\sigma W(t)}]=S_0 e^{(\mu-\sigma^2/2)t}e^{\sigma^2 t/2}=S_0 e^{\mu t},
+\]
+recovering the drift exactly --- the $-\tfrac12\sigma^2$ in the exponent is precisely the convexity adjustment that keeps $\E[S]$ growing at rate $\mu$. The $-\tfrac12\sigma^2$ is the single most common sign error in the course; it is an It\^o term, not a typo, and forgetting it biases your simulated stock high.
+
+\begin{remark}[Risk-neutral GBM and the COS connection]
+For pricing we work under $\mathbb{Q}$, where the discounted stock $e^{-rt}S(t)$ is a martingale; this forces the drift to be the risk-free rate, $\mu\to r$, so
+\[
+\dd S=r S\,\dd t+\sigma S\,\dd W,\qquad
+\ln\frac{S(T)}{S_0}\sim\mathcal{N}\big((r-\tfrac12\sigma^2)T,\ \sigma^2 T\big).
+\]
+The log-return is normal, so its \emph{characteristic function} is the Gaussian one,
+\[
+\varphi(u)=\exp\!\Big[\mathrm{i}u\big(r-\tfrac12\sigma^2\big)T-\tfrac12\sigma^2 T u^2\Big],
+\]
+known in closed form. This is the entire input COS needs: the method writes the price as $e^{-rT}\E^{\mathbb{Q}}[\text{payoff}]=\int \text{payoff}(y)f(y)\dd y$, expands the density $f$ on $[a,b]$ in cosines whose coefficients are $\mathrm{Re}\,\varphi$ evaluated at the cosine frequencies, and integrates the payoff against cosines analytically. Lecture~1 supplies the two ingredients --- ``price $=$ discounted risk-neutral expectation'' and ``log-price is Gaussian under GBM'' --- that COS then makes fast. The truncation range $[a,b]$ is built from the cumulants of $\ln(S_T/S_0)$; for GBM $c_1=(r-\tfrac12\sigma^2)T$, $c_2=\sigma^2 T$, $c_4=0$, and the notorious short-maturity bug (range too narrow when $c_2=\sigma^2T$ is small) is a direct consequence of this variance shrinking with $T$.
+\end{remark}
+
+\section{A zoo of one-dimensional SDEs}
+
+The slides line up three constant-coefficient diffusions to contrast, all driven by one Wiener process $W$:
+\[
+\text{ABM:}\quad \dd X=\mu\,\dd t+\sigma\,\dd W;\qquad
+\text{GBM:}\quad \dd X=\mu X\,\dd t+\sigma X\,\dd W;
+\]
+\[
+\text{OU (mean-reverting):}\quad \dd X=\kappa(\theta-X)\,\dd t+\sigma\,\dd W.
+\]
+The differences. \emph{Arithmetic} Brownian motion has \emph{additive} noise (constant $\sigma$): $X(t)=X_0+\mu t+\sigma W(t)$ is Gaussian and \emph{can go negative} --- unsuitable for prices but fine for spreads or already-logged quantities. \emph{Geometric} Brownian motion has \emph{multiplicative} noise ($\sigma X$): it stays positive and grows/shrinks proportionally, the right scaling for prices, lognormal as derived above. \emph{Ornstein--Uhlenbeck} adds a linear restoring drift $\kappa(\theta-X)$ that pulls $X$ back to the long-run level $\theta$ at speed $\kappa$; it is stationary (mean-reverting), Gaussian, and can also go negative. The shared property the slide asks for: \emph{all three are Markov diffusions} (no path memory), all driven by Brownian motion, all with the It\^o calculus applying verbatim. The trajectory plot ($\mu=0.05,\sigma=0.7,\kappa=1.5,\theta=1$, same random path for all three) shows GBM wandering off, ABM drifting more mildly, and OU hugging $\theta=1$. OU is the prototype for the variance process: the CIR/Heston variance $\dd v=\kappa(\theta-v)\dd t+\gamma\sqrt v\,\dd W$ (Lecture~7) is mean-reverting like OU but with a $\sqrt v$ diffusion that keeps $v\ge0$.
+
+\section{It\^o's lemma, restated, and why it is the engine}
+
+For reference, the full statement as given. If $X$ solves $\dd X=\bar\mu(t,X)\,\dd t+\bar\sigma(t,X)\,\dd W$ with $X_0=x_0$, and $g(t,x)\in C^{1,2}$, then $Y(t):=g(t,X(t))$ is again an It\^o process \emph{driven by the same $W$}:
+\[
+\dd Y=\Big(\underbrace{g_t}_{\text{time}}+\underbrace{\bar\mu\,g_x}_{\text{transport}}+\underbrace{\tfrac12\bar\sigma^2 g_{xx}}_{\text{It\^o correction}}\Big)\dd t+\underbrace{\bar\sigma\,g_x}_{\text{diffusion}}\,\dd W.
+\]
+The mnemonic: ordinary chain rule \emph{plus} a $\tfrac12\bar\sigma^2 g_{xx}\,\dd t$ term born of $(\dd W)^2=\dd t$. Everything downstream uses it: deriving the log-price ABM (done above), deriving the Black--Scholes PDE (apply It\^o to $V(t,S)$, substitute into the self-financing hedged portfolio, cancel the $\dd W$ term by choosing $\Delta=V_S$, and the remaining $\dd t$ balance is the PDE), and computing characteristic functions of affine models by solving the associated Riccati ODEs. If you can apply It\^o to $\ln S$ from memory and explain where the $-\tfrac12\sigma^2$ comes from, you own the technical core of Lecture~1.
+
+\section{Honest gaps and what Lecture 1 deliberately omits}
+
+For completeness, the things that are \emph{not} in these slides and that I have flagged as derivations I added rather than read off:
+\begin{itemize}[nosep]
+\item The slides \emph{state} It\^o's lemma and the GBM SDE but never solve for $S(t)$ or derive the lognormal law; the $\ln S$ computation, the closed form, $\E[S(t)]=S_0e^{\mu t}$, and the risk-neutral characteristic function are mine, included because they are exactly what later lectures presuppose.
+\item Risk-neutral valuation is present only \emph{implicitly} (the ``probabilities don't matter'' remark); the explicit $\mathbb{Q}$-measure, the martingale property of $e^{-rt}S$, and the identity $V=e^{-r(T-t)}\E^{\mathbb{Q}}[\text{payoff}]$ are the natural reading of the binomial argument but are formalised only in later lectures.
+\item Interest rates beyond constant continuous compounding (yield curves, the short-rate models behind them) are explicitly deferred to a follow-up course.
+\item No COS, no Black--Scholes formula, no Greeks beyond the one-step $\Delta$, no proof of It\^o, and only a verbal treatment of quadratic variation. Lecture~1 is scaffolding; the cited connections to COS, Heston, jumps, American and barrier options are forward references I have signposted, not Lecture~1 content.
+\end{itemize}
+The exam-relevant skeleton to carry forward: \emph{no-arbitrage $\Rightarrow$ replication $\Rightarrow$ risk-neutral expectation; GBM $\Rightarrow$ Gaussian log-returns $\Rightarrow$ closed-form characteristic function; It\^o (with $(\dd W)^2=\dd t$) is the tool that connects the SDE to the density and the PDE.} Everything in the rest of the course, COS most of all, is an efficient way of evaluating that risk-neutral expectation.
+
+\end{document}

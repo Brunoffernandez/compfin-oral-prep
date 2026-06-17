@@ -12,25 +12,25 @@ For each ASSIGNMENT task, produce:
 - Code-level "open your file and explain line X" questions in `question-bank/assignment-defense-questions.md`.
 
 ## Priority — COS
-- [ ] Lecture 06 — Fourier family, COS for density recovery, COS for option pricing
-- [ ] Lecture 10 — pricing problem, analytical under GBM, PDE + COS for Barrier options
+- [x] Lecture 06 — Fourier family, COS for density recovery, COS for option pricing
+- [x] Lecture 10 — pricing problem, analytical under GBM, PDE + COS for Barrier options
 
 ## Lectures (numeric order)
-- [ ] Lecture 01
-- [ ] Lecture 02
-- [ ] Lecture 03
-- [ ] Lecture 04 — Monte Carlo integration, MC for SDEs, variance reduction
-- [ ] Lecture 05 — Binomial, finite differences, BS PDE, binomial-as-FD
-- [ ] Lecture 07 — Heston, CIR variance, affine structure & characteristic function, MC under Heston
-- [ ] Lecture 08 — Poisson, jump diffusion, affine jump diffusion
-- [ ] Lecture 09 — American options (call/put, Euro/Am equivalence, FD/MC/COS/binomial-tree)
-- [ ] Lecture 11 — exotics overview (barrier/Asian/digital/basket/cliquet)
+- [x] Lecture 01
+- [x] Lecture 02
+- [x] Lecture 03
+- [x] Lecture 04 — Monte Carlo integration, MC for SDEs, variance reduction
+- [x] Lecture 05 — Binomial, finite differences, BS PDE, binomial-as-FD
+- [x] Lecture 07 — Heston, CIR variance, affine structure & characteristic function, MC under Heston
+- [x] Lecture 08 — Poisson, jump diffusion, affine jump diffusion
+- [x] Lecture 09 — American options (call/put, Euro/Am equivalence, FD/MC/COS/binomial-tree)
+- [x] Lecture 11 — exotics overview (barrier/Asian/digital/basket/cliquet)
 
 ## Assignments (defense sheets)
-- [ ] exercise-set-1
-- [ ] assignment-set-1
-- [ ] exercise-set-2
-- [ ] assignment-set-2
+- [x] exercise-set-1
+- [x] assignment-set-1
+- [x] exercise-set-2
+- [x] assignment-set-2
 
 ## Rules
 - Commit after each item with a clear message.

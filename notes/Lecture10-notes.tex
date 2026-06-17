@@ -1,0 +1,385 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\Imag}{\operatorname{Im}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ch}{\varphi}
+\newcommand{\Max}{\Xi}
+\DeclareMathOperator*{\esssup}{ess\,sup}
+
+\newtheorem{remark}{Remark}
+
+\title{\textbf{Lecture 10 --- Pricing Barrier Options}\\[2pt]
+\large Study notes: the pricing problem, analytical GBM results, and COS for discrete barriers}
+\author{Computational Finance (WI4151), TU Delft --- F.\ Fang}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+\begin{abstract}
+\noindent Barrier options pay only if the underlying does (knock-in) or does not (knock-out) breach a
+level over $[0,T]$. These notes cover the three routes in the lecture: (1) the \emph{pricing problem} ---
+the eight barrier types, in--out parity, and the two equivalent formulations (a first-passage expectation
+and a localized Feynman--Kac PDE with absorbing boundaries); (2) \emph{analytical results under GBM} ---
+the reflection principle (derived), the density of the running maximum and the joint density of $(W_T,\Max_0^T)$,
+the closed-form up-and-out call, and two PDE routes (method of images and a sine-series heat-equation
+solution); (3) \emph{the COS method for discretely-monitored barriers} --- the backward recursion over
+monitoring dates, COS applied at each step, the backward induction for the cosine coefficients $V_k$, the
+Hankel\,+\,Toeplitz structure of the coefficient update and its FFT acceleration to
+$O((M{-}1)N\log_2 N)$, the terminal conditions, and the truncation range. The key conceptual point: for a
+\emph{discrete} barrier COS becomes a backward recursion and, unlike European COS, \emph{does} use the FFT,
+because each step is a structured matrix--vector product. Prereq: the European COS machinery
+(\texttt{notes/Lecture06-notes.pdf}); $\sum'$ halves the $k=0$ term.
+\end{abstract}
+
+\tableofcontents
+
+\section{The pricing problem}\label{sec:problem}
+
+\subsection{Definitions: eight barrier types}
+Fix a barrier level $B$ (or $H$) and maturity $T$. A barrier option is a vanilla call/put whose existence is
+gated by whether the asset path touches $B$ during monitoring:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{up-and-out call}: pays $\max(S_T-K,0)$ \emph{unless} the asset crosses $B>S_0$ at some
+  time in $[0,T]$, in which case it pays $0$ (it is ``knocked out'');
+  \item \textbf{up-and-in call}: pays $0$ \emph{unless} the asset crosses $B>S_0$, in which case it
+  becomes a vanilla call (``knocked in'').
+\end{itemize}
+Replacing up$\leftrightarrow$down and call$\leftrightarrow$put gives $2\times2\times2=8$ types
+(up/down $\times$ in/out $\times$ call/put). Each admits an analytical formula under GBM.
+
+\subsection{In--out parity}
+Owning the knock-in \emph{and} the knock-out with the same $(K,B,T)$ reproduces the vanilla, because exactly
+one of the two is alive at maturity:
+\begin{equation}\label{eq:parity}
+C_{\text{up-in}}(t)+C_{\text{up-out}}(t)=e^{-r(T-t)}\E\big[(S_T-K)^+\mid\mathcal F_t\big],
+\end{equation}
+and likewise for down/in--out and for puts. \emph{Practical use:} price the easier one (often the knock-out)
+plus the vanilla, then back out the other by subtraction. It also gives a free correctness check on any
+numerical barrier price.
+
+\subsection{Two equivalent formulations}
+Let $X_t=\ln S_t$ (or a log-return), $\tau_B$ the first time the barrier is breached, and $\alpha=+1$ for a
+call, $-1$ for a put. The \textbf{expectation (martingale) route} writes the (e.g.\ up-and-out) price as a
+discounted expectation with a survival indicator:
+\begin{equation}\label{eq:expectation}
+V(x,t)=e^{-r(T-t)}\,\E_{X_t=x}\!\left[\big(\alpha\,(e^{X_T}-K)\big)^+\cdot\mathbf 1_{\{\tau_B>T\}}\right].
+\end{equation}
+The \textbf{PDE route} (localized Feynman--Kac): on $x\in[a,b]$ the same $V$ is the unique bounded solution of
+\begin{equation}\label{eq:pde}
+\frac{\partial V}{\partial t}+\big(r-\tfrac12\sigma^2\big)\frac{\partial V}{\partial x}
++\tfrac12\sigma^2\frac{\partial^2 V}{\partial x^2}-rV=0,
+\end{equation}
+with terminal data $V(x,T)=\big(\alpha(e^{x}-K)\big)^+$ and \emph{absorbing (Dirichlet) boundary conditions}
+$V(a,t)=V(b,t)=0$ at the knock-out level(s). The barrier enters the PDE not through the equation but through
+the homogeneous boundary condition: hitting the barrier sets the value to zero. The two routes are the same
+object; \eqref{eq:expectation} is convenient for Monte Carlo and for the COS method, \eqref{eq:pde} for finite
+differences and for the analytic GBM solutions of \S\ref{sec:gbm}.
+
+\section{Analytical results under GBM}\label{sec:gbm}
+
+Under GBM the asset is $S_t=S_0\exp(\sigma W_t+(r-\tfrac12\sigma^2)t)$, so the barrier event depends on the
+running extreme of a (drifted) Brownian motion. The closed forms all rest on the distribution of that extreme.
+
+\subsection{The running maximum and the reflection principle}\label{sec:reflection}
+Let $W$ be standard BM, $W_0=0$, and $\Max_0^T=\max_{t\in[0,T]}W_t\ge 0$. For a level $a>0$ let
+$\tau_a=\inf\{t\ge0:W_t=a\}$ be the first hitting time. The two events $\{\Max_0^T\ge a\}$ and
+$\{\tau_a\le T\}$ are identical.
+
+\paragraph{Reflection.} By the strong Markov property at $\tau_a$ and the symmetry of BM, a path that has
+already touched $a$ is equally likely to finish above or below $a$:
+$\Prob(W_T\ge a\mid\tau_a\le T)=\Prob(W_T\le a\mid\tau_a\le T)=\tfrac12$. Hence
+\begin{align}
+\Prob(\tau_a\le T)
+&=\Prob(\tau_a\le T,\,W_T>a)+\Prob(\tau_a\le T,\,W_T\le a)\notag\\
+&=2\,\Prob(\tau_a\le T,\,W_T\ge a)
+ =2\,\Prob(W_T\ge a),\label{eq:refl}
+\end{align}
+where the last step uses $\{W_T\ge a\}\subseteq\{\tau_a\le T,\,W_T\ge a\}\subseteq\{W_T\ge a\}$ (to reach a
+level above $a$ at $T$ you must have hit $a$ earlier). Therefore the maximum has the law of $|W_T|$:
+\begin{equation}\label{eq:maxcdf}
+\Prob(\Max_0^T\le a)=1-2\,\Prob(W_T\ge a)=\Prob(|W_T|\le a)
+=\frac{2}{\sqrt{2\pi T}}\int_0^a e^{-x^2/2T}\dd x,
+\end{equation}
+with density
+\begin{equation}\label{eq:maxdensity}
+\boxed{\;p_{\Max_0^T}(a)=\sqrt{\tfrac{2}{\pi T}}\,e^{-a^2/2T}\,\mathbf 1_{[0,\infty)}(a).\;}
+\end{equation}
+A consequence: $\Prob(W_t\le0\ \forall t\in[0,\varepsilon])=\Prob(\Max_0^\varepsilon=0)=\int_0^0 p=0$, i.e.\
+BM is immediately positive somewhere with probability one.
+
+\subsection{The joint density of $(\Max_0^T,W_T)$}\label{sec:joint}
+Reflect the terminal point across the level. For $b\le a$, a path with $\Max_0^T\ge a$ ending below $b$ is in
+bijection (reflect after $\tau_a$) with a path ending above $2a-b$:
+\begin{equation}
+\Prob(\Max_0^T\ge a,\,W_T< b)=\Prob(\Max_0^T\ge a,\,W_T>2a-b)=\Prob(W_T>2a-b),
+\end{equation}
+the last equality because $2a-b\ge a$ forces the maximum to exceed $a$. So
+$\Prob(\Max_0^T> a,\,W_T\le b)=\Prob(W_T\ge 2a-b)=\frac{1}{\sqrt{2\pi T}}\int_{2a-b}^{\infty}e^{-x^2/2T}\dd x$,
+and differentiating,
+\begin{equation}\label{eq:jointdensity}
+p_{\Max_0^T,W_T}(a,b)=-\frac{\partial^2}{\partial a\,\partial b}\,\Prob(\Max_0^T>a,\,W_T\le b)
+=\sqrt{\tfrac{2}{\pi}}\,\frac{2a-b}{T^{3/2}}\,e^{-(2a-b)^2/2T}\,\mathbf 1_{\{a\ge\max(b,0)\}}.
+\end{equation}
+For \emph{drifted} BM one obtains the law by a Girsanov change of measure (the drift becomes a Radon--Nikodym
+exponential weight $e^{\theta W_T-\frac12\theta^2 T}$). Equation \eqref{eq:jointdensity} is exactly the
+$p(\xi,y)$ that appears in the expectation route below.
+
+\subsection{Closed-form barrier prices}
+Any payoff $\phi(S_T,\max_{\tau}S_\tau)$ integrates against \eqref{eq:jointdensity}:
+\begin{equation}
+V(x,t)=e^{-r(T-t)}\!\int_{\R}\!\int_{\R}
+\phi\big(S_t e^{\sigma y+(r-\frac12\sigma^2)(T-t)},\,S_0 e^{\sigma\xi+(r-\frac12\sigma^2)(T-t)}\big)\,
+p(\xi,y)\dd\xi\dd y .
+\end{equation}
+For the \textbf{up-and-out call} this evaluates to the standard form
+\begin{align}
+C_{\text{up-out}}=\;&S_t\Big[N(d_1)-N(e_1)-(B/S_t)^{1+2r/\sigma^2}\big(N(f_2)-N(g_2)\big)\Big]\notag\\
+&-e^{-rT}K\Big[N(d_2)-N(e_2)-(B/S_t)^{-1+2r/\sigma^2}\big(N(f_1)-N(g_1)\big)\Big],
+\end{align}
+with $d_{1,2}$ the usual Black--Scholes arguments and the barrier-shifted arguments
+\[
+e_{1,2}=\tfrac{1}{\sigma\sqrt{T-t}}\big[\ln\tfrac{S_t}{B}+(r\pm\tfrac12\sigma^2)(T-t)\big],\quad
+f_{2,1}=\tfrac{1}{\sigma\sqrt{T-t}}\big[\ln\tfrac{S_t}{B}-(r\pm\tfrac12\sigma^2)(T-t)\big],
+\]
+\[
+g_{2,1}=\tfrac{1}{\sigma\sqrt{T-t}}\big[\ln\tfrac{S_tK}{B^2}-(r\pm\tfrac12\sigma^2)(T-t)\big].
+\]
+The $N(e),N(f),N(g)$ terms are precisely the reflected/image contributions that subtract the
+barrier-breaching paths; the $(B/S_t)^{\pm 1+2r/\sigma^2}$ powers are the GBM analogue of the image weight
+derived next.
+
+\subsection{PDE route 1 --- method of images}\label{sec:images}
+On the BS operator $\mathcal L V=V_t+rSV_S+\tfrac12\sigma^2S^2V_{SS}-rV$, one checks directly that if
+$\mathcal L V=0$ then so does the \emph{image}
+\begin{equation}\label{eq:image}
+U(S,t)=S^{2\alpha}\,V\!\Big(\frac{B^2}{S},t\Big),\qquad \alpha=\tfrac12\Big(1-\tfrac{2r}{\sigma^2}\Big).
+\end{equation}
+This is the BS analogue of reflecting a heat-equation solution across a wall to enforce a homogeneous
+boundary (method of images). Subtracting the image with the right weight cancels the value on the barrier
+$S=B$, yielding e.g.\ the \textbf{down-and-out call}
+\begin{equation}\label{eq:dao}
+C_{\text{down-out}}(S_t,K)=C_{\text{vanilla}}(S_t,K)-\Big(\tfrac{S_t}{B}\Big)^{2\alpha}
+C_{\text{vanilla}}\!\Big(\tfrac{B^2}{S_t},K\Big).
+\end{equation}
+The first term is the vanilla; the second removes exactly the paths that would have crossed $B$, evaluated at
+the mirror spot $B^2/S_t$ with the image weight $(S_t/B)^{2\alpha}$.
+
+\subsection{PDE route 2 --- sine-series solution of the heat equation}\label{sec:sineseries}
+This route is the spiritual precursor of the COS barrier method and worth working through. The localized BS
+PDE \eqref{eq:pde} on $x\in[a,b]$ with $V(a,t)=V(b,t)=0$ reduces to the heat equation. Substitute
+\begin{equation}
+\tau=\tfrac12\sigma^2(T-t),\quad \kappa=\tfrac{2r}{\sigma^2},\quad
+V(x,\tau)=e^{\alpha x+\beta\tau}U(x,\tau),\quad
+\alpha=-\tfrac12(\kappa-1),\ \ \beta=-\alpha^2-\kappa,\quad z=x-a,
+\end{equation}
+giving, for $z\in[0,b-a]$,
+\begin{equation}\label{eq:heat}
+\frac{\partial U}{\partial\tau}=\frac{\partial^2 U}{\partial z^2},\qquad
+U(0,\tau)=U(b-a,\tau)=0,\qquad
+U(z,0)=g(z)=e^{-\alpha(z+a)}K\big(e^{z+a}-1\big)^+ .
+\end{equation}
+The homogeneous Dirichlet conditions select the \emph{sine} basis. Expand the initial datum,
+\begin{equation}
+g(z)=\sum_{n=1}^{\infty} b_n\sin\!\Big(\frac{n\pi z}{b-a}\Big),\qquad
+b_n=\frac{2}{b-a}\int_0^{b-a}g(z)\sin\!\Big(\frac{n\pi z}{b-a}\Big)\dd z,
+\end{equation}
+and propagate each mode by its heat eigenvalue $e^{-(n\pi/(b-a))^2\tau}$:
+\begin{equation}
+U(z,\tau)=\sum_{n=1}^{\infty}b_n\sin\!\Big(\frac{n\pi z}{b-a}\Big)e^{-(n\pi/(b-a))^2\tau}.
+\end{equation}
+Undoing the substitutions gives the barrier price as a sine series:
+\begin{equation}\label{eq:sinesol}
+V(x,t)=e^{-r(T-t)}\sum_{n=1}^{\infty}b_n\sin\!\Big(\frac{n\pi(x-a)}{b-a}\Big)
+e^{\alpha x}\,e^{-\frac12\sigma^2(T-t)\big[(n\pi/(b-a))^2+\alpha^2\big]}.
+\end{equation}
+Note the structural parallel with COS: a finite-interval Fourier basis, coefficients from the payoff
+($b_n$), and an exponential ``propagator''. The difference is that here the propagator is the explicit
+GBM/heat semigroup, whereas COS uses the characteristic function and so generalises to any model with a
+known $\ch$.
+
+\section{COS for discretely-monitored barriers}\label{sec:cos}
+
+\subsection{Why discrete monitoring, and why a backward recursion}
+In practice barriers are checked on a finite grid $t_1<\cdots<t_M=T$. Write $x_m=\ln(S(t_m)/K)$ and
+$h=\ln(H/K)$. Knock-out survival is a \emph{product} of indicators,
+\begin{equation}
+\mathbf 1_{\{\tau>T\}}=\prod_{m=1}^{M}\mathbf 1_{\{x_m<h\}},
+\end{equation}
+and (up-and-out, rebate $R$) the price is
+\begin{equation}\label{eq:discprice}
+V(X_0,t_0)=\E^{\Q}\!\Big[V(X_M,t_M)\textstyle\prod_{m=1}^M\mathbf 1_{\{x_m<h\}}
++e^{-r\tau}R\,\mathbf 1_{\{\tau\le T\}}\,\Big|\,X_0\Big].
+\end{equation}
+By the Markov property the joint density factorises into one-step transitions,
+$f(x_M,\dots,x_1\mid x_0)=f(x_M\mid x_{M-1})\cdots f(x_1\mid x_0)$, so the $M$-dimensional integral
+\eqref{eq:discprice} \emph{nests}:
+\begin{equation}
+\int_{\R}f(x_1\mid x_0)\mathbf 1_{\{x_1<h\}}\cdots
+\int_{\R}f(x_{M-1}\mid x_{M-2})\mathbf 1_{\{x_{M-1}<h\}}
+\int_{\R}V(x_M)f(x_M\mid x_{M-1})\mathbf 1_{\{x_M<h\}}\dd x_M\cdots\dd x_1 .
+\end{equation}
+This is precisely a \textbf{backward recursion}. Define the continuation value and the (knock-out) option
+value at each monitoring date, for $m=M,M-1,\dots,2$:
+\begin{equation}\label{eq:recursion}
+c(x,t_{m-1})=e^{-r\Delta t}\!\int_{\R}v(y,t_m)f(y\mid x)\dd y,\qquad
+v(x,t_{m-1})=
+\begin{cases}
+e^{-r(T-t_{m-1})}R, & x\ge h\ \ (\text{knocked out}),\\[2pt]
+c(x,t_{m-1}), & x<h\ \ (\text{still alive}),
+\end{cases}
+\end{equation}
+terminating with $v(x,t_0)=e^{-r\Delta t}\int v(y,t_1)f(y\mid x)\dd y$. Each step is one continuation integral
+of exactly the European COS form --- the lecture's whole construction is to evaluate \eqref{eq:recursion} by
+COS, fast, $M-1$ times.
+
+\subsection{The COS step}
+Apply the European COS density expansion (Lecture 6) to $f(y\mid x)$ inside \eqref{eq:recursion}. With
+\[
+F_k(x)=\Real\!\left[\ch\!\Big(\tfrac{k\pi}{b-a};x\Big)e^{-\ii k\pi a/(b-a)}\right],\qquad
+V_k(t_m)=\frac{2}{b-a}\int_a^b v(y,t_m)\cos\!\Big(\tfrac{k\pi(y-a)}{b-a}\Big)\dd y,
+\]
+the continuation value is the familiar finite sum
+\begin{equation}\label{eq:cosstep}
+\boxed{\;c(x,t_{m-1})\approx \hat c(x,t_{m-1})=e^{-r\Delta t}{\sum_{k=0}^{N-1}}'\,F_k(x)\,V_k(t_m).\;}
+\end{equation}
+Here $\ch(\omega;x)$ is the \emph{conditional} characteristic function of $y$ given $x$; for a L\'evy process
+the increment is independent of $x$, so $\ch(\omega;x)=\ch_{\text{L\'evy}}(\omega)e^{\ii\omega x}$, which is
+what makes the $x$-dependence cheap. The new ingredient versus Lecture 6: the ``payoff'' $v(y,t_m)$ is itself
+produced by the previous COS step, so its coefficients $V_k$ must be propagated.
+
+\subsection{Backward induction for the coefficients $V_k$}
+Because $v$ is defined piecewise at $h$ \eqref{eq:recursion}, its cosine coefficient splits at the barrier:
+\begin{equation}\label{eq:Vksplit}
+\hat V_k(t_m)=\underbrace{\frac{2}{b-a}\int_a^h \hat c(y,t_m)\cos\!\Big(\tfrac{k\pi(y-a)}{b-a}\Big)\dd y}_{\displaystyle \hat C_k(a,h,t_m)}
+\;+\;\underbrace{\frac{2e^{-r(T-t_{m-1})}R}{b-a}\int_h^b \cos\!\Big(\tfrac{k\pi(y-a)}{b-a}\Big)\dd y}_{\displaystyle e^{-r(T-t_{m-1})}\frac{2R}{b-a}\Psi_k(h,b)} .
+\end{equation}
+The cosine integral $\Psi_k(h,b)=\int_h^b\cos(\tfrac{k\pi(y-a)}{b-a})\dd y$ is elementary (the $\psi_k$ of
+Lecture 6). The first piece, inserting the COS continuation value \eqref{eq:cosstep}, becomes a sum over the
+previous coefficients:
+\begin{equation}\label{eq:Ck}
+\hat C_k(x_1,x_2,t_m)=e^{-r\Delta t}\,\Real\!\left[{\sum_{j=0}^{N-1}}'
+\ch_{\text{L\'evy}}\!\Big(\tfrac{j\pi}{b-a}\Big)V_j(t_{m+1})\,M_{k,j}(x_1,x_2)\right],
+\end{equation}
+where the coupling integral is analytic:
+\begin{equation}\label{eq:Mkj}
+M_{k,j}(x_1,x_2)=\frac{2}{b-a}\int_{x_1}^{x_2}e^{\ii j\pi(x-a)/(b-a)}\cos\!\Big(\tfrac{k\pi(x-a)}{b-a}\Big)\dd x .
+\end{equation}
+Writing $\cos=\tfrac12(e^{\ii\cdot}+e^{-\ii\cdot})$ splits $M_{k,j}=\tfrac{1}{2}(M^c_{k,j}+M^s_{k,j})$ into a
+piece depending on $j+k$ and one on $j-k$:
+\begin{equation}
+M^c_{k,j}=\frac{\exp\!\big(\ii(j+k)\tfrac{(x_2-a)\pi}{b-a}\big)-\exp\!\big(\ii(j+k)\tfrac{(x_1-a)\pi}{b-a}\big)}{(j+k)},
+\quad
+M^s_{k,j}=\frac{\exp\!\big(\ii(j-k)\tfrac{(x_2-a)\pi}{b-a}\big)-\exp\!\big(\ii(j-k)\tfrac{(x_1-a)\pi}{b-a}\big)}{(j-k)},
+\end{equation}
+(with the removable cases $j+k=0$ and $j=k$ giving the linear term $(x_2-x_1)\pi\ii/(b-a)$). The summary
+recursion is then
+\begin{equation}
+\hat V_k(t_m)=\hat C_k(a,h,t_m)+e^{-r(T-t_{m-1})}\frac{2R\,\Psi_k(h,b)}{b-a}.
+\end{equation}
+
+\paragraph{Terminal condition.} At $t_M$ the coefficients are those of the actual payoff
+$v(y,t_M)$; with $G_k$ the cosine coefficients of the vanilla payoff $K(\alpha(e^y-1))^+$ (the $\chi_k-\psi_k$
+combinations of Lecture 6) one has, e.g.\ for $h\ge0$,
+\[
+V_k(t_M)=
+\begin{cases}
+G_k(0,h)+\dfrac{2R\,\Psi_k(h,b)}{b-a}, & \text{call},\\[2ex]
+G_k(a,0), & \text{put},
+\end{cases}
+\]
+and the analogous split for $h<0$.
+
+\subsection{Hankel + Toeplitz structure and the FFT}\label{sec:fft}
+For a fixed pair $(x_1,x_2)$ the matrix $M^c_{k,j}$ depends only on $j+k$ (a \textbf{Hankel} matrix) and
+$M^s_{k,j}$ only on $j-k$ (a \textbf{Toeplitz} matrix). Define $u_j=\ch(\tfrac{j\pi}{b-a})V_j(t_{m+1})$
+(with $u_0$ halved). The required product is
+\begin{equation}
+\hat C(x_1,x_2,t_m)=\frac{e^{-r\Delta t}}{\pi}\,\Imag\big\{(\mathcal M_c+\mathcal M_s)\,u\big\}.
+\end{equation}
+A Toeplitz (or Hankel) matrix times a vector is a \emph{discrete convolution}, which by circulant embedding
+is computed with three FFTs:
+\begin{equation}
+x\circledast y=\mathcal D^{-1}\{\mathcal D(x)\cdot\mathcal D(y)\}.
+\end{equation}
+This drops each step from the naive $O(N^2)$ to $O(N\log_2 N)$. Over the $M-1$ monitoring dates the
+\textbf{overall cost is}
+\begin{equation}
+\boxed{\;O\big((M-1)\,N\log_2 N\big).\;}
+\end{equation}
+
+\begin{remark}[The FFT returns --- a key contrast with Lecture 6]
+European COS is a single $O(N)$ cosine sum and uses \emph{no} FFT. The discrete-barrier method needs the
+coefficients $\{V_k(t_m)\}$ at \emph{every} step, and propagating them is a structured (Toeplitz/Hankel)
+matrix--vector product across the whole coefficient vector --- that is the convolution the FFT accelerates. So
+the FFT, dismissed for the European problem, is exactly what makes the barrier recursion tractable.
+\end{remark}
+
+\subsection{The algorithm}
+\begin{enumerate}[leftmargin=*]
+  \item Choose $[a,b]$ (\S\ref{sec:range}) and set the terminal coefficients $\hat V_k(t_M)=V_k(t_M)$.
+  \item For $m=M,M-1,\dots,2$:
+  \begin{enumerate}[label=(\alph*)]
+    \item form $u_j=\ch(\tfrac{j\pi}{b-a})\hat V_j(t_m)$;
+    \item compute $\hat C_k(a,h,t_m)$ via the Hankel/Toeplitz--vector products by FFT;
+    \item assemble $\hat V_k(t_{m-1})=\hat C_k(a,h,t_{m-1})+e^{-r(T-t_{m-1})}\tfrac{2R\Psi_k(h,b)}{b-a}$.
+  \end{enumerate}
+  \item Final price at $t_0$: $\ \hat v(x,t_0)=e^{-r\Delta t}\sum_{k=0}^{N-1}{}'F_k(x)\hat V_k(t_1)$.
+\end{enumerate}
+``In'' barriers follow from in--out parity \eqref{eq:parity} (price the out-version, subtract from vanilla),
+which is cheaper and numerically more stable than handling the in-condition directly.
+
+\subsection{The truncation range}\label{sec:range}
+Same cumulant rule as Lecture 6, but now centred with the log-moneyness $x_0=\ln(S_0/K)$:
+\begin{equation}\label{eq:range}
+[a,b]=\Big[(c_1+x_0)-L\sqrt{c_2+\sqrt{c_4}},\ \ (c_1+x_0)+L\sqrt{c_2+\sqrt{c_4}}\Big],
+\end{equation}
+with $c_1,\dots,c_4$ the cumulants of the (one-step) log-increment and $L$ fixed by tolerance. The trade-off is
+sharp here because the range is fixed once and reused for all $M$ steps: too small $\Rightarrow$
+integration-range truncation error; too large $\Rightarrow$ large $N$ for the same accuracy. The same
+short-maturity caution as in Lecture 6 applies to each step ($c_2\propto\Delta t$ small), and additionally the
+range must be wide enough that the barrier $h$ sits well inside $[a,b]$ --- otherwise the split at $h$ in
+\eqref{eq:Vksplit} is meaningless. Empirically (CGMY tests, slide 35) the method reaches $\sim10^{-8}$ error at
+$N=2^7$ in a few milliseconds per option, with the error ratio confirming high-order convergence in $N$.
+
+\subsection{Continuous monitoring and Heston}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Continuous monitoring} is the $M\to\infty$ (or $\Delta t\to0$) limit; in practice the discrete
+  price converges to it, and a Richardson-type extrapolation in $\Delta t$ (with the known $O(\sqrt{\Delta t})$
+  discrete-vs-continuous barrier bias) recovers the continuous price. The clean GBM continuous case is
+  \S\ref{sec:gbm}.
+  \item \textbf{Heston.} The same backward recursion applies, but the state is now (log-stock, variance), so
+  the continuation integral is two-dimensional: either 1-D COS in the log-stock with numerical integration over
+  variance, or a full 2-D COS recovering the joint density. The characteristic function is Heston's
+  (Lecture 7); the Feller condition $2\kappa\bar v\ge\eta^2$ keeps it well-behaved.
+\end{itemize}
+
+\section{One-paragraph reconstruction (say this out loud)}
+
+A barrier option pays the vanilla payoff times a survival indicator. Continuously and under GBM, the survival
+event is governed by the running maximum of Brownian motion, whose law I get from the reflection principle
+($p_{\Max}(a)=\sqrt{2/\pi T}\,e^{-a^2/2T}$, joint density $\propto(2a-b)e^{-(2a-b)^2/2T}$), giving closed-form
+barrier prices; equivalently the localized BS PDE with absorbing boundaries at the barrier, solved by images
+($U=S^{2\alpha}V(B^2/S,t)$) or by a sine series of the heat equation. For a \emph{discretely}-monitored barrier
+under a general model with known $\ch$, I write the price as a backward recursion over monitoring dates: at each
+date the continuation value is $\hat c(x,t_{m-1})=e^{-r\Delta t}\sum_k{}'F_k(x)V_k(t_m)$ (European COS), then I
+knock out by overwriting $v=R$ above $h$, which splits the coefficient $V_k$ at the barrier into a payoff piece
+$\Psi_k(h,b)$ and a continuation piece $\hat C_k$ built from the previous $V_j$ through the analytic coupling
+$M_{k,j}$. That coupling is Hankel\,+\,Toeplitz, so each step is a convolution done by FFT in $O(N\log N)$, and
+the whole price costs $O((M{-}1)N\log_2 N)$. Truncation range is the cumulant box $(c_1+x_0)\pm L\sqrt{c_2+\sqrt
+c_4}$, wide enough to contain the barrier.
+
+\end{document}

@@ -1,0 +1,509 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newtheorem{remark}{Remark}
+
+\newcommand{\impl}{\mathrm{impl}}
+\newcommand{\mkt}{\mathrm{mkt}}
+\newcommand{\BS}{\mathrm{BS}}
+\newcommand{\Vega}{\mathcal{V}}
+
+\title{\textbf{Lecture 3 --- Implied Volatility}\\[2pt]
+\large Study notes: definition, existence and uniqueness, root-finding (bisection, Newton),
+the volatility surface, and the deficiencies of Black--Scholes}
+\author{Computational Finance (WI4151), TU Delft --- F.\ Fang}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+\begin{abstract}
+\noindent These notes work through Lecture 3 in full. Implied volatility is the value of the
+single free Black--Scholes parameter $\sigma$ that reproduces an observed market option price.
+The lecture has two halves. First, the \emph{theory}: $\sigma\mapsto C^{\BS}(\sigma)$ is
+continuous, strictly increasing (because $\Vega>0$) with explicit limits as $\sigma\to0^+$ and
+$\sigma\to\infty$, so the inverse exists and is unique on the admissible price interval. Second,
+the \emph{numerics}: bisection (robust, linear) and Newton (fragile but quadratic), with the
+key practical result that starting Newton at the inflection point $\hat\sigma$ of $C(\sigma)$
+gives \emph{global} monotone convergence. Finally, the empirical observation that implied
+volatility is not flat across strike and maturity --- the smile/skew/surface --- which is the
+diagnostic that constant-volatility Black--Scholes is misspecified, and the motivation for the
+local-, stochastic-volatility and jump models of later lectures. Everything is derived; where I
+fill gaps not on the slides (notably the closed form of $\Vega$, the second-derivative identity,
+and the put treatment) I say so explicitly.
+\end{abstract}
+
+\tableofcontents
+
+\section{Setup: the four knowns and the one unknown}
+
+We work inside the Black--Scholes model. Under the risk-neutral measure $\mathbb{Q}$ the stock
+solves $\dd S_t=rS_t\dd t+\sigma S_t\dd W_t^{\mathbb{Q}}$, and the time-$t$ price of a European
+call with strike $K$ and maturity $T$ is the closed form
+\begin{equation}\label{eq:bs}
+C^{\BS}(S_t,t;\sigma)=S_t\,N(d_1)-Ke^{-r\tau}N(d_2),\qquad \tau:=T-t,
+\end{equation}
+with
+\begin{equation}\label{eq:d1d2}
+d_1=\frac{\ln(S_t/K)+(r+\tfrac12\sigma^2)\tau}{\sigma\sqrt{\tau}},\qquad
+d_2=\frac{\ln(S_t/K)+(r-\tfrac12\sigma^2)\tau}{\sigma\sqrt{\tau}}=d_1-\sigma\sqrt{\tau},
+\end{equation}
+and $N$ the standard normal CDF, $N'(x)=\tfrac{1}{\sqrt{2\pi}}e^{-x^2/2}$.
+
+The formula has five inputs $(\tau,K,r,S_t,\sigma)$. Four of them are directly observable:
+the time to maturity $\tau=T-t$, the strike $K$, the risk-free rate $r$, and the current spot
+$S_t$. The fifth, the volatility $\sigma$, is \emph{not} observable: it is a property of the
+unobserved future, not a quoted number. Black--Scholes treats it as a constant model parameter,
+but the market does not hand it to us.
+
+\paragraph{The inverse problem.} The market \emph{does} hand us option prices $C^{\mkt}$. So we
+turn \eqref{eq:bs} around. Holding $(\tau,K,r,S_t)$ fixed at their observed values, regard the
+call price as a scalar function of the one free parameter,
+\[
+\sigma\;\longmapsto\;C^{\BS}(\sigma),
+\]
+and ask: which $\sigma$ reproduces the quote? The \emph{implied volatility} $\sigma^{\impl}$ is
+defined as the solution of
+\begin{equation}\label{eq:def-iv}
+V^{\BS}(\sigma^{\impl};r,\tau,K,S_t)-V^{\mkt}=0,
+\end{equation}
+i.e. the volatility ``implied'' by the market price through the Black--Scholes lens. It is the
+market's quote expressed in the units of the model. We treat the call below; the put is identical
+after one remark (Section~\ref{sec:put}).
+
+\begin{remark}
+Implied volatility is \emph{not} a forecast of realised volatility and \emph{not} a directly
+measured quantity. It is a change of variable: a one-to-one re-quoting of a price as a vol,
+using a model we already suspect is wrong. Its usefulness is precisely that, were Black--Scholes
+true, $\sigma^{\impl}$ would be the same constant for every $(K,T)$. The extent to which it is
+\emph{not} constant is a direct readout of the model's misspecification.
+\end{remark}
+
+\section{Existence and uniqueness of the implied volatility}
+
+For \eqref{eq:def-iv} to define $\sigma^{\impl}$ unambiguously we need: (i) $C^{\BS}(\sigma)$
+strictly monotone in $\sigma$ (so the inverse is single-valued), and (ii) the market price to lie
+in the range of $C^{\BS}$. Both follow from elementary properties of \eqref{eq:bs}.
+
+\subsection{Vega is strictly positive}
+
+The \emph{vega} is the sensitivity of the price to volatility,
+\[
+\Vega:=\frac{\partial C}{\partial\sigma}.
+\]
+Differentiate \eqref{eq:bs}. By the chain rule, treating $d_1,d_2$ as functions of $\sigma$,
+\begin{equation}\label{eq:vega-chain}
+\frac{\partial C}{\partial\sigma}
+= S_t N'(d_1)\,\frac{\partial d_1}{\partial\sigma}
+ - Ke^{-r\tau}N'(d_2)\,\frac{\partial d_2}{\partial\sigma}.
+\end{equation}
+From $d_2=d_1-\sigma\sqrt{\tau}$ we get $\dfrac{\partial d_2}{\partial\sigma}
+=\dfrac{\partial d_1}{\partial\sigma}-\sqrt{\tau}$. The key simplification is the identity
+\begin{equation}\label{eq:vega-identity}
+S_t\,N'(d_1)=Ke^{-r\tau}\,N'(d_2),
+\end{equation}
+which I prove below. Substituting \eqref{eq:vega-identity} into \eqref{eq:vega-chain}, the two
+terms carrying $\partial d_1/\partial\sigma$ have equal coefficients $S_tN'(d_1)=Ke^{-r\tau}N'(d_2)$
+and cancel:
+\[
+\frac{\partial C}{\partial\sigma}
+= S_tN'(d_1)\frac{\partial d_1}{\partial\sigma}
+ - Ke^{-r\tau}N'(d_2)\Big(\frac{\partial d_1}{\partial\sigma}-\sqrt{\tau}\Big)
+= Ke^{-r\tau}N'(d_2)\,\sqrt{\tau}.
+\]
+Using \eqref{eq:vega-identity} once more to rewrite the prefactor in terms of $S_t$ and $d_1$,
+\begin{equation}\label{eq:vega}
+\boxed{\;\Vega=\frac{\partial C}{\partial\sigma}=S_t\,N'(d_1)\,\sqrt{\tau}
+=\frac{S_t\sqrt{\tau}}{\sqrt{2\pi}}\,e^{-\frac12 d_1^2}\;>0\;}
+\qquad(\sigma>0,\ \tau>0).
+\end{equation}
+Every factor on the right is strictly positive, so $\Vega>0$. Hence $C^{\BS}(\sigma)$ is
+\emph{strictly increasing} in $\sigma$ on $(0,\infty)$. This is the structural fact that makes the
+implied volatility well posed: a strictly monotone continuous function has a continuous inverse,
+so \emph{at most one} $\sigma^{\impl}$ can solve \eqref{eq:def-iv}.
+
+\paragraph{Proof of identity \eqref{eq:vega-identity}.} (Not on the slides; supplied here because
+Fang is exactly the kind of examiner who asks ``why does that identity hold?'') Write the ratio
+\[
+\frac{N'(d_1)}{N'(d_2)}=\exp\!\Big(-\tfrac12(d_1^2-d_2^2)\Big)
+=\exp\!\Big(-\tfrac12(d_1-d_2)(d_1+d_2)\Big).
+\]
+Now $d_1-d_2=\sigma\sqrt{\tau}$ and $d_1+d_2=\dfrac{2\ln(S_t/K)+2r\tau}{\sigma\sqrt{\tau}}$
+(the $\pm\tfrac12\sigma^2\tau$ terms cancel in the sum). Therefore
+\[
+-\tfrac12(d_1-d_2)(d_1+d_2)
+=-\tfrac12\,\sigma\sqrt{\tau}\cdot\frac{2\ln(S_t/K)+2r\tau}{\sigma\sqrt{\tau}}
+=-\ln(S_t/K)-r\tau,
+\]
+so $\dfrac{N'(d_1)}{N'(d_2)}=e^{-\ln(S_t/K)-r\tau}=\dfrac{K}{S_t}\,e^{-r\tau}$, i.e.
+$S_tN'(d_1)=Ke^{-r\tau}N'(d_2)$. \hfill$\square$
+
+\begin{remark}[Vega's shape]
+$\Vega=S_t\sqrt{\tau}\,N'(d_1)$ is a Gaussian bump in $d_1$, maximised when $d_1=0$, i.e. near the
+money. It decays to zero for deep in- or out-of-the-money options ($|d_1|\to\infty$). This will
+matter twice below: it is why Newton can stall in the wings (tiny denominator), and it is the
+reason the implied-vol \emph{inversion} is ill-conditioned far from the money --- a small price
+error is divided by a near-zero vega and blows up the implied vol.
+\end{remark}
+
+\subsection{The admissible price interval}
+
+Monotonicity gives \emph{at most} one solution. Existence requires the quote to lie in the range
+of $C^{\BS}$, which we now pin down by taking the two limits in $\sigma$.
+
+\paragraph{Lower limit, $\sigma\to0^+$.} As $\sigma\to0^+$ the sign of $d_1,d_2$ is governed by
+the sign of $\ln(S_t/K)+r\tau$ (the volatility-independent part of the numerator), since
+$\sigma\sqrt{\tau}\to0$ in the denominator amplifies that sign:
+\begin{itemize}[nosep]
+\item If $\ln(S_t/K)+r\tau>0$: $d_1,d_2\to+\infty$, $N(d_1),N(d_2)\to1$, so
+      $C(\sigma)\to S_t-Ke^{-r\tau}>0$.
+\item If $\ln(S_t/K)+r\tau<0$: $d_1,d_2\to-\infty$, $N(d_1),N(d_2)\to0$, so $C(\sigma)\to0$.
+\item If $\ln(S_t/K)+r\tau=0$: $d_1,d_2\to0$, $N\to\tfrac12$, so
+      $C(\sigma)\to\tfrac12(S_t-Ke^{-r\tau})=0$, the last equality because the case condition is
+      exactly $S_t=Ke^{-r\tau}$.
+\end{itemize}
+The three branches collapse to one statement,
+\begin{equation}\label{eq:lower}
+\lim_{\sigma\to0^+}C(\sigma)=\max\!\big(S_t-Ke^{-r\tau},\,0\big),
+\end{equation}
+which is the no-arbitrage \emph{intrinsic value} of the call (its forward-discounted moneyness,
+floored at zero). This is the natural floor: a zero-vol stock grows deterministically at $r$, and
+the call is worth its discounted in-the-money amount or nothing.
+
+\paragraph{Upper limit, $\sigma\to\infty$.} As $\sigma\to\infty$, the $+\tfrac12\sigma^2\tau$ term
+sends $d_1\to+\infty$ while the $-\tfrac12\sigma^2\tau$ term sends $d_2\to-\infty$. Hence
+$N(d_1)\to1$, $N(d_2)\to0$, and
+\begin{equation}\label{eq:upper}
+\lim_{\sigma\to\infty}C(\sigma)=S_t.
+\end{equation}
+Economically: with infinite volatility the downside is unchanged (payoff floored at $0$) but the
+upside is unbounded, and the option's value rises to the whole spot $S_t$ (the discounted strike
+becomes negligible against the dispersion). It is a supremum, not attained.
+
+\paragraph{Conclusion.} Combining \eqref{eq:vega}, \eqref{eq:lower}, \eqref{eq:upper}: for every
+$\sigma\ge0$,
+\begin{equation}\label{eq:bounds}
+\max\!\big(S_t-Ke^{-r\tau},0\big)\;\le\;C(\sigma)\;<\;S_t,
+\end{equation}
+and $C$ is a continuous strictly increasing bijection from $[0,\infty)$ onto
+$\big[\max(S_t-Ke^{-r\tau},0),\,S_t\big)$. Therefore:
+\begin{quote}
+\emph{If} $C^{\mkt}\in\big[\max(S_t-Ke^{-r\tau},0),\,S_t\big)$, then there is a \emph{unique}
+$\sigma^{\impl}\ge0$ with $C(\sigma^{\impl})=C^{\mkt}$.
+\end{quote}
+A quote outside this band violates a static no-arbitrage bound (a call worth less than intrinsic,
+or more than the stock) and admits no real implied volatility --- which in practice flags a stale
+or erroneous quote, or a quote at the bid/ask edge.
+
+\section{Numerical inversion}
+
+The equation $F(\sigma):=C(\sigma)-C^{\mkt}=0$ has no closed-form solution (it sits behind the
+nonlinear $N(d_1),N(d_2)$), so we root-find numerically. Two methods are on the slides.
+
+\subsection{Bisection}
+
+\paragraph{Idea.} If $F$ is continuous and changes sign on $[\sigma_a,\sigma_b]$, i.e.
+$F(\sigma_a)F(\sigma_b)<0$, the intermediate value theorem guarantees a root inside. Evaluate the
+midpoint $\sigma_m=\tfrac12(\sigma_a+\sigma_b)$; the sign of $F(\sigma_m)$ agrees with exactly one
+endpoint, so one of $[\sigma_a,\sigma_m]$, $[\sigma_m,\sigma_b]$ still brackets the root. Replace
+the bracket by that half and repeat.
+
+\paragraph{Pseudocode (as on the slide).}
+\begin{verbatim}
+N <- 1
+while N <= NMAX:
+    c <- (a+b)/2                      # midpoint
+    if F(c)=0 or (b-a)/2 < TOL:       # converged
+        output c; stop
+    N <- N+1
+    if sign(F(c)) = sign(F(a)): a <- c    # root in [c,b]
+    else:                       b <- c    # root in [a,c]
+\end{verbatim}
+
+\paragraph{Why it always works here.} By \eqref{eq:bounds} and monotonicity, an initial bracket
+exists whenever the quote is admissible: take $\sigma_a$ tiny (then $F<0$ once
+$C^{\mkt}>$ intrinsic) and $\sigma_b$ large (then $F>0$ once $C^{\mkt}<S_t$). Monotonicity of $C$
+guarantees a single sign change, so bisection cannot be confused by spurious roots.
+
+\paragraph{Convergence.} The bracket halves each step: after $n$ iterations the root is localised
+to width $(\sigma_b-\sigma_a)/2^{\,n}$. So the error obeys
+$|\sigma_n-\sigma^*|\le 2^{-n}(\sigma_b-\sigma_a)$ --- \emph{linear} convergence with rate $1/2$,
+one bit of accuracy per iteration. To reach tolerance $\varepsilon$ needs about
+$\log_2\!\big((\sigma_b-\sigma_a)/\varepsilon\big)$ steps.
+
+\paragraph{Trade-off.} Advantage: needs no derivative and no good initial guess --- only a sign-
+changing bracket, which we can always produce. It is globally convergent and bullet-proof.
+Disadvantage: only linear, so it is slow when high accuracy is wanted.
+
+\subsection{Newton--Raphson}
+
+\paragraph{Derivation.} To solve $F(\sigma^*)=0$, Taylor-expand $F$ about the current iterate
+$\sigma_n$ for a small step $\delta$:
+\[
+F(\sigma_n+\delta)=F(\sigma_n)+\delta F'(\sigma_n)+\mathcal O(\delta^2).
+\]
+Drop the quadratic remainder and demand the linear model vanish, $F(\sigma_n)+\delta F'(\sigma_n)=0$.
+Solving for $\delta$ and setting $\sigma_{n+1}=\sigma_n+\delta$ gives the iteration
+\begin{equation}\label{eq:newton}
+\sigma_{n+1}=\sigma_n-\frac{F(\sigma_n)}{F'(\sigma_n)}
+=\sigma_n-\frac{C(\sigma_n)-C^{\mkt}}{\Vega(\sigma_n)}.
+\end{equation}
+Here $F'=C'=\Vega$ from \eqref{eq:vega}, so each step needs one price and one vega evaluation ---
+both cheap, and both already available in closed form. Geometrically, $\sigma_{n+1}$ is where the
+tangent to $F$ at $\sigma_n$ crosses zero.
+
+\paragraph{Local convergence theorem.} If $F\in C^2$ and there is a simple root $\sigma^*$ with
+$F(\sigma^*)=0$, $F'(\sigma^*)\neq0$, then there is $\delta>0$ such that for any start with
+$|\sigma_0-\sigma^*|<\delta$ the iterates are well defined, $\sigma_n\to\sigma^*$, and there is a
+constant $C$ with
+\begin{equation}\label{eq:quad}
+|\sigma_{n+1}-\sigma^*|\le C\,|\sigma_n-\sigma^*|^2.
+\end{equation}
+This is \emph{quadratic} convergence: the number of correct digits roughly doubles each step. For
+the IV problem $F'=\Vega>0$ at any interior root, so the simple-root hypothesis holds.
+
+\paragraph{Why quadratic.} Subtract $\sigma^*$ from \eqref{eq:newton} and use $F(\sigma^*)=0$:
+\begin{align*}
+\sigma_{n+1}-\sigma^*
+&=\sigma_n-\sigma^*-\frac{F(\sigma_n)}{F'(\sigma_n)}
+=\sigma_n-\sigma^*-\frac{F(\sigma_n)-F(\sigma^*)}{F'(\sigma_n)}\\
+&=\sigma_n-\sigma^*-\frac{(\sigma_n-\sigma^*)F'(\sigma_n)+\mathcal O\big((\sigma_n-\sigma^*)^2\big)}
+{F'(\sigma_n)}
+=\mathcal O\big((\sigma_n-\sigma^*)^2\big),
+\end{align*}
+where the third equality is the Taylor expansion
+$F(\sigma_n)-F(\sigma^*)=(\sigma_n-\sigma^*)F'(\sigma_n)-\tfrac12(\sigma_n-\sigma^*)^2F''(\xi)+\cdots$
+rearranged so the linear part cancels $(\sigma_n-\sigma^*)$. The leading surviving term is
+quadratic, with constant $\approx \tfrac12|F''/F'|$ near $\sigma^*$.
+
+\paragraph{Trade-off.} Advantage: much faster than bisection (quadratic vs.\ linear). Disadvantage:
+\emph{local} --- a poor $\sigma_0$ can overshoot, diverge, or step to negative volatility, and in
+the deep wings $\Vega(\sigma_n)\approx0$ makes the update \eqref{eq:newton} explode. So Newton is
+fast where it works but is not robust by itself.
+
+\subsection{Globalising Newton: start at the inflection point $\hat\sigma$}
+
+The slides give a clean cure for Newton's fragility: a special starting point from which
+convergence is \emph{global and monotone}. The construction rests on the convexity structure of
+$C(\sigma)$.
+
+\paragraph{Second derivative.} Differentiating $\Vega=S_t\sqrt{\tau}\,N'(d_1)$ in $\sigma$ and
+simplifying (using $\partial d_1/\partial\sigma=-d_2/\sigma$, a standard reduction) gives the
+slide's formula
+\begin{equation}\label{eq:d2C}
+\frac{\partial^2 C}{\partial\sigma^2}
+=\frac{S_t\sqrt{\tau}}{\sqrt{2\pi}}\,e^{-\frac12 d_1^2}\cdot\frac{d_1 d_2}{\sigma},
+\qquad\sigma>0.
+\end{equation}
+The prefactor is positive, so the sign of $\partial^2 C/\partial\sigma^2$ is the sign of $d_1d_2$.
+Now
+\[
+d_1 d_2
+=\frac{\ln(S_t/K)+(r+\tfrac12\sigma^2)\tau}{\sigma\sqrt\tau}\cdot
+ \frac{\ln(S_t/K)+(r-\tfrac12\sigma^2)\tau}{\sigma\sqrt\tau}
+=\frac{\big(\ln(S_t/K)+r\tau\big)^2-\big(\tfrac12\sigma^2\tau\big)^2}{\sigma^2\tau},
+\]
+a difference of squares. This vanishes precisely when
+$\big(\ln(S_t/K)+r\tau\big)^2=\tfrac14\sigma^4\tau^2$, i.e. at
+\begin{equation}\label{eq:sigmahat}
+\sigma=\hat\sigma:=\sqrt{\frac{2\,\big|\ln(S_t/K)+r\tau\big|}{\tau}}.
+\end{equation}
+For $0\le\sigma<\hat\sigma$ the squared moneyness term dominates, $d_1d_2>0$, so
+$\partial^2 C/\partial\sigma^2>0$ and $C$ is \emph{convex}. For $\sigma>\hat\sigma$ we have
+$d_1d_2<0$, so $\partial^2 C/\partial\sigma^2<0$ and $C$ is \emph{concave}. Thus $\hat\sigma$ is
+the unique inflection point of $C(\sigma)$, and --- crucially --- it is where $\Vega=C'$ attains
+its \emph{maximum} (the slope is largest exactly where curvature changes sign).
+
+\paragraph{Global monotone convergence from $\sigma_0=\hat\sigma$.} Suppose the true root satisfies
+$\sigma^*>\sigma_0=\hat\sigma$ (the case $\sigma^*<\hat\sigma$ is symmetric). By the mean value
+theorem applied to $F$ on $[\sigma_0,\sigma^*]$, there is $\xi_0\in(\sigma_0,\sigma^*)$ with
+$F(\sigma_0)-F(\sigma^*)=(\sigma_0-\sigma^*)F'(\xi_0)$, hence from \eqref{eq:newton}
+\[
+\sigma_1-\sigma^*
+=(\sigma_0-\sigma^*)-\frac{(\sigma_0-\sigma^*)F'(\xi_0)}{F'(\sigma_0)}
+\;\Longrightarrow\;
+\frac{\sigma_1-\sigma^*}{\sigma_0-\sigma^*}=1-\frac{F'(\xi_0)}{F'(\sigma_0)}.
+\]
+Because $\sigma_0=\hat\sigma$ \emph{maximises} $F'=\Vega$, we have $0<F'(\xi_0)\le F'(\sigma_0)$, so
+the ratio lies in $(0,1)$. Therefore $\sigma_1-\sigma^*$ has the same sign as $\sigma_0-\sigma^*$
+but smaller magnitude: $\sigma_0<\sigma_1<\sigma^*$. At the next step $\sigma_1$ lies on the
+concave branch where $F'=\Vega$ is positive and \emph{decreasing}, and the same MVT argument with
+$\sigma_1<\xi_1<\sigma^*$ gives the ratio again in $(0,1)$, so $\sigma_1<\sigma_2<\sigma^*$.
+Inductively $\sigma_n<\sigma_{n+1}<\sigma^*$: the iterates form an increasing sequence bounded
+above by $\sigma^*$, hence converge, and the limit is the root. The error decreases monotonically
+to zero and, by \eqref{eq:quad}, quadratically near the end.
+
+\begin{remark}
+The starting point \eqref{eq:sigmahat} is the trick that makes Newton both fast and safe for this
+specific problem: the maximal-slope property of $\hat\sigma$ is exactly what forces the
+contraction ratio $1-F'(\xi)/F'(\sigma_0)$ into $(0,1)$ on the first step, after which the
+iterates stay on the ``good'' (concave, monotone) side. This is a problem-specific globalisation,
+not a general Newton guarantee. In practice one still caps iterations and falls back to bisection
+if a step leaves the admissible interval.
+\end{remark}
+
+\subsection{Method comparison}
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+ & \textbf{Bisection} & \textbf{Newton (from $\hat\sigma$)}\\
+\hline
+Order of convergence & linear, rate $\tfrac12$ & quadratic\\
+Needs derivative? & no & yes ($\Vega$, closed form)\\
+Needs good start? & no, only a bracket & yes; $\hat\sigma$ supplies it\\
+Robustness & global, fail-safe & global here by the $\hat\sigma$ argument\\
+Cost per step & one price eval & one price + one vega eval\\
+\hline
+\end{tabular}
+\end{center}
+
+A common production choice is a hybrid: a few bisection steps to localise, then switch to Newton
+for the final digits; or Newton from $\hat\sigma$ with a bisection safety net.
+
+\section{The put, and a sanity check via parity}\label{sec:put}
+
+The put is handled identically. By put--call parity $C-P=S_t-Ke^{-r\tau}$, which is
+$\sigma$-independent, the put price is $P(\sigma)=C(\sigma)-(S_t-Ke^{-r\tau})$. Differentiating,
+\[
+\frac{\partial P}{\partial\sigma}=\frac{\partial C}{\partial\sigma}=\Vega=S_t\sqrt\tau\,N'(d_1)>0,
+\]
+so the put has the \emph{same} positive vega and the same strict monotonicity; its implied
+volatility is unique on the analogous admissible band, and an arbitrage-free call and put at the
+same $(K,T)$ return the \emph{identical} implied volatility. This is why one may quote one IV per
+$(K,T)$ regardless of call/put. The same bisection/Newton machinery applies verbatim with $C$
+replaced by $P$.
+
+\section{The implied volatility surface}
+
+If Black--Scholes held exactly, $\sigma^{\impl}$ recovered from \eqref{eq:def-iv} would be a single
+constant, identical across every strike $K$ and maturity $T$ --- because $\sigma$ is, in the model,
+one fixed number. The empirical fact is that it is not. Inverting market quotes produces a function
+\[
+(K,T)\longmapsto\sigma^{\impl}(K,T),
+\]
+the \emph{implied volatility surface}. Its non-flatness is the central diagnostic of this lecture.
+
+\paragraph{Empirical example (FTSE 100, 22 Aug 2001).} With $S_0=5420.3$, $r=0.05$,
+$T=\tfrac13$\,yr, inverting the quoted call prices across strikes $5125,\dots,5825$ yields implied
+volatilities that \emph{fall} monotonically with strike (from $\approx0.190$ at $K=5125$ to
+$\approx0.174$ at $K=5825$) instead of staying flat. Under Black--Scholes they should coincide;
+they do not, so the market does not obey the model's constant-vol assumption.
+
+\subsection{Shapes in the strike direction}
+
+Holding $T$ fixed, $K\mapsto\sigma^{\impl}(K,T)$ takes characteristic shapes:
+\begin{itemize}[nosep]
+\item \textbf{Smile.} A convex U: implied vol is lowest near the money and higher for both deep
+      ITM and deep OTM strikes. Reading it through the model, the market prices \emph{both} tails
+      richer than a lognormal --- consistent with a return distribution with heavier tails
+      (excess kurtosis) than the Gaussian Black--Scholes assumes.
+\item \textbf{Skew (smirk).} A monotone decreasing curve: implied vol is high for low strikes
+      (downside puts) and decays for high strikes. This is the typical equity-index shape and
+      encodes a left-skewed (negatively skewed) risk-neutral distribution: crash risk is priced
+      richer, so out-of-the-money puts carry higher implied vol.
+\item \textbf{Hockey stick.} A skew on the left blending into a smile on the right --- a
+      combination of the two, with a rich left tail and a modestly rich right tail.
+\end{itemize}
+
+\subsection{Term structure in the maturity direction}
+
+Holding $K$ fixed (say at the money), $T\mapsto\sigma^{\impl}(K,T)$ is the \emph{term structure}.
+The slide contrasts two models for $\dd S/S=\mu\dd t+\sigma(t)\dd W_t$:
+\begin{itemize}[nosep]
+\item Constant volatility $\sigma_*$: the ATM implied term structure is flat in $T$.
+\item Time-dependent $\sigma(t)$: the implied vol at maturity $T$ is the root-mean-square of the
+      instantaneous vol, $\sigma^{\impl}(T)^2=\tfrac1T\int_0^T\sigma(t)^2\dd t$, so a rising
+      $\sigma(t)$ produces an upward-sloping implied term structure. (This is the cleanest way to
+      see that the BS implied vol over $[0,T]$ aggregates the path of instantaneous variance into
+      a single average.)
+\end{itemize}
+
+\subsection{The full surface}
+
+Combining both directions gives $\sigma^{\impl}(K,T)$ over a 2-D domain. The slides show the
+generic pattern: a pronounced \emph{smile at short maturities} (the wings are most curved when
+there is little time for the central limit theorem to Gaussianise the return), flattening into a
+milder \emph{skew at longer maturities}. A flat plane would mean Black--Scholes; the curvature and
+tilt of the actual surface is the market's correction to it, and any candidate model is judged by
+how well it can reproduce this surface (calibration).
+
+\section{Why constant-vol Black--Scholes fails}
+
+The surface is a symptom; the lecture closes by naming the broken assumptions and the families of
+models that repair them.
+
+\paragraph{Assumptions that fail in reality.}
+\begin{itemize}[nosep]
+\item \textbf{Continuous trading.} Delta hedging is assumed continuous-time and frictionless; real
+      rebalancing is discrete, leaving hedging error.
+\item \textbf{No transaction costs.} Real hedging incurs costs, which feed back into prices.
+\item \textbf{Gaussian returns.} BS log-returns are normal; empirical returns are heavy-tailed and
+      negatively skewed --- exactly what the smile/skew reports.
+\item \textbf{Constant volatility.} Realised volatility is not constant: it clusters (calm and
+      turbulent regimes persist), so a single $\sigma$ cannot fit prices across $(K,T)$
+      simultaneously.
+\end{itemize}
+
+\paragraph{Repair families (introduced here, developed later).}
+\begin{itemize}[nosep]
+\item \textbf{Term-structure volatility:} $\dd S/S=\mu\dd t+\sigma(t)\dd W_t$ --- deterministic
+      $\sigma(t)$ fits the maturity dimension but, being deterministic, still gives a flat smile
+      in strike at each $T$.
+\item \textbf{Local volatility:} $\dd S/S=\mu\dd t+\sigma(S,t)\dd W_t$ --- volatility a
+      deterministic function of spot and time, calibrated (Dupire) to reproduce the \emph{entire}
+      surface exactly, at the cost of unrealistic forward smile dynamics.
+\item \textbf{Stochastic volatility:} $\dd S/S=\mu\dd t+\sigma(W^v,t)\dd W^S_t$ with volatility
+      itself driven by a second Brownian motion --- e.g. Heston (Lecture 7). A genuinely random
+      variance generates smiles/skews endogenously and is the workhorse for the COS method later.
+\item \textbf{Jump models:} adding a jump component (Merton, Lecture 8) injects discontinuities
+      that fatten the short-maturity tails, fixing the steep short-dated smile that diffusion
+      alone cannot.
+\end{itemize}
+These are precisely the models the rest of the course prices, and the implied-vol surface is the
+target they must hit.
+
+\section{Distinguish: implied vs.\ local vs.\ stochastic volatility}
+
+A point Fang may probe, since the slide lists $\sigma(t),\sigma(S,t),\sigma(W^v,t)$ side by side.
+\begin{itemize}[nosep]
+\item \textbf{Implied volatility} is a \emph{model-inversion output}, not a model input: a single
+      number per quote, defined only through the Black--Scholes formula. It is the market price
+      re-expressed in vol units. It says nothing on its own about the true dynamics.
+\item \textbf{Local volatility} $\sigma(S,t)$ is a \emph{model input}: a deterministic surface
+      that, by Dupire, can be chosen to match all implied vols at once. It is the
+      ``effective'' instantaneous vol consistent with today's surface.
+\item \textbf{Stochastic volatility} $\sigma(W^v,t)$ is also a model input but \emph{random},
+      with its own driving noise (and, in Heston, correlation $\rho$ with the spot's noise). It
+      explains \emph{why} the surface has the shape and dynamics it does, rather than merely
+      fitting it.
+\end{itemize}
+In one line: implied vol describes the data, local vol fits it deterministically, stochastic vol
+explains it.
+
+\section*{Missing / not on the slides (flagged honestly)}
+\addcontentsline{toc}{section}{Missing / not on the slides}
+\begin{itemize}[nosep]
+\item The closed form $\Vega=S_t\sqrt\tau\,N'(d_1)$ \eqref{eq:vega} is \emph{derived} here; the
+      slides assert $\Vega>0$ and the cancellation but stop short of the boxed formula. The proof
+      of the identity \eqref{eq:vega-identity} is mine; the slide only states it ``follows from
+      $d_2=d_1-\sigma\sqrt\tau$ and the exponential form of $N'$''.
+\item The reduction $\partial d_1/\partial\sigma=-d_2/\sigma$ used to get \eqref{eq:d2C} is stated
+      without derivation on the slides; I quote it.
+\item The put treatment via parity (Section~\ref{sec:put}) is my addition; the slides only say ``an
+      analogous treatment applies''.
+\item The RMS reading of the term structure,
+      $\sigma^{\impl}(T)^2=\tfrac1T\int_0^T\sigma(t)^2\dd t$, is the standard interpretation of the
+      $\sigma(t)$ figure but is not written on the slide.
+\item The Dupire/local-vol and Heston cross-references are forward pointers to Lectures 7--8, not
+      content of Lecture 3.
+\end{itemize}
+
+\end{document}
