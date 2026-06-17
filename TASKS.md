@@ -17,7 +17,7 @@ For each ASSIGNMENT task, produce:
 
 ## Lectures (numeric order)
 - [ ] Lecture 01
-- [ ] Lecture 02
+- [x] Lecture 02
 - [ ] Lecture 03
 - [ ] Lecture 04 — Monte Carlo integration, MC for SDEs, variance reduction
 - [ ] Lecture 05 — Binomial, finite differences, BS PDE, binomial-as-FD
