@@ -16,14 +16,14 @@ For each ASSIGNMENT task, produce:
 - [x] Lecture 10 — pricing problem, analytical under GBM, PDE + COS for Barrier options
 
 ## Lectures (numeric order)
-- [ ] Lecture 01
+- [x] Lecture 01
 - [x] Lecture 02
 - [ ] Lecture 03
-- [ ] Lecture 04 — Monte Carlo integration, MC for SDEs, variance reduction
-- [ ] Lecture 05 — Binomial, finite differences, BS PDE, binomial-as-FD
-- [ ] Lecture 07 — Heston, CIR variance, affine structure & characteristic function, MC under Heston
+- [x] Lecture 04 — Monte Carlo integration, MC for SDEs, variance reduction
+- [x] Lecture 05 — Binomial, finite differences, BS PDE, binomial-as-FD
+- [x] Lecture 07 — Heston, CIR variance, affine structure & characteristic function, MC under Heston
 - [x] Lecture 08 — Poisson, jump diffusion, affine jump diffusion
-- [ ] Lecture 09 — American options (call/put, Euro/Am equivalence, FD/MC/COS/binomial-tree)
+- [x] Lecture 09 — American options (call/put, Euro/Am equivalence, FD/MC/COS/binomial-tree)
 - [x] Lecture 11 — exotics overview (barrier/Asian/digital/basket/cliquet)
 
 ## Assignments (defense sheets)

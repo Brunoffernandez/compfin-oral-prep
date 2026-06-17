@@ -1,0 +1,509 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ch}{\varphi}
+\newtheorem{remark}{Remark}
+
+\title{Lecture 07 --- The Heston Model: CIR Variance, Affine Structure, and Simulation}
+\author{Computational Finance (WI4151), Cluster 4 --- Models}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+These notes cover the Heston stochastic volatility model: the SDE system, the CIR
+variance process and the Feller condition, the affine machinery that produces the
+characteristic function, and the simulation schemes (Euler with truncation/reflection,
+exact Broadie--Kaya). The single most important object for this course is the
+\emph{Heston characteristic function} of $\ln S_T$, because it is exactly the input the
+COS method needs to price under Heston. Cross-reference: \texttt{notes/Lecture06-notes.pdf}
+(the COS pricing formula and the cumulant-based truncation range $[a,b]$).
+
+\section{Why stochastic volatility}
+
+Black--Scholes assumes a constant volatility $\sigma$. Empirically, option-implied
+volatility depends on strike and maturity (the volatility \emph{smile}/\emph{skew}), so a
+single $\sigma$ cannot reprice the whole surface. Two standard cures: add jumps to the
+geometric Brownian motion (Lecture~8), or make the volatility itself stochastic. The
+Heston model takes the second route. Its appeal over competitors such as SABR
+($\dd S_t = \sigma_t S_t^\beta \dd W_t$, $\dd \sigma_t = \alpha \sigma_t \dd Z_t$) is that
+it admits a \emph{semi-analytic} pricing solution (through its characteristic function)
+and an \emph{exact} simulation scheme. SABR relies on the Hagan asymptotic formula, which
+is only accurate for a limited range of maturities.
+
+\section{The Heston SDE system}
+
+Under the risk-neutral measure $\mathbb{Q}$ the Heston model is the two-dimensional
+diffusion
+\begin{equation}
+\dd S_t = r S_t \dd t + \sqrt{\nu_t}\, S_t \dd W^S_t,
+\qquad
+\dd \nu_t = \kappa(\bar\nu - \nu_t)\dd t + \gamma \sqrt{\nu_t}\, \dd W^\nu_t,
+\label{eq:heston}
+\end{equation}
+with the two Brownian motions \emph{correlated},
+\begin{equation}
+\dd W^S_t\, \dd W^\nu_t = \rho_{S,\nu}\dd t.
+\end{equation}
+Here $\nu_t$ is the instantaneous \emph{variance} (not the volatility; the volatility is
+$\sqrt{\nu_t}$). The parameters are:
+\begin{itemize}[noitemsep]
+\item $\bar\nu$ --- the long-run mean of the variance;
+\item $\kappa>0$ --- the speed of mean reversion of $\nu_t$ to $\bar\nu$;
+\item $\gamma>0$ --- the volatility of variance (``vol-of-vol''), which governs the
+curvature of the smile;
+\item $\rho_{S,\nu}$ --- the spot/variance correlation, which governs the \emph{slope}
+(skew) of the implied-volatility curve. As $\rho_{S,\nu}$ becomes more negative the skew
+steepens; this is the leverage effect.
+\end{itemize}
+The variance follows a Cox--Ingersoll--Ross (CIR) process: mean-reverting with a
+diffusion coefficient $\gamma\sqrt{\nu_t}$ that vanishes as $\nu_t\to0$, which is what
+keeps the process non-negative.
+
+\paragraph{Log-spot form via Cholesky.}
+For pricing and simulation it is convenient to (i) move to $X_t=\ln S_t$ and (ii)
+decorrelate the Brownian drivers. By It\^o's lemma on $X_t=\ln S_t$, with
+$\dd S_t/S_t = r\dd t + \sqrt{\nu_t}\dd W^S_t$ and $(\dd S_t/S_t)^2=\nu_t\dd t$,
+\begin{equation}
+\dd \ln S_t = \Big(r - \tfrac12 \nu_t\Big)\dd t + \sqrt{\nu_t}\,\dd W^S_t.
+\end{equation}
+Now write the correlated pair $(W^S,W^\nu)$ in terms of two \emph{independent}
+Brownian motions $(\widetilde W_1, \widetilde W_2)$. For the $2\times2$ correlation
+matrix
+\[
+\Sigma = \begin{pmatrix} 1 & \rho \\ \rho & 1 \end{pmatrix}
+= L L^\top,
+\qquad
+L = \begin{pmatrix} 1 & 0 \\ \rho & \sqrt{1-\rho^2}\end{pmatrix},
+\]
+($\rho\equiv\rho_{S,\nu}$) the Cholesky construction $W = L\widetilde W$ gives
+$W^S_t = \widetilde W_1(t)$ and
+$W^\nu_t = \rho\,\widetilde W_1(t) + \sqrt{1-\rho^2}\,\widetilde W_2(t)$.
+One checks $\operatorname{Cov}(W^S_t,W^\nu_t)=\rho\,\E[(\widetilde W_1)^2]=\rho t$, hence
+correlation $\rho$ as required. Inverting so that the \emph{variance} is driven by its
+own clean increment $W^\nu$, the equivalent system is
+\begin{align}
+\dd \ln S_t &= \Big(r - \tfrac12\nu_t\Big)\dd t
++ \sqrt{\nu_t}\Big(\rho_{S,\nu}\dd W^S_t + \sqrt{1-\rho_{S,\nu}^2}\,\dd W^\nu_t\Big),\\
+\dd \nu_t &= \kappa(\bar\nu-\nu_t)\dd t + \gamma\sqrt{\nu_t}\,\dd W^\nu_t,
+\label{eq:hestonlog}
+\end{align}
+where now $W^S$ and $W^\nu$ on the right are \emph{independent}. This is the form used
+for both Euler simulation and the affine derivation.
+
+\section{The CIR variance process}
+
+\subsection{Conditional distribution}
+
+A central fact: conditional on $\nu_t$, the future variance $\nu_T$ has a known
+distribution. Writing $\tau=T-t$,
+\begin{equation}
+\nu_T \mid \nu_t \;\sim\; \frac{Y}{2c},
+\qquad
+c = \frac{2\kappa}{\gamma^2\big(1-e^{-\kappa\tau}\big)},
+\end{equation}
+where $Y$ follows a \emph{noncentral chi-squared} distribution $\chi^{\star}_d(\lambda)$
+with
+\begin{equation}
+d = \frac{4\kappa\bar\nu}{\gamma^2} \text{ degrees of freedom},
+\qquad
+\lambda = 2c\,e^{-\kappa\tau}\nu_t \text{ noncentrality}.
+\end{equation}
+Recall $\chi^\star_d(\lambda)$ is the law of $\sum_{i=1}^d X_i^2$ where the $X_i$ are
+independent $N(\mu_i,1)$ and $\lambda=\sum_i\mu_i^2$. Its density is
+\begin{equation}
+f(x;d,\lambda) = \tfrac12 e^{-(x+\lambda)/2}
+\Big(\tfrac{x}{\lambda}\Big)^{d/4-1/2}
+I_{d/2-1}\!\big(\sqrt{\lambda x}\big),
+\label{eq:ncx2}
+\end{equation}
+with $I_\nu$ the modified Bessel function of the first kind,
+$I_\nu(y)=(y/2)^\nu\sum_{j\ge0}\frac{(y^2/4)^j}{j!\,\Gamma(\nu+j+1)}$.
+
+\subsection{The Feller condition}
+
+\begin{remark}[Feller condition]
+If
+\begin{equation}
+2\kappa\bar\nu \ge \gamma^2
+\end{equation}
+then $\nu_t$ stays strictly positive almost surely (the origin is inaccessible). If it is
+violated, $\nu_t$ can reach $0$ (and, for the pure CIR process, instantaneously reflects /
+leaves $0$ again; in either case $\nu_t$ never goes negative).
+\end{remark}
+
+The cleanest way to see why this is the relevant threshold is through the density
+\eqref{eq:ncx2}. As $x\to0^+$, $I_\nu(\sqrt{\lambda x})\sim (\sqrt{\lambda x}/2)^\nu/\Gamma(\nu+1)$,
+so the density behaves like $x^{d/4-1/2}\cdot x^{(d/2-1)/2}=x^{d/2-1}$ up to constants
+(combining the explicit power and the Bessel power). For the density not to blow up at the
+origin we need the exponent $\tfrac{d}{2}-1\ge0$, i.e.
+\begin{equation}
+q_F \coloneqq \frac{2\kappa\bar\nu}{\gamma^2}-1 \ge 0
+\iff 2\kappa\bar\nu\ge\gamma^2,
+\end{equation}
+recovering the Feller condition. Interpretation: a large vol-of-vol $\gamma$ relative to
+the restoring force $\kappa\bar\nu$ makes excursions to zero likely; a strong restoring
+force keeps the variance away from the origin. This matters in practice because the
+non-central chi-squared exact scheme is only guaranteed well-defined when the Feller
+condition holds (it is a \emph{sufficient} condition; rare exceptions exist but are not of
+practical interest).
+
+\section{Affine structure and the characteristic function}
+
+\subsection{Affine diffusions: the general result}
+
+An $n$-dimensional diffusion $\dd X_t = \mu(X_t)\dd t + \sigma(X_t)\dd W_t$ is
+\emph{affine} if the drift and the diffusion covariance are affine in the state:
+\begin{align}
+\mu(x) &= K_0 + K_1 x, \qquad K_0\in\R^n,\ K_1\in\R^{n\times n},\\
+\big(\sigma(x)\sigma(x)^\top\big)_{ij} &= (H_0)_{ij} + (H_1)_{ij}\cdot x,
+\qquad H_0\in\R^{n\times n},\ H_1\in\R^{n\times n\times n},
+\end{align}
+and the short rate is affine, $R(x)=\rho_0+\rho_1\cdot x$. The key theorem (Duffie--Pan--Singleton 2000) states that the discounted transform
+\begin{equation}
+\psi^X(u,x,t,T) = \E\!\left[\exp\!\Big(-\!\int_t^T R(X_s)\dd s\Big)\,e^{u\cdot X_T}
+\,\Big|\,\mathcal F_t\right]
+= e^{\alpha(u,t,T)+\beta(u,t,T)\cdot x},
+\label{eq:affineans}
+\end{equation}
+i.e. the transform is \emph{exponential-affine} in the state. The coefficients
+$\alpha,\beta$ solve a system of complex ODEs (the Riccati system). For a pure diffusion
+(no jumps) the system is
+\begin{align}
+\dot\beta &= \rho_1 - K_1^\top\beta - \tfrac12\beta^\top H_1\beta, \label{eq:riccati-b}\\
+\dot\alpha &= \rho_0 - K_0\cdot\beta - \tfrac12\beta^\top H_0\beta, \label{eq:riccati-a}
+\end{align}
+with boundary conditions $\beta(u,T,T)=u$ and $\alpha(u,T,T)=0$. Here
+$\beta^\top H_1\beta$ is the $n$-vector with $k$-th component
+$\sum_{ij}\beta_i (H_1)_{ijk}\beta_j$.
+
+\paragraph{Where the ODEs come from.}
+The Feynman--Kac theorem says $\psi^X$ (as a function of $(t,x)$) satisfies the backward
+PDE
+\[
+\partial_t \psi + \mathcal L\psi - R(x)\psi = 0,
+\qquad \psi(T,x)=e^{u\cdot x},
+\]
+where $\mathcal L$ is the generator
+$\mathcal L g = \sum_i \mu_i \partial_{x_i} g + \tfrac12\sum_{ij}(\sigma\sigma^\top)_{ij}\partial_{x_i x_j}g$.
+Substituting the ansatz $\psi=e^{\alpha+\beta\cdot x}$ gives
+$\partial_{x_i}\psi=\beta_i\psi$, $\partial_{x_ix_j}\psi=\beta_i\beta_j\psi$, and
+$\partial_t\psi=(\dot\alpha+\dot\beta\cdot x)\psi$. Dividing by $\psi$ and collecting the
+terms that are constant in $x$ versus linear in $x$ (using that $\mu$, $\sigma\sigma^\top$
+and $R$ are affine) decouples into the two ODE families \eqref{eq:riccati-b}--\eqref{eq:riccati-a}: the linear-in-$x$ part gives $\dot\beta$, the constant part gives $\dot\alpha$. The
+affine structure is exactly what makes the $x$-dependence separate cleanly.
+
+\subsection{Is Heston affine? Restoring it in the log-domain}
+
+In the $(S,\nu)$ coordinates Heston is \emph{not} affine: the diffusion covariance is
+\[
+\sigma\sigma^\top =
+\begin{pmatrix} \nu_t S_t^2 & \gamma\rho_{S,\nu}\nu_t S_t \\
+\gamma\rho_{S,\nu}\nu_t S_t & \gamma^2\nu_t \end{pmatrix},
+\]
+whose top-left entry $\nu_t S_t^2$ is not affine in $(S_t,\nu_t)$. The fix is to switch to
+$X_t=\ln S_t$. With state $(\ln S_t,\nu_t)^\top$ the drift becomes
+\[
+\begin{pmatrix} \dd\ln S_t\\ \dd\nu_t\end{pmatrix}
+=\Bigg(
+\underbrace{\begin{pmatrix} r\\ \kappa\bar\nu\end{pmatrix}}_{K_0}
++\underbrace{\begin{pmatrix} 0 & -1/2\\ 0 & -\kappa\end{pmatrix}}_{K_1}
+\begin{pmatrix}\ln S_t\\ \nu_t\end{pmatrix}
+\Bigg)\dd t + \sqrt{\nu_t}\,L\,\dd\widetilde W_t,
+\]
+which is affine in the drift, and the covariance becomes
+\[
+\sigma\sigma^\top = \nu_t
+\begin{pmatrix} 1 & \gamma\rho_{S,\nu}\\ \gamma\rho_{S,\nu} & \gamma^2\end{pmatrix},
+\]
+affine in $\nu_t$. Matching the template: $H_0=0$ (the $2\times2$ zero matrix), and $H_1$
+is the $2\times2\times2$ tensor whose first slice (coefficient of $\ln S$) is the zero
+matrix and whose second slice (coefficient of $\nu$) is
+$\big(\begin{smallmatrix} 1 & \gamma\rho_{S,\nu}\\ \gamma\rho_{S,\nu} & \gamma^2\end{smallmatrix}\big)$.
+So in log-coordinates Heston \emph{is} affine, and the general transform result applies.
+
+\subsection{The variance ODE solved explicitly (warm-up)}
+
+Before the full Heston cf, it is instructive to solve the one-dimensional CIR Riccati
+exactly, which is what underlies the variance distribution. For the cf of $\nu_T$ alone,
+$\psi^\nu(u,\nu_t,t,T)=\E[e^{u\nu_T}\mid\nu_t]=e^{\alpha_1(t)+\beta_1(t)\nu_t}$, with
+$K_0=\kappa\bar\nu$, $K_1=-\kappa$, $H_0=0$, $H_1=\gamma^2$, $\rho_0=\rho_1=0$. Using the
+reparametrization $\psi^\nu=e^{\alpha(\tau)+\beta(\tau)\nu_t}$ in $\tau=T-t$, the Riccati
+equation reads
+\begin{equation}
+\dot\beta = -\kappa\beta + \tfrac12\gamma^2\beta^2,
+\qquad \beta(0)=u.
+\end{equation}
+This is solvable by the substitution $g=1/\beta$, which linearizes it:
+$\dot g = -\dot\beta/\beta^2 = \kappa g - \tfrac12\gamma^2$. The integrating factor
+$e^{-\kappa t}$ gives $\dd(g e^{-\kappa t}) = -\tfrac12\gamma^2 e^{-\kappa t}\dd t$, hence
+\[
+g(t)e^{-\kappa t}-g(0) = -\frac{\gamma^2}{2}\int_0^t e^{-\kappa s}\dd s,
+\qquad
+g(t)=e^{\kappa t}\Big(g(0)-\tfrac{\gamma^2(1-e^{-\kappa t})}{2\kappa}\Big),
+\]
+with $g(0)=1/u$. Inverting,
+\begin{equation}
+\beta(t) = \frac{u\,e^{-\kappa t}}{1-\tfrac{u\gamma^2}{2}\xi_\kappa(t)},
+\qquad
+\xi_\kappa(t)=\frac{1-e^{-\kappa t}}{\kappa}.
+\end{equation}
+Then $\dot\alpha=\kappa\bar\nu\,\beta$ integrates (noting $e^{-\kappa s}=\xi_\kappa'(s)$)
+to
+\begin{equation}
+\alpha(t)= \kappa\bar\nu u\int_0^t
+\frac{e^{-\kappa s}}{1-\tfrac{u\gamma^2}{2}\xi_\kappa(s)}\dd s
+= -\frac{2\kappa\bar\nu}{\gamma^2}
+\ln\!\Big(1-\tfrac{u\gamma^2}{2}\xi_\kappa(t)\Big).
+\end{equation}
+Collecting,
+\begin{equation}
+\E[e^{u\nu_T}\mid\nu_t]
+= \Big(1-\tfrac{u\gamma^2}{2}\xi_\kappa(\tau)\Big)^{-2\kappa\bar\nu/\gamma^2}
+\exp\!\Big(\frac{u\,e^{-\kappa\tau}}{1-\tfrac{u\gamma^2}{2}\xi_\kappa(\tau)}\,\nu_t\Big).
+\end{equation}
+Although derived for real $u$, this extends to complex $u$ within the convergence domain,
+and is exactly the cf of the (scaled) noncentral chi-squared variable above. This is the
+same Riccati mechanism that produces the full Heston cf below.
+
+\subsection{The Heston characteristic function}
+
+Now take the full log-Heston system, set $u=\ii\omega$ purely imaginary, and write
+$y_t=\ln S_t$. The transform
+$\E[e^{u y_T}\mid y_t,\nu_t]=e^{\alpha(\tau,u)+u y_t+\beta(\tau,u)\nu_t}$ has, with
+$\tau=T-t$ and the shorthands
+\begin{equation}
+b = \gamma\rho_{S,\nu}u-\kappa,
+\qquad a = u(1-u),
+\qquad s = \sqrt{b^2 + a\gamma^2},
+\end{equation}
+the closed forms
+\begin{align}
+\beta(\tau,u) &= \frac{a\,(1-e^{-s\tau})}{2s-(s+b)(1-e^{-s\tau})}, \label{eq:hbeta}\\
+\alpha(\tau,u) &= -r\tau + ru\tau
+- \kappa\bar\nu\left(\frac{s+b}{\gamma^2}\,\tau
++ \frac{2}{\gamma^2}\ln\!\Big[1-\frac{s+b}{2s}\big(1-e^{-s\tau}\big)\Big]\right).
+\label{eq:halpha}
+\end{align}
+The Heston \emph{characteristic function} of the log-price is then
+\begin{equation}
+\boxed{\;
+\ch_{\ln S_T}(\omega; \tau) \;=\; \E\!\big[e^{\ii\omega\ln S_T}\mid \ln S_t,\nu_t\big]
+\;=\; \exp\!\big(\alpha(\tau,\ii\omega) + \ii\omega\,\ln S_t + \beta(\tau,\ii\omega)\,\nu_t\big).
+\;}
+\label{eq:hestoncf}
+\end{equation}
+This is the load-bearing object of the lecture. Everything --- semi-analytic pricing,
+calibration, exact simulation of $\int\nu\,\dd s$ --- runs through it.
+
+\begin{remark}[The ``little Heston trap'' / branch-cut subtlety]
+The square root $s=\sqrt{b^2+a\gamma^2}$ and the complex logarithm in
+\eqref{eq:halpha} are multi-valued. The way the formula is grouped
+matters. The original Heston (1993) presentation uses an algebraically equivalent
+grouping (with a factor $g=(b+s)/(b-s)$ and $\ln(1-g e^{s\tau})$ with $e^{+s\tau}$ rather
+than $e^{-s\tau}$). For long maturities $\tau$ that form repeatedly crosses the branch cut
+of the principal-branch $\ln$, the function becomes discontinuous and the integrand
+oscillates wrongly, giving \emph{wildly wrong prices}. Albrecher et al.\ (2007) showed
+that the mathematically equivalent ``little trap'' formulation --- precisely the one in
+\eqref{eq:halpha}, written with $e^{-s\tau}$ and $1-\tfrac{s+b}{2s}(1-e^{-s\tau})$ ---
+stays on the principal branch and is numerically stable for all $\tau$, provided one takes
+the principal square root with non-negative real part. The lesson: the two forms are equal
+as analytic functions but not as numerical recipes; always use the stable grouping.
+\end{remark}
+
+\subsection{The pricing PDE (consistency check)}
+
+It\^o on $e^{-rt}V(t,S,\nu)$ and setting the drift to zero (so the discounted price is a
+martingale) gives the Heston pricing PDE
+\begin{equation}
+\partial_t V + rS\,\partial_S V + \kappa(\bar\nu-\nu)\partial_\nu V
++ \tfrac12\nu S^2 \partial_{SS}V + \tfrac12\gamma^2\nu\,\partial_{\nu\nu}V
++ \gamma\nu S\rho_{S,\nu}\,\partial_{S\nu}V - rV = 0,
+\end{equation}
+where the cross term used $\dd S\,\dd\nu = \gamma\nu S\rho_{S,\nu}\dd t$. The cf
+\eqref{eq:hestoncf} is the fundamental solution of the corresponding backward equation for
+the transform; this is the same PDE the Feynman--Kac/affine derivation invokes.
+
+\section{How the Heston cf plugs into COS}
+
+Recall from Lecture~06 the COS European pricing formula. With $x=\ln(S_0/K)$, density
+support truncated to $[a,b]$, and cosine coefficients $V_k$ of the payoff,
+\begin{equation}
+v(x,t_0) \approx e^{-r\tau}\sideset{}{'}\sum_{k=0}^{N-1}
+\operatorname{Re}\!\Big\{\ch\!\Big(\tfrac{k\pi}{b-a};x\Big)\,
+e^{-\ii k\pi\frac{a}{b-a}}\Big\}\,V_k,
+\label{eq:cos}
+\end{equation}
+where ${\sum}'$ halves the first term. The \emph{only} model-specific input is the
+characteristic function $\ch(\cdot)$ of the log-price. For Black--Scholes one substitutes
+the Gaussian cf; for Heston one substitutes exactly \eqref{eq:hestoncf}, evaluated at the
+COS frequencies $\omega_k = k\pi/(b-a)$:
+\begin{equation}
+\ch\!\Big(\tfrac{k\pi}{b-a};x\Big)
+= \exp\!\Big(\alpha\big(\tau,\tfrac{\ii k\pi}{b-a}\big)
++ \tfrac{\ii k\pi}{b-a}\,x
++ \beta\big(\tau,\tfrac{\ii k\pi}{b-a}\big)\nu_0\Big).
+\end{equation}
+This is why the affine machinery matters for this course: COS is a quadrature of the
+inverse Fourier transform, and Heston is exactly the model whose density is unknown in
+closed form but whose cf is known in closed form, which is the regime where COS dominates.
+
+\begin{remark}[Truncation range under Heston]
+The cumulant-based rule from Lecture~06,
+$[a,b]=[c_1 - L\sqrt{c_2+\sqrt{c_4}},\; c_1 + L\sqrt{c_2+\sqrt{c_4}}]$, requires the
+cumulants $c_1,c_2,c_4$ of $\ln S_T$, which for Heston follow by differentiating
+$\log\ch$ at $\omega=0$. The danger I hit in Assignment~2 is generic: at \emph{short}
+maturities $\tau$ the variance of $\ln S_T$ is small (small $c_2$), so $[a,b]$ becomes
+narrow; if the higher cumulants or a fat left tail (negative $\rho$) are under-weighted,
+the range can chop off mass and COS loses its spectral accuracy. Under Heston the skew
+from $\rho<0$ and the vol-of-vol $\gamma$ inflate the tails, so the prudent fix is a
+larger $L$ (e.g.\ $L=10$--$12$) and including $c_4$, rather than trusting the BS-style
+$L=8$ to $10$ with $c_4$ ignored.
+\end{remark}
+
+\section{Monte Carlo simulation under Heston}
+
+\subsection{Euler scheme and the negative-variance problem}
+
+The naive Euler discretization of \eqref{eq:hestonlog} on a grid $t_i$ is
+\begin{align}
+\nu_{t_{i+1}} &= \nu_{t_i} + \kappa(\bar\nu-\nu_{t_i})(t_{i+1}-t_i)
++ \gamma\sqrt{\nu_{t_i}}\sqrt{t_{i+1}-t_i}\,Z,\\
+\ln S_{t_{i+1}} &= \ln S_{t_i} + \Big(r-\tfrac12\nu_{t_i}\Big)(t_{i+1}-t_i)
++ \sqrt{\nu_{t_i}}\sqrt{t_{i+1}-t_i}\,Y,
+\end{align}
+with $Y=\rho_{S,\nu}Z + \sqrt{1-\rho_{S,\nu}^2}\,X$, $X,Z\sim N(0,1)$ independent.
+Because $Z$ is Gaussian and unbounded below, $\mathbb P(\nu_{t_{i+1}}<0)>0$ always: the
+discretized variance can go negative, after which $\sqrt{\nu}$ is undefined. No naive
+time-stepping scheme avoids this.
+
+\paragraph{Quick fixes (with errors).}
+\begin{itemize}[noitemsep]
+\item \emph{Truncation / floor}: set $\nu_{t_{i+1}}\leftarrow\max(\nu_{t_{i+1}},\varepsilon)$
+for tiny $\varepsilon\ge0$. Simple, but introduces a truncation bias.
+\item \emph{Reflection}: set $\nu_{t_{i+1}}\leftarrow|\nu_{t_{i+1}}|$. Useful when the
+Feller condition fails; the reflected path systematically sits a little above the floored
+one near zero.
+\item \emph{Log-variance change of variable}: simulate $Y_t=\ln\nu_t$ by Euler and
+exponentiate. This does \emph{not} work: $\ln\nu$ can blow up, so $\nu=e^{Y}$ explodes for
+some paths.
+\end{itemize}
+These are all biased; the bias is worst exactly when the Feller condition is badly
+violated and the variance spends time near $0$.
+
+\subsection{Exact simulation of the variance}
+
+A bias-free alternative for the variance uses the conditional law directly:
+$\nu_{t_{i+1}}\mid\nu_{t_i}\sim Y/(2c)$ with $Y\sim\chi^\star_d(\lambda)$,
+$c=2\kappa/[\gamma^2(1-e^{-\kappa\Delta})]$, $d=4\kappa\bar\nu/\gamma^2$,
+$\lambda=2c\,e^{-\kappa\Delta}\nu_{t_i}$, $\Delta=t_{i+1}-t_i$. Sampling the noncentral
+chi-squared uses:
+\begin{itemize}[noitemsep]
+\item if $d>1$: $\chi^\star_d(\lambda)^2 \stackrel{d}{=} (Z+\sqrt\lambda)^2 + \chi^2_{d-1}$
+with $Z\sim N(0,1)$ and an independent ordinary $\chi^2_{d-1}$;
+\item for general $d>0$: draw $J\sim\mathrm{Poisson}(\lambda/2)$, then conditionally
+$\chi^\star_d(\lambda)^2\sim\chi^2_{d+2J}$.
+\end{itemize}
+This is exact for $\nu$ and produces strictly non-negative samples. Caveat: the noncentral
+chi-squared representation needs $d>0$, i.e.\ effectively the Feller condition; when it
+fails one switches to the log-variance transform of Fang--Oosterlee (2011).
+
+\subsection{Exact (Broadie--Kaya) simulation of the spot}
+
+Knowing the variance law is not enough for $S$, because the log-price depends on
+$\int_u^t\nu_s\dd s$ and on the stochastic integrals against $W^\nu,W^S$. Integrating
+\eqref{eq:heston} over $[u,t]$,
+\begin{align}
+S_t &= S_u \exp\!\Big(r(t-u) - \tfrac12\!\int_u^t\!\nu_s\dd s
++ \rho_{S,\nu}\!\int_u^t\!\sqrt{\nu_s}\dd W^\nu_s
++ \sqrt{1-\rho_{S,\nu}^2}\!\int_u^t\!\sqrt{\nu_s}\dd W^S_s\Big),\\
+\nu_t &= \nu_u + \kappa\bar\nu(t-u) - \kappa\!\int_u^t\!\nu_s\dd s
++ \gamma\!\int_u^t\!\sqrt{\nu_s}\dd W^\nu_s.
+\end{align}
+The second line lets us express one stochastic integral in terms of the others. The
+Broadie--Kaya (2006) algorithm is then:
+\begin{enumerate}[label=\textbf{Step \arabic*.},leftmargin=*]
+\item Sample $\nu_t\mid\nu_u$ from the noncentral chi-squared above.
+\item Sample $\int_u^t\nu_s\dd s$ given $\nu_u,\nu_t$ --- \emph{the hard step}.
+\item Recover $\int_u^t\sqrt{\nu_s}\dd W^\nu_s
+= \tfrac1\gamma\big(\nu_t-\nu_u-\kappa\bar\nu(t-u)+\kappa\int_u^t\nu_s\dd s\big)$.
+\item Sample $\int_u^t\sqrt{\nu_s}\dd W^S_s \mid \int_u^t\nu_s\dd s
+\sim N\!\big(0,\int_u^t\nu_s\dd s\big)$ (independence of $W^S$ from the variance path).
+\end{enumerate}
+Then assemble $S_t$. The result is unbiased and lets you jump directly from $u$ to $t$ with
+no intermediate time steps.
+
+\paragraph{Step 2 via the cf of the integrated variance.}
+The distribution of $\int_u^t\nu_s\dd s$ given $(\nu_u,\nu_t)$ is obtained from its
+characteristic function $\ch(\omega)=\E^{\mathbb Q}[\exp(\ii\omega\int_u^t\nu_s\dd s)\mid\nu_u,\nu_t]$,
+which is known in closed form (a ratio of modified Bessel functions $I_{d/2-1}$, with
+$R(\omega)=\sqrt{\kappa^2-2\gamma^2\ii\omega}$ and $d=4\kappa\bar\nu/\gamma^2$). One then
+inverts to get the CDF $F$ --- the original paper used the trapezoidal rule on the Fourier
+inversion; \emph{today one uses the COS method} --- and finally samples by inversion
+$\int\nu\,\dd s = F^{-1}(U)$ with $U\sim\mathrm{Uniform}(0,1)$, valid because
+$\mathbb P(F^{-1}(U)\le r)=\mathbb P(U\le F(r))=F(r)$.
+
+\paragraph{Trade-offs.} Exact simulation has no discretization/truncation error, higher
+accuracy per path, and direct sampling at horizon $t$; but it is slow and intricate to
+implement (Bessel functions, Fourier inversion per step). Broadie--Kaya's tables show the
+exact scheme's RMS error decaying as $O(N^{-1/2})$ in the number of trials with zero bias,
+versus Euler's slower convergence dominated by discretization bias.
+
+\subsection{The three tools behind the integrated-variance cf (sketch)}
+
+The closed form for $\ch(\omega)$ is built from three ingredients; knowing the names and
+roles is enough for the oral.
+\begin{itemize}[noitemsep]
+\item \textbf{Infinitesimal generator.} For $\dd X_t=\mu(X_t)\dd t+\sigma(X_t)\dd W_t$ the
+generator is $\mathcal A f = \mu f' + \tfrac12\sigma^2 f''$. The CIR generator is
+$\mathcal A f(x)=\kappa(\bar\nu-x)f'(x)+\tfrac12\gamma^2 x f''(x)$. The $n$-dimensional
+\emph{squared Bessel} process $\dd X_t = n\dd t + 2\sqrt{X_t}\dd W_t$ has generator
+$nf'(x)+2xf''(x)$ and a known Laplace transform of its time integral (Pitman--Yor 1982).
+\item \textbf{Time change.} The scaling $cW_t\sim W_{c^2 t}$ lets us rescale the diffusion
+coefficient. The time change $s=\tfrac{\gamma^2}{4}t$ maps the CIR second-order coefficient
+$\tfrac12\gamma^2 x$ onto the squared-Bessel value $2x$.
+\item \textbf{Change of measure (Girsanov).} After the time change the \emph{drift}
+coefficients still differ ($\kappa(\bar\nu-x)$ vs $n$); a Girsanov change of measure absorbs
+the discrepancy, expressing the CIR integrated-variance Laplace transform as a ratio of
+squared-Bessel Laplace transforms, which Pitman--Yor give explicitly. Matching coefficients
+yields the Bessel-ratio formula for $\ch(\omega)$.
+\end{itemize}
+
+\section{Parameter intuition (for the smile)}
+
+\begin{itemize}[noitemsep]
+\item $\gamma$ (vol-of-vol): with $\rho=0$, larger $\gamma$ deepens the smile curvature.
+\item $\rho_{S,\nu}$: more negative $\rho$ steepens the skew (left tail heavier).
+\item $\kappa$: limited effect on the smile shape ($1$--$2\%$); controls how fast ATM
+implied vol converges to $\sqrt{\bar\nu}$ in maturity.
+\item $\nu_0,\bar\nu$: similar effects, mediated by $\kappa$ ($\nu_0$ dominates short
+maturities, $\bar\nu$ long maturities).
+\end{itemize}
+Versus Black--Scholes, Heston gives heavier tails of log returns and reproduces the smile.
+
+\section*{Honest gaps / things not on these slides}
+
+\begin{itemize}[noitemsep]
+\item The \emph{full} explicit Riccati derivation of \eqref{eq:hbeta}--\eqref{eq:halpha}
+(as opposed to the scalar CIR warm-up) is not carried out term by term on the slides; they
+quote the closed form. I have shown the mechanism on the 1-D CIR case, which is the same.
+\item The little-Heston-trap discussion (branch cut, Albrecher et al.) is \emph{my
+addition}; the slides give the stable grouping \eqref{eq:halpha} but do not flag the trap
+explicitly. Worth knowing for Fang's exam.
+\item The exact integrated-variance cf (the Bessel-ratio formula, slide 53) and the full
+Girsanov derivation (slides 65--69) are stated; I have summarized them rather than
+reproduced every line. The squared-Bessel Laplace transform itself (Pitman--Yor) is quoted
+without proof.
+\item Cumulant formulas $c_1,c_2,c_4$ for Heston needed for the COS truncation range are
+referenced from Lecture~06 / Fang--Oosterlee; not derived here.
+\end{itemize}
+
+\end{document}
