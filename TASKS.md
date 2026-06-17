@@ -12,7 +12,7 @@ For each ASSIGNMENT task, produce:
 - Code-level "open your file and explain line X" questions in `question-bank/assignment-defense-questions.md`.
 
 ## Priority — COS
-- [ ] Lecture 06 — Fourier family, COS for density recovery, COS for option pricing
+- [x] Lecture 06 — Fourier family, COS for density recovery, COS for option pricing
 - [ ] Lecture 10 — pricing problem, analytical under GBM, PDE + COS for Barrier options
 
 ## Lectures (numeric order)

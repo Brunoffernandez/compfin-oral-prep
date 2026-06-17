@@ -1,0 +1,457 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ch}{\varphi}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+
+\newtheorem{remark}{Remark}
+
+\title{\textbf{Lecture 6 --- Fourier methods for option pricing}\\[2pt]
+\large Study notes: the Fourier family, density recovery by COS, and the COS pricing formula}
+\author{Computational Finance (WI4151), TU Delft --- F.\ Fang}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+\begin{abstract}
+\noindent These notes work through Lecture 6 in full. The destination is the \emph{COS pricing
+formula} for a European option,
+\[
+P(x_0,T)\;\approx\; e^{-rT}{\sum_{k=0}^{N-1}}' \Real\!\left\{\ch_{X_T}\!\Big(\tfrac{k\pi}{b-a};x_0\Big)\,
+e^{-\ii k\pi\frac{a}{b-a}}\right\}V_k ,
+\]
+and everything needed to reconstruct it on paper: the characteristic function as the Fourier dual of the
+density, why a \emph{cosine} (not full complex) series, the closed form of the cosine coefficients $A_k$ in
+terms of the characteristic function $\ch$, the closed form of the payoff coefficients $V_k$ for a call/put,
+the cumulant-based truncation range $[a,b]$, and the error analysis. The closed forms of $V_k$ and of $[a,b]$
+are not on the slides; they are taken from Fang \& Oosterlee (2008/2009) and derived here because they are
+the parts an examiner will press on. The prime on the sum means the $k=0$ term is halved.
+\end{abstract}
+
+\tableofcontents
+
+\section{Where COS sits, and what problem it solves}
+
+The risk-neutral price of a European-style claim with maturity $T$, payoff $V(x_T,T)$ and discount rate $r$ is
+the discounted expectation
+\begin{equation}\label{eq:pricing}
+P(x_0,T)=e^{-rT}\,\E\!\left[V(x_T,T)\mid x_0\right]
+= e^{-rT}\int_{\R} V(y,T)\,f(y\mid x_0)\dd y ,
+\end{equation}
+where $x_T$ is the state variable (typically $x_T=\ln S_T$ or the log-return $\ln(S_T/S_0)$) and
+$f(\,\cdot\mid x_0)$ is its risk-neutral conditional density. The numerical problem is that $f$ is rarely
+known in closed form. What \emph{is} known, for an enormous class of models (Black--Scholes, Heston,
+Variance-Gamma, the affine jump-diffusions, the L\'evy models tabulated in \S\ref{sec:cf}), is the
+\emph{characteristic function} $\ch_{X_T}$. COS is a way to compute the integral~\eqref{eq:pricing} using only
+$\ch$, with no numerical integration and with (for smooth densities) exponential convergence in the number of
+terms. It is the method this course is built around.
+
+The logic of the lecture is three-fold and these notes follow it:
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{The Fourier family} (\S\ref{sec:family}): the continuous Fourier transform, the characteristic
+  function as a special case, the inversion formula, the DFT/FFT, and Fourier(-cosine) series. This fixes the
+  vocabulary and the one identity COS exploits.
+  \item \textbf{Density recovery by COS} (\S\ref{sec:cos-density}): approximate a density on a finite range
+  $[a,b]$ by a cosine series whose coefficients are \emph{sampled directly from $\ch$}.
+  \item \textbf{COS for option pricing} (\S\ref{sec:cos-pricing}): insert the cosine expansion into
+  \eqref{eq:pricing}, swap sum and integral, and read off the pricing formula; then compute $V_k$ in closed
+  form and fix the range $[a,b]$ from cumulants.
+\end{enumerate}
+
+\section{The Fourier family}\label{sec:family}
+
+\subsection{Continuous Fourier transform (CFT)}
+For integrable $f:\R\to\C$ one convention of the transform / inverse pair is
+\begin{equation}\label{eq:cft}
+\hat f(\omega)=\int_{-\infty}^{\infty} f(x)\,e^{\ii 2\pi\omega x}\dd x,
+\qquad
+f(x)=\frac{1}{2\pi}\int_{-\infty}^{\infty}\hat f(\omega)\,e^{-\ii 2\pi\omega x}\dd\omega .
+\end{equation}
+$\hat f(\omega)$ is the amplitude/phase of the frequency-$\omega$ component; the inversion rebuilds $f$ as a
+superposition of complex exponentials of all frequencies. (Conventions differ in the placement of $2\pi$ and
+the sign in the exponent; only internal consistency matters.)
+
+\subsection{The characteristic function as Fourier dual of the density}\label{sec:cf}
+The characteristic function of a random variable $X$ is
+\begin{equation}\label{eq:chf}
+\ch_X(t)=\E\!\left[e^{\ii t X}\right]=\int_{-\infty}^{\infty} e^{\ii t x} f_X(x)\dd x .
+\end{equation}
+Comparing \eqref{eq:chf} with \eqref{eq:cft}, $\ch_X$ \emph{is} (up to the $2\pi$-scaling convention) the
+Fourier transform of the density $f_X$. The CDF $F_X$ determines $\ch_X$ and vice versa; when a density exists,
+$f_X$ and $\ch_X$ are a Fourier pair. The inversion reads
+\begin{equation}\label{eq:inversion}
+f_X(x)=\frac{1}{2\pi}\int_{-\infty}^{\infty} e^{-\ii t x}\,\ch_X(t)\dd t .
+\end{equation}
+\emph{This is the integral COS evaluates cheaply.} Before COS, \eqref{eq:inversion} (or the equivalent pricing
+integral) was attacked by direct quadrature or by FFT (Carr--Madan, \S\ref{sec:carrmadan}).
+
+\begin{remark}[Why the characteristic function is the right object]
+The whole appeal is in \S\ref{sec:cf}: a long list of pricing models give $\ch$ in closed (or semi-closed)
+form even when $f$ is intractable --- Black--Scholes, Heston, Variance-Gamma, Merton/Kou jumps, the affine
+jump-diffusions, CGMY, NIG. Some of these are tabulated in \S\ref{sec:cftable}. A method that needs only $\ch$
+inherits this entire library for free.
+\end{remark}
+
+\subsection{Discrete Fourier transform (DFT) and the FFT}
+On a sequence $\{x_n\}_{n=0}^{N-1}$ the DFT and its inverse are
+\begin{equation}
+X_k=\sum_{n=0}^{N-1} x_n\,e^{\ii\frac{2\pi}{N}kn},
+\qquad
+x_n=\frac{1}{N}\sum_{k=0}^{N-1} X_k\,e^{-\ii\frac{2\pi}{N}kn}.
+\end{equation}
+Computed naively this is $O(N^2)$. The \emph{Fast Fourier Transform} factorises the DFT matrix into
+$O(\log N)$ sparse factors (the radix-2 split into even/odd indexed sub-DFTs of length $N/2$), giving
+$O(N\log N)$. The FFT is what makes the Carr--Madan approach practical and is the benchmark COS is measured
+against. Note for later: COS does \emph{not} use the FFT --- its cost is the bare $O(N)$ evaluation of the
+single sum.
+
+\subsection{Fourier series and the half-range cosine series}\label{sec:halfrange}
+A $2\pi$-periodic function expands as
+$f(x)=\tfrac{a_0}{2}+\sum_{n\ge 1}\big(a_n\cos nx+b_n\sin nx\big)$. Restrict to a function on $[0,L]$ and extend
+it to $[-L,L]$:
+\begin{itemize}[leftmargin=*]
+  \item the \textbf{even} extension kills all sine terms and gives the \emph{half-range cosine series}
+  \begin{equation}\label{eq:halfcos}
+  f(x)=\frac{a_0}{2}+\sum_{n=1}^{\infty} a_n\cos\!\Big(\frac{n\pi}{L}x\Big),
+  \qquad a_n=\frac{2}{L}\int_0^L f(x)\cos\!\Big(\frac{n\pi}{L}x\Big)\dd x ;
+  \end{equation}
+  \item the \textbf{odd} extension kills all cosine terms and gives the half-range sine series.
+\end{itemize}
+COS uses the cosine version on a finite truncation interval $[a,b]$ (shift $x\mapsto x-a$, period $2(b-a)$).
+The reason for choosing cosine over the full complex series is taken up in \S\ref{sec:whycos}.
+
+\section{The first Fourier pricing method: Carr--Madan (1998)}\label{sec:carrmadan}
+
+This is the precursor COS improves on; understanding it sharpens the contrast. Write $k=\ln K$,
+$x_T=\ln S_T$. The call is
+\begin{equation}
+C_T(k)=e^{-rT}\int_{k}^{\infty}\big(e^{x_T}-e^{k}\big) f(x_T\mid x_0)\dd x_T .
+\end{equation}
+As $k\to-\infty$, $C_T(k)\to S_0$, so $C_T$ is not square-integrable in $k$ and cannot be Fourier-transformed
+directly. Carr--Madan \emph{damp} it,
+\begin{equation}
+c_T(k)=e^{\alpha k}C_T(k),\qquad \alpha>0,
+\end{equation}
+so $c_T\in L^1\cap L^2$. Its Fourier transform $\psi_T(v)=\int_{-\infty}^{\infty} e^{\ii v k} c_T(k)\dd k$ can be
+written in closed form in terms of the characteristic function:
+\begin{equation}\label{eq:carrmadan}
+\psi_T(v)=\frac{e^{-rT}\,\ch_X\!\big(v-(\alpha+1)\ii\big)}{\alpha^2+\alpha-v^2+\ii(2\alpha+1)v},
+\end{equation}
+and the price is recovered by an \emph{inverse} transform, evaluated by FFT:
+\begin{equation}
+C_T(k)=\frac{e^{-\alpha k}}{2\pi}\int_{-\infty}^{\infty} e^{-\ii v k}\,\psi_T(v)\dd v .
+\end{equation}
+Two structural weaknesses, both of which COS removes: (i) it still performs a numerical \emph{integration}
+(the FFT computes a trapezoidal-type quadrature of an oscillatory integrand), and (ii) it needs a free damping
+parameter $\alpha$, whose choice affects accuracy. COS needs neither.
+
+\section{Density recovery by the COS method}\label{sec:cos-density}
+
+\subsection{The cosine expansion and its coefficients}
+Let $f$ be (essentially) supported on a finite interval $[a,b]$. Its half-range cosine series
+\eqref{eq:halfcos}, written with the prime convention, is
+\begin{equation}\label{eq:cosexp}
+f(x)={\sum_{k=0}^{\infty}}' A_k\,\cos\!\Big(k\pi\frac{x-a}{b-a}\Big),
+\qquad
+A_k=\frac{2}{b-a}\int_{a}^{b} f(x)\cos\!\Big(k\pi\frac{x-a}{b-a}\Big)\dd x ,
+\end{equation}
+where $\sum'$ halves the $k=0$ term (so $A_0/2$ is the mean of $f$ over $[a,b]$).
+
+\subsection{The key identity: $A_k$ from the characteristic function}\label{sec:Akderiv}
+This is the engine of the method. Start from the coefficient integral and write the cosine as the real part
+of a complex exponential:
+\begin{align}
+A_k&=\frac{2}{b-a}\int_a^b f(x)\cos\!\Big(k\pi\frac{x-a}{b-a}\Big)\dd x
+   =\frac{2}{b-a}\,\Real\!\left\{\int_a^b f(x)\,
+       \exp\!\Big(\ii k\pi\frac{x-a}{b-a}\Big)\dd x\right\}\notag\\
+   &=\frac{2}{b-a}\,\Real\!\left\{e^{-\ii k\pi\frac{a}{b-a}}
+       \int_a^b f(x)\,\exp\!\Big(\ii \frac{k\pi}{b-a}\,x\Big)\dd x\right\}.\label{eq:Akmid}
+\end{align}
+Now \emph{extend the integration range to $\R$}. Because $f$ has negligible mass outside $[a,b]$,
+\begin{equation}\label{eq:trunc}
+\int_a^b f(x)\,e^{\ii \frac{k\pi}{b-a}x}\dd x
+\;\approx\;
+\int_{-\infty}^{\infty} f(x)\,e^{\ii \frac{k\pi}{b-a}x}\dd x
+\;=\;\ch_X\!\Big(\frac{k\pi}{b-a}\Big),
+\end{equation}
+the characteristic function~\eqref{eq:chf} evaluated at $t=k\pi/(b-a)$. Substituting \eqref{eq:trunc} into
+\eqref{eq:Akmid} gives the coefficient \emph{without any integral}:
+\begin{equation}\label{eq:Fk}
+\boxed{\;A_k\approx F_k:=\frac{2}{b-a}\,\Real\!\left\{\ch_X\!\Big(\frac{k\pi}{b-a}\Big)
+\exp\!\Big(-\ii k\pi\frac{a}{b-a}\Big)\right\}.\;}
+\end{equation}
+The single approximation made so far is the range truncation in \eqref{eq:trunc}; everything else is exact.
+\emph{This is precisely why COS needs only $\ch$ and not $f$.}
+
+\paragraph{Worked check: the standard normal.}
+For $X\sim\mathcal N(0,1)$, $\ch_X(t)=e^{-t^2/2}$. With $a=-b$ symmetric,
+\[
+F_k=\frac{2}{b-a}\,\Real\!\left\{e^{-\frac12\left(\frac{k\pi}{b-a}\right)^2}
+e^{-\ii k\pi\frac{a}{b-a}}\right\},
+\]
+matching the slide formula. A natural range is $a=\Phi^{-1}(10^{-8})$, $b=-a$ (clip the tails at probability
+$10^{-8}$). With $K\!=\!50$ terms the reconstruction is graphically indistinguishable from the true density,
+and at a fixed point the error falls \emph{exponentially} in $K$ until it saturates at the (fixed) range-truncation
+floor --- the canonical COS convergence picture (\S\ref{sec:convergence}).
+
+\subsection{Why a cosine series and not a full complex Fourier series}\label{sec:whycos}
+Three reasons, each worth stating explicitly because it is a favourite question:
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Real coefficients, real arithmetic.} The even extension of $f$ on $[a,b]$ kills every sine term;
+  the surviving coefficients $A_k$ are real (\eqref{eq:Fk} is a real part). A complex series would carry twice
+  the coefficients and complex bookkeeping for no gain.
+  \item \textbf{Direct sampling from $\ch$.} The cosine coefficient is exactly the real part of $\ch$ evaluated
+  at the grid frequency $k\pi/(b-a)$ (\eqref{eq:Fk}). The cosine basis is the one whose coefficients are
+  ``read off'' from the characteristic function in one line.
+  \item \textbf{Payoff side closes in elementary functions.} The payoff coefficients $V_k$
+  (\S\ref{sec:Vk}) are integrals of (polynomial/exponential)$\times\cos$, which integrate to elementary
+  closed forms $\chi_k,\psi_k$. With a complex exponential basis the call payoff coefficients would not be as
+  clean.
+\end{enumerate}
+Equivalently: the cosine series is the discrete cosine transform analogue, and the whole method is a clever way
+to pair the cosine coefficients of $f$ (got from $\ch$) against the cosine coefficients of $V$ (got in closed
+form) --- see \S\ref{sec:cos-pricing}.
+
+\section{COS for European option pricing}\label{sec:cos-pricing}
+
+\subsection{Deriving the pricing formula}
+Insert the cosine expansion \eqref{eq:cosexp} of the (truncated) density into the price \eqref{eq:pricing} and
+restrict the integral to $[a,b]$:
+\begin{equation}
+P(x_0,T)\approx e^{-rT}\int_a^b V(y,T)
+{\sum_{k=0}^{\infty}}' A_k(x_0)\cos\!\Big(k\pi\frac{y-a}{b-a}\Big)\dd y .
+\end{equation}
+Interchange sum and integral (justified by uniform convergence on $[a,b]$ for smooth $f$) and define the
+\textbf{payoff cosine coefficients}
+\begin{equation}\label{eq:Vkdef}
+V_k:=\frac{2}{b-a}\int_a^b V(y,T)\cos\!\Big(k\pi\frac{y-a}{b-a}\Big)\dd y .
+\end{equation}
+Then
+\begin{equation}\label{eq:AkVk}
+P(x_0,T)\approx e^{-rT}\,\frac{b-a}{2}{\sum_{k=0}^{\infty}}' A_k(x_0)\,V_k .
+\end{equation}
+Finally replace $A_k$ by its characteristic-function form \eqref{eq:Fk} --- note
+$\tfrac{b-a}{2}A_k=\Real\{\ch_X(\tfrac{k\pi}{b-a})e^{-\ii k\pi a/(b-a)}\}$ --- and truncate the series at $N$
+terms:
+\begin{equation}\label{eq:cosprice}
+\boxed{\;P(x_0,T)\approx e^{-rT}{\sum_{k=0}^{N-1}}'
+\Real\!\left\{\ch_{X_T}\!\Big(\frac{k\pi}{b-a};x_0\Big)\,
+\exp\!\Big(-\ii k\pi\frac{a}{b-a}\Big)\right\}V_k .\;}
+\end{equation}
+This is the European COS formula. The characteristic function enters in exactly one place: as the cosine
+coefficients of the density, $\Real\{\ch\,e^{-\ii k\pi a/(b-a)}\}$. The dependence on the spot $x_0$ lives
+inside $\ch_{X_T}(\,\cdot\,;x_0)$; for L\'evy/BS models $\ch_{X_T}(u;x_0)=\ch_{\text{lvl}}(u)\,e^{\ii u x_0}$,
+so a single set of $\{V_k\}$ prices the whole strike/spot grid --- only the cheap $e^{\ii u x_0}$ factor
+changes. Cost is $O(N)$ per price; no integration, no FFT.
+
+\subsection{Closed form of the payoff coefficients $V_k$}\label{sec:Vk}
+Work in the log variable $y=\ln(S_T/K)$, so $S_T=K e^{y}$ and the strike sits at $y=0$. Introduce the two
+building-block integrals on a sub-interval $[c,d]\subseteq[a,b]$, with $\omega_k:=\dfrac{k\pi}{b-a}$:
+\begin{align}
+\chi_k(c,d)&:=\int_c^d e^{y}\cos\!\big(\omega_k(y-a)\big)\dd y,\label{eq:chi}\\
+\psi_k(c,d)&:=\int_c^d \cos\!\big(\omega_k(y-a)\big)\dd y.\label{eq:psi}
+\end{align}
+
+\paragraph{Derivation of $\chi_k$.}
+Write the cosine as a real part and integrate the complex exponential exactly:
+\begin{align}
+\chi_k(c,d)&=\Real\!\left\{\int_c^d e^{(1+\ii\omega_k)y}e^{-\ii\omega_k a}\dd y\right\}
+=\Real\!\left\{\frac{e^{-\ii\omega_k a}}{1+\ii\omega_k}\,
+\Big[e^{(1+\ii\omega_k)y}\Big]_c^d\right\}.
+\end{align}
+Multiply numerator and denominator by $(1-\ii\omega_k)$ (so the denominator becomes $1+\omega_k^2$) and take
+the real part of $e^{y}e^{\ii\omega_k(y-a)}(1-\ii\omega_k)=e^y\big[\cos\omega_k(y-a)+\omega_k\sin\omega_k(y-a)\big]
++\ii(\cdots)$. This gives the standard closed form
+\begin{equation}\label{eq:chiclosed}
+\chi_k(c,d)=\frac{1}{1+\omega_k^2}\Big[
+\cos\!\big(\omega_k(d-a)\big)e^{d}-\cos\!\big(\omega_k(c-a)\big)e^{c}
++\omega_k\sin\!\big(\omega_k(d-a)\big)e^{d}-\omega_k\sin\!\big(\omega_k(c-a)\big)e^{c}\Big].
+\end{equation}
+
+\paragraph{Derivation of $\psi_k$.}
+Elementary:
+\begin{equation}\label{eq:psiclosed}
+\psi_k(c,d)=
+\begin{cases}
+\dfrac{1}{\omega_k}\Big[\sin\!\big(\omega_k(d-a)\big)-\sin\!\big(\omega_k(c-a)\big)\Big]
+=\dfrac{b-a}{k\pi}\Big[\sin\!\big(\omega_k(d-a)\big)-\sin\!\big(\omega_k(c-a)\big)\Big], & k\neq 0,\\[2ex]
+d-c, & k=0.
+\end{cases}
+\end{equation}
+
+\paragraph{Call and put.}
+For the call, $V=K(e^{y}-1)^{+}$ has support $y\in[0,\infty)$, so on $[a,b]$ the relevant interval is $[0,b]$:
+\begin{equation}\label{eq:Vcall}
+V_k^{\text{call}}=\frac{2}{b-a}\,K\int_0^b\big(e^{y}-1\big)\cos\!\big(\omega_k(y-a)\big)\dd y
+=\frac{2}{b-a}\,K\big[\chi_k(0,b)-\psi_k(0,b)\big].
+\end{equation}
+For the put, $V=K(1-e^{y})^{+}$ has support $y\in(-\infty,0]$, so the interval is $[a,0]$:
+\begin{equation}\label{eq:Vput}
+V_k^{\text{put}}=\frac{2}{b-a}\,K\int_a^0\big(1-e^{y}\big)\cos\!\big(\omega_k(y-a)\big)\dd y
+=\frac{2}{b-a}\,K\big[\psi_k(a,0)-\chi_k(a,0)\big].
+\end{equation}
+These $V_k$ are computed once. Put--call parity gives a fast cross-check and, in practice, the put is
+preferred when its density mass sits in a numerically gentler region; either way \eqref{eq:cosprice} returns
+the price.
+
+\subsection{Greeks at no extra cost}
+Because $S_0$ (equivalently $x_0$) enters \eqref{eq:cosprice} only analytically through $\ch_{X_T}(\cdot;x_0)$,
+differentiation passes through the finite sum. With $\ch_{X_T}(u;x_0)=\ch(u)e^{\ii u x}$, $x=\ln(S_0/K)$,
+\begin{align}
+\Delta=\frac{\partial P}{\partial S_0}&\approx e^{-rT}{\sum_{k=0}^{N-1}}'
+\Real\!\left\{\ch\!\Big(\tfrac{k\pi}{b-a}\Big)e^{\ii k\pi\frac{x-a}{b-a}}\cdot
+\frac{\ii k\pi}{b-a}\right\}\frac{V_k}{S_0},\\
+\text{Vega}=\frac{\partial P}{\partial u_0}&\approx e^{-rT}{\sum_{k=0}^{N-1}}'
+\Real\!\left\{\frac{\partial\ch\!\big(\tfrac{k\pi}{b-a};u_0\big)}{\partial u_0}\,
+e^{\ii k\pi\frac{x-a}{b-a}}\right\}V_k ,
+\end{align}
+where $u_0$ is the relevant model parameter (e.g.\ the initial variance in Heston). No re-integration is
+needed --- a structural advantage over quadrature- and FFT-based pricers.
+
+\section{The truncation range $[a,b]$ from cumulants}\label{sec:range}
+
+The only approximation in the density step was discarding the tails outside $[a,b]$ in \eqref{eq:trunc}. The
+range must therefore be wide enough to contain essentially all the probability mass of $X_T$, but no wider
+(too wide wastes terms: a fixed accuracy needs $N\propto(b-a)$). Fang--Oosterlee fix it from the
+\emph{cumulants} $c_n$ of $X_T$:
+\begin{equation}\label{eq:abrange}
+\boxed{\;[a,b]=\Big[c_1-L\sqrt{c_2+\sqrt{c_4}},\;\; c_1+L\sqrt{c_2+\sqrt{c_4}}\Big],
+\qquad L\in[8,12]\ (\text{typ. }10).\;}
+\end{equation}
+Reading the terms:
+\begin{itemize}[leftmargin=*]
+  \item $c_1$ is the \textbf{mean} --- it centres the interval where the mass is;
+  \item $c_2$ is the \textbf{variance} --- $\sqrt{c_2}$ is the natural width scale, so $L\sqrt{c_2}$ is an
+  ``$L$-sigma'' box;
+  \item $\sqrt{c_4}$ (from the fourth cumulant, controlling tail/kurtosis) \textbf{fattens} the box for
+  heavy-tailed models (jumps, VG); for Gaussian models $c_4=0$ and it drops out;
+  \item $L$ is the safety multiplier; larger $L$ lowers the truncation floor but demands more terms.
+\end{itemize}
+
+\paragraph{Black--Scholes cumulants.}
+For $X_T=\ln(S_T/K)$ under GBM, $\ln S_T$ is normal, so only $c_1,c_2$ are nonzero:
+\begin{equation}
+c_1=\ln\tfrac{S_0}{K}+\Big(r-\tfrac12\sigma^2\Big)T,\qquad
+c_2=\sigma^2 T,\qquad c_4=0,
+\end{equation}
+giving the clean box $[a,b]=c_1\pm L\sigma\sqrt{T}$.
+
+\subsection{The short-maturity failure (and why it bites)}\label{sec:bug}
+\emph{This is exactly the kind of trap an examiner sets, and a bug I hit in Assignment 2.} As $T\to0$,
+$c_2=\sigma^2 T\to 0$, so the half-width $L\sqrt{c_2+\sqrt{c_4}}\to 0$ and $[a,b]$ \emph{collapses} towards the
+single point $c_1$. Consequences:
+\begin{itemize}[leftmargin=*]
+  \item the interval can become so narrow that it fails to contain the region where the payoff $\times$ density
+  product has mass --- in particular, in a Gaussian model with $c_4=0$ there is no $\sqrt{c_4}$ term to keep a
+  floor, so the box shrinks unchecked;
+  \item when pricing across a \emph{grid} of spots/strikes, a range computed for one $(S_0,K)$ may be centred
+  by $c_1$ away from another point on the grid, so the truncated density is evaluated where the cosine
+  reconstruction is meaningless --- producing large, erratic pricing errors precisely at short maturities;
+  \item because the range error is a \emph{floor} on accuracy (\S\ref{sec:convergence}), simply adding more
+  cosine terms $N$ does \emph{not} fix it --- the error plateaus.
+\end{itemize}
+\textbf{Fixes:} (i) increase $L$ at short maturity; (ii) keep the $\sqrt{c_4}$ term and/or impose a minimum
+half-width floor so $b-a$ cannot collapse; (iii) make sure the range is computed to cover the whole
+spot/strike grid actually priced, not a single point. The diagnostic signature is: errors that \emph{grow} as
+$T\to 0$ and that \emph{do not} improve when $N$ is increased --- the tell-tale of a range, not a series,
+problem.
+
+\section{Error analysis and convergence}\label{sec:convergence}
+
+The COS price \eqref{eq:cosprice} carries three error sources, and the lecture's central claim is that for
+smooth densities the total error converges \emph{exponentially}.
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Range-truncation error} (from \eqref{eq:trunc}): the discarded tail mass outside $[a,b]$. It is
+  \emph{fixed} once $[a,b]$ is chosen --- it sets the accuracy \emph{floor} at which the series convergence
+  saturates. For densities with exponentially decaying tails it is itself exponentially small in the half-width.
+  \item \textbf{Series-truncation error} (cutting the sum at $N$): governed by the decay of the cosine
+  coefficients $A_k$ as $k\to\infty$. By the standard Fourier result, the smoother $f$, the faster $A_k$ decay:
+  \begin{itemize}
+    \item $f\in C^\infty$ with all derivatives integrable / $f$ analytic in a strip $\Rightarrow$
+    \textbf{exponential} decay of $A_k$ $\Rightarrow$ exponential convergence in $N$;
+    \item $f$ with only $\beta$ integrable derivatives (a finite-smoothness density --- e.g.\ near a jump, or
+    VG with small $\nu$) $\Rightarrow$ only \textbf{algebraic} decay $A_k=O(k^{-(\beta+1)})$ $\Rightarrow$
+    algebraic convergence. \emph{Lack of smoothness is what kills the exponential rate.}
+  \end{itemize}
+  \item \textbf{Characteristic-function / model error}: any error in $\ch$ itself (e.g.\ a mis-evaluated
+  Heston $\ch$ across the branch cut) feeds straight through.
+\end{enumerate}
+The empirical picture (slide 24): at a fixed evaluation point the error drops like $e^{-cN}$ and then
+\emph{plateaus} at the range-truncation floor --- raise the floor (wider $[a,b]$, larger $L$) and the plateau
+drops, but you then need more terms to reach it. Compared with Monte Carlo's $O(N^{-1/2})$ and Carr--Madan/FFT,
+COS reaches machine precision with $N$ in the dozens to low hundreds (the Heston tables on slide 31:
+$N\!\sim\!160$ for $\sim\!10^{-10}$ error, versus thousands of FFT nodes for far worse error and longer CPU
+time).
+
+\section{COS versus Carr--Madan / FFT}\label{sec:vs}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{4.3cm} p{5.0cm} p{5.0cm}}
+\hline
+& \textbf{COS} & \textbf{Carr--Madan / FFT} \\
+\hline
+Core operation & one $O(N)$ cosine sum, no integration & FFT quadrature, $O(N\log N)$ \\
+Free parameters & none (range from cumulants) & damping $\alpha$ to be tuned \\
+Convergence (smooth $f$) & exponential in $N$ & algebraic (quadrature-limited) \\
+Terms for $\sim$machine prec. & dozens--hundreds & thousands of nodes \\
+Greeks & analytic, from the same sum & extra transforms / finite differences \\
+Needs only $\ch$? & yes & yes \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent\textbf{When COS wins:} smooth (or piecewise-smooth) densities with known $\ch$ and exponentially
+decaying tails --- i.e.\ most European pricing under BS, Heston, and the standard L\'evy/AJD models. \textbf{When
+to be careful:} densities with genuine low regularity (slow algebraic decay of $A_k$) and very short maturities
+or fat tails, where $[a,b]$ must be set carefully (\S\ref{sec:bug}) and $N$ raised.
+
+\section{Characteristic functions to keep at hand}\label{sec:cftable}
+
+From Fang--Oosterlee (2009); here $\xi$ is the transform argument and $t$ the horizon.
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{l l}
+\hline
+\textbf{Model} & \textbf{Characteristic function} \\
+\hline
+Black--Scholes & $\ch(\xi,t)=\exp\!\big(\ii\xi\mu t-\tfrac12\sigma^2\xi^2 t\big)$ \\
+NIG & $\ch(\xi,t)=\exp\!\big[\delta t\big(\sqrt{\alpha^2-\beta^2}-\sqrt{\alpha^2-(\beta+\ii\xi)^2}\big)\big]$ \\
+Kou & $\ch(\xi,t)=\exp\!\big[\lambda t\big(\tfrac{p\eta_1}{\eta_1-\ii\xi}+\tfrac{(1-p)\eta_2}{\eta_2+\ii\xi}-1\big)\big]$ \\
+Merton & $\ch(\xi,t)=\exp\!\big[\lambda t\big(\exp(\ii\bar\mu\xi-\tfrac12\bar\sigma^2\xi^2)-1\big)\big]$ \\
+Variance-Gamma & $\ch(\xi,t)=\big(1-\ii\xi\theta\nu+\tfrac12\sigma^2\nu\xi^2\big)^{-t/\nu}$ \\
+CGMY & $\ch(\xi,t)=\exp\!\big(Ct\,\Gamma(-Y)\big[(M-\ii\xi)^Y-M^Y+(G+\ii\xi)^Y-G^Y\big]\big)$ \\
+\hline
+\end{tabular}
+\end{center}
+\noindent For BS the risk-neutral drift is $\mu=r-\tfrac12\sigma^2$ in the log-price (martingale condition).
+Heston's $\ch$ (Lecture 7) plugs into the same formula \eqref{eq:cosprice}; the Feller condition
+$2\kappa\bar v\ge\eta^2$ keeps the variance process from hitting zero and keeps $\ch$ well-behaved.
+
+\section{One-paragraph reconstruction (the thing to be able to say out loud)}
+
+The price is a discounted expectation $e^{-rT}\!\int V f$. I do not know $f$, but I know its Fourier transform,
+the characteristic function $\ch$. So I truncate to a finite range $[a,b]$ chosen from the cumulants
+($c_1\pm L\sqrt{c_2+\sqrt{c_4}}$), expand $f$ there in a half-range \emph{cosine} series whose coefficients are
+$A_k=\frac{2}{b-a}\Real\{\ch(\frac{k\pi}{b-a})e^{-\ii k\pi a/(b-a)}\}$ --- read straight off $\ch$, no integral.
+I expand the payoff in the same cosine basis, getting coefficients $V_k$ that are elementary closed forms
+($\chi_k,\psi_k$). Plancherel-style, the integral of the product becomes $\frac{b-a}{2}\sum' A_k V_k$, i.e.
+$P\approx e^{-rT}\sum_{k=0}^{N-1}{}'\Real\{\ch(\frac{k\pi}{b-a})e^{-\ii k\pi a/(b-a)}\}V_k$. For smooth $f$ the
+coefficients decay exponentially, so a few dozen terms reach machine precision; the only floor is the range
+truncation, which is why a too-narrow $[a,b]$ at short maturity ($c_2=\sigma^2T\to0$) cannot be cured by adding
+terms.
+
+\end{document}
