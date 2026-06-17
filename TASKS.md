@@ -13,7 +13,7 @@ For each ASSIGNMENT task, produce:
 
 ## Priority — COS
 - [x] Lecture 06 — Fourier family, COS for density recovery, COS for option pricing
-- [ ] Lecture 10 — pricing problem, analytical under GBM, PDE + COS for Barrier options
+- [x] Lecture 10 — pricing problem, analytical under GBM, PDE + COS for Barrier options
 
 ## Lectures (numeric order)
 - [ ] Lecture 01

@@ -101,3 +101,59 @@ collapsible note — cover it and answer out loud first. "Derive" means on paper
 
 **G1.** Why are Delta and Vega "free" in COS? Write the Delta sum.
 > Key: S0/params enter only analytically via φ(·;x0); differentiate the finite sum termwise — no re-integration. Δ≈e^{-rT}Σ' Re{φ(kπ/(b-a)) e^{ikπ(x-a)/(b-a)} · ikπ/(b-a)} V_k/S0.
+
+---
+
+# Lecture 10 drill set (COS for barrier options)
+
+Companion to `notes/Lecture10-notes.pdf`. Same cover-and-answer format.
+
+## H. The pricing problem
+
+**H1.** Define up-and-out vs up-and-in call. Why are there exactly 8 barrier types?
+> Key: out = pays vanilla UNLESS barrier crossed (then 0); in = pays 0 UNLESS crossed (then vanilla). 8 = up/down × in/out × call/put.
+
+**H2.** State in–out parity and give its two practical uses.
+> Key: C_in + C_out = e^{-r(T-t)}E[(S_T-K)^+] (vanilla). Uses: (i) price the easier leg + vanilla, subtract for the other; (ii) free correctness check on a numerical barrier price.
+
+**H3.** Write the two equivalent formulations (expectation and PDE). Where does the barrier enter the PDE?
+> Key: V=e^{-r(T-t)}E_x[(α(e^{X_T}-K))^+ 1_{τ_B>T}]; or localized Feynman–Kac BS PDE on [a,b] with terminal payoff and ABSORBING boundary V(a,t)=V(b,t)=0. Barrier enters via the homogeneous Dirichlet BC, not the equation.
+
+## I. Reflection principle (derive)
+
+**I1.** *(Core.)* Derive P(τ_a ≤ T) = 2P(W_T ≥ a) and hence the density of the running maximum Ξ.
+> Key: split P(τ_a≤T) by {W_T>a},{W_T≤a}; reflection ⇒ both halves equal ⇒ =2P(τ_a≤T,W_T≥a)=2P(W_T≥a) (since {W_T≥a}⊆{τ_a≤T}). So Ξ ~ |W_T|, P(Ξ≤a)=erf-type, p_Ξ(a)=√(2/πT) e^{-a²/2T} 1_{a≥0}.
+
+**I2.** *(Core.)* Derive the joint density of (Ξ_0^T, W_T).
+> Key: for b≤a, reflect after τ_a: P(Ξ≥a,W_T<b)=P(Ξ≥a,W_T>2a-b)=P(W_T>2a-b) (since 2a-b≥a). Differentiate -∂²/∂a∂b ⇒ p(a,b)=√(2/π)(2a-b)/T^{3/2} e^{-(2a-b)²/2T} 1_{a≥max(b,0)}.
+
+**I3.** How do you get from standard BM to drifted BM (GBM log-price) results?
+> Key: Girsanov change of measure — the drift appears as a Radon–Nikodym weight e^{θW_T-½θ²T}; reflect under the equivalent driftless measure then reweight.
+
+## J. PDE routes
+
+**J1.** State the method-of-images identity and the down-and-out call it produces. What is α?
+> Key: if LV=0 then U(S,t)=S^{2α}V(B²/S,t) also solves it, α=½(1-2r/σ²). Subtract the weighted image to kill V on S=B: C_down-out=C_van(S,K) - (S/B)^{2α} C_van(B²/S,K).
+
+**J2.** *(Derive.)* Sine-series PDE route: what change of variables reduces the localized BS PDE to the heat equation, and why does the sine basis appear?
+> Key: τ=½σ²(T-t), κ=2r/σ², V=e^{αx+βτ}U with α=-½(κ-1), β=-α²-κ, z=x-a ⇒ U_τ=U_zz on [0,b-a], U(0,τ)=U(b-a,τ)=0. Homogeneous Dirichlet BCs ⇒ sine series. Propagate modes by e^{-(nπ/(b-a))²τ}.
+
+## K. COS for discrete barriers (the main event)
+
+**K1.** *(High priority.)* Why does a discretely-monitored barrier become a BACKWARD RECURSION? Where does the Markov property enter?
+> Key: survival = ∏_{m}1_{x_m<h}; Markov ⇒ joint density factorises into one-step transitions ⇒ the M-dim integral nests ⇒ backward recursion: c(x,t_{m-1})=e^{-rΔt}∫v(y,t_m)f(y|x)dy, then knock out: v=R for x≥h, =c for x<h.
+
+**K2.** Write the COS step for the continuation value. How is it the European COS formula?
+> Key: ĉ(x,t_{m-1})=e^{-rΔt}Σ'_{k} F_k(x)V_k(t_m), F_k(x)=Re[φ(kπ/(b-a);x)e^{-ikπa/(b-a)}], V_k=cosine coeffs of v(y,t_m). It IS Euro COS with v(·,t_m) playing the role of the payoff — except v's coefficients come from the previous step.
+
+**K3.** *(Core.)* Why must V_k be propagated by backward induction, and how does the knock-out split V_k at h?
+> Key: v is piecewise (R above h, ĉ below) ⇒ V̂_k(t_m)=Ĉ_k(a,h,t_m) + e^{-r(T-t_{m-1})}(2R/(b-a))Ψ_k(h,b). Ĉ_k inserts the COS continuation value ⇒ Ĉ_k=e^{-rΔt}Re[Σ'_j φ_Levy(jπ/(b-a))V_j(t_{m+1})M_{k,j}], with M_{k,j} an analytic coupling integral.
+
+**K4.** *(High priority — contrast with Lecture 6.)* Why does the discrete-barrier COS use the FFT when European COS does not? Give the matrix structure and the complexity.
+> Key: M_{k,j} splits into a Hankel part (depends on j+k) and Toeplitz part (depends on j-k). Toeplitz/Hankel × vector = convolution = 3 FFTs via circulant embedding ⇒ O(N log N) per step. Euro COS is a single O(N) sum needing no coefficient propagation; the barrier needs all {V_k} at every step. Total: O((M-1)N log₂N).
+
+**K5.** State the truncation range for the barrier problem. What extra constraint beyond Lecture 6?
+> Key: [a,b]=(c1+x0) ± L√(c2+√c4), x0=ln(S0/K), cumulants of the one-step increment. Extra: the barrier h=ln(H/K) must sit well INSIDE [a,b] or the split at h is meaningless; and range is fixed once but reused for all M steps.
+
+**K6.** How is Heston handled? Continuous monitoring?
+> Key: Heston ⇒ 2-D state (log-stock, variance): 1-D COS in log-stock + numerical integration over variance, OR full 2-D COS for the joint density; cf is Heston's, Feller 2κv̄≥η². Continuous = M→∞ limit; extrapolate in Δt using the known O(√Δt) discrete-continuous bias.

@@ -20,6 +20,18 @@ Filled in per cluster as I study. Format: question -> my short answer -> (gap?).
 8. Contrast COS and Carr–Madan on: core operation, free parameters, convergence rate for smooth f, and number of terms to reach machine precision. -> -> (gap?)
 9. Give the BS log-price characteristic function and state the risk-neutral drift μ = r - ½σ². Where does the martingale condition fix μ? -> -> (gap?)
 
+### Lecture 10 — barrier options (theory around COS)
+
+> Deep COS-for-barrier drilling is in `cos-deep-dive.md` (sets H–K). These are the surrounding theory items.
+
+10. Name the 8 barrier types and explain why exactly 8. State in–out parity and its uses. -> -> (gap?)
+11. Write the barrier price as (i) a first-passage expectation and (ii) a localized Feynman–Kac PDE. How does the barrier enter the PDE? -> -> (gap?)
+12. State and prove the reflection principle result P(τ_a ≤ T) = 2P(W_T ≥ a). Hence write the density of the running maximum. -> -> (gap?)
+13. Derive the joint density of (running max, W_T). Why does the reflection at level 2a−b appear? -> -> (gap?)
+14. Method of images: state U(S,t) = S^{2α}V(B²/S,t), α = ½(1−2r/σ²), and the down-and-out call it gives. -> -> (gap?)
+15. Sine-series PDE route: what substitution turns the localized BS PDE into the heat equation, and why the sine (not cosine) basis? -> -> (gap?)
+16. Why is a discretely-monitored barrier a backward recursion? Where does the Markov property enter, and why does the FFT reappear (vs European COS)? -> -> (gap?)
+
 ## Cluster 4 — Models (Heston / jumps)
 ## Cluster 5 — American options
 ## Cluster 6 — Exotics
