@@ -18,7 +18,7 @@ For each ASSIGNMENT task, produce:
 ## Lectures (numeric order)
 - [x] Lecture 01
 - [x] Lecture 02
-- [ ] Lecture 03
+- [x] Lecture 03
 - [x] Lecture 04 — Monte Carlo integration, MC for SDEs, variance reduction
 - [x] Lecture 05 — Binomial, finite differences, BS PDE, binomial-as-FD
 - [x] Lecture 07 — Heston, CIR variance, affine structure & characteristic function, MC under Heston
@@ -27,10 +27,10 @@ For each ASSIGNMENT task, produce:
 - [x] Lecture 11 — exotics overview (barrier/Asian/digital/basket/cliquet)
 
 ## Assignments (defense sheets)
-- [ ] exercise-set-1
-- [ ] assignment-set-1
-- [ ] exercise-set-2
-- [ ] assignment-set-2
+- [x] exercise-set-1
+- [x] assignment-set-1
+- [x] exercise-set-2
+- [x] assignment-set-2
 
 ## Rules
 - Commit after each item with a clear message.

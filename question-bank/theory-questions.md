@@ -37,6 +37,17 @@ Filled in per cluster as I study. Format: question -> my short answer -> (gap?).
 13. Greeks: define Delta, Gamma, Theta. Show the BS PDE as an algebraic identity linking them, and give the closed-form call Delta and Gamma. -> -> (gap?)
 14. List the five parameters the BS call price depends on and explain why mu (the real-world drift) is not among them. -> -> (gap?)
 
+### Lecture 03
+1. In the implied-volatility problem, which four inputs of the BS price are known and which one is the unknown? Why is recovering σ a root-find rather than a closed-form inversion? -> -> (gap?)
+2. Prove vega = ∂C/∂σ = S0√T φ(d1) > 0 for σ>0. Why does strict monotonicity of price in σ guarantee a unique implied vol? -> -> (gap?)
+3. State the admissible no-arbitrage price interval for a European call. What happens to the implied vol as the market price approaches the upper/lower bound? -> -> (gap?)
+4. Bisection vs Newton-Raphson for IV inversion: state the convergence order of each and Newton's failure mode. Why is dividing by vega dangerous deep OTM / short maturity? -> -> (gap?)
+5. Globalised Newton: why seed at the price-curve inflection point σ̂? What property there makes Newton converge monotonically (no overshoot)? -> -> (gap?)
+6. Put implied vol: why must a put and a call at the same (K,T) have the same implied vol? Derive it from put-call parity. -> -> (gap?)
+7. Describe the implied-vol smile/skew in the strike direction and the term structure in maturity. What market fact does each encode? -> -> (gap?)
+8. Why does constant-vol Black-Scholes fail to fit the whole surface? State precisely what a single σ cannot reproduce. -> -> (gap?)
+9. Distinguish implied vs local vs stochastic volatility: which is a quoting convention, which is a deterministic σ(S,t), which adds its own SDE? How does this motivate Heston (Lecture 7)? -> -> (gap?)
+
 ### Lecture 05
 1. Derive the CRR up/down/probability parameters by matching the mean and variance of the tree log-return to Black-Scholes. Show every step. -> -> (gap?)
 2. Why does the Itô-corrected drift r-½σ² (not r) appear inside u and d? What exactly is being matched -- the price or the log-price? -> -> (gap?)
