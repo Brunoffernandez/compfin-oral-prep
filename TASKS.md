@@ -24,7 +24,7 @@ For each ASSIGNMENT task, produce:
 - [ ] Lecture 07 — Heston, CIR variance, affine structure & characteristic function, MC under Heston
 - [x] Lecture 08 — Poisson, jump diffusion, affine jump diffusion
 - [ ] Lecture 09 — American options (call/put, Euro/Am equivalence, FD/MC/COS/binomial-tree)
-- [ ] Lecture 11 — exotics overview (barrier/Asian/digital/basket/cliquet)
+- [x] Lecture 11 — exotics overview (barrier/Asian/digital/basket/cliquet)
 
 ## Assignments (defense sheets)
 - [ ] exercise-set-1

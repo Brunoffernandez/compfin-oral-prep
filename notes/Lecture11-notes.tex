@@ -1,0 +1,421 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newtheorem{remark}{Remark}
+\newcommand{\Q}{\mathbb{Q}}
+
+\title{Lecture 11 --- Exotic Options: Overview and Numerical Procedures}
+\author{Computational Finance (WI4151), TU Delft --- exam notes}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Scope.} This is the closing, survey lecture. It is deliberately broad rather than
+deep on any single product, but the slides do carry real technical content: the Fouque--Han
+stochastic-volatility Asian PDE and the Vecer dimension reduction are worked out in detail, and
+several closed forms (geometric Asian, digital $=e^{-rT}N(d_2)$) appear or are implied. The aim of
+these notes is to fix, for each exotic, three things that an examiner will probe: \emph{(i)} the
+precise payoff, \emph{(ii)} the economic risk/need it serves, and \emph{(iii)} which numerical
+method is appropriate and \emph{why}. Barrier options are listed in the lecture but explicitly
+deferred to Lecture 10; see \texttt{notes/Lecture10-notes.pdf}.
+
+\section{Why exotic options exist}
+
+Vanilla European calls/puts pay off a function of the terminal price $S_T$ alone. Many real
+exposures are not of that form, and the lecture organises the rationale for exotics under five heads.
+
+\begin{enumerate}[label=(\arabic*),leftmargin=2em]
+\item \textbf{Customised payoff structure.} A European exporter wants protection only in a specific
+tail: pay a fixed amount if $\text{EUR/USD}>1.10$ at maturity, nothing otherwise. This discontinuous
+(digital) payoff cannot be replicated cheaply with vanilla calls --- a tight call spread approximating
+it requires an unbounded notional as the spread width $\to 0$ (see \S\ref{sec:digital}).
+
+\item \textbf{Reduction of hedging cost.} An airline hedging one month of jet-fuel procurement buys a
+\emph{single} Asian call on the monthly average rather than $\sim 20$ daily vanilla calls. Averaging
+lowers the effective volatility of the underlying quantity, hence lowers the premium materially.
+
+\item \textbf{Better matching of business exposure.} The airline's economic exposure is the average
+procurement cost $\frac1n\sum_{i=1}^n S_{t_i}$, not the terminal price $S_T$. An Asian option matches
+this exactly; a terminal-price call would over- or under-hedge for most of the month.
+
+\item \textbf{Yield enhancement in low-rate environments.} A worst-of autocallable on
+$\{\text{EURO STOXX 50, S\&P 500, Nikkei 225}\}$ pays a $10\%$ annual coupon if the worst performer is
+above a barrier, with possible early redemption. The investor implicitly \emph{sells} correlation and
+downside risk on the weakest index in return for an above-market coupon.
+
+\item \textbf{Volatility / correlation trading.} A worst-of put gives clean exposure to the
+correlation risk premium (the issuing bank is short correlation); a cliquet gives forward-skew /
+forward-volatility exposure. These are first-order exposures a vanilla portfolio cannot replicate cleanly.
+\end{enumerate}
+
+\noindent\textbf{Who uses them.} Corporates (FX/commodity/rate hedging), asset managers, insurers
+(cliquet-style equity-linked guarantees), private banks (yield-enhancement notes funded by
+implicitly selling option-like risks), structured-product desks (autocallables, reverse
+convertibles), and commodity/FX hedgers (Asian, barrier, digital).
+
+\subsection*{Pre-2008 vs.\ post-2008}
+
+\noindent\emph{Before 2008:} cheap funding, weak regulatory capital constraints, large OTC growth,
+aggressive yield-enhancement demand, heavy structured-product issuance. Popular: barriers, reverse
+convertibles, callable range accruals, snowballs, autocallables, long-dated path-dependent and highly
+bespoke OTC exotics. Theme: banks optimised yield and leverage aggressively.
+
+\noindent\emph{Lessons of 2008:} counterparty risk became critical; liquidity assumptions failed;
+\emph{correlation structures broke down} (directly hitting basket/worst-of books); model risk became
+visible; funding costs mattered.
+
+\noindent\emph{After 2008:} XVA adjustments (CVA, FVA, MVA), Basel III capital constraints, increased
+collateralisation, simplification of product books, and a preference for hedgeable flow products. The
+surviving-product table is worth memorising:
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Category & Before 2008 & After 2008 \\
+\hline
+Highly bespoke OTC & very common & reduced \\
+Barriers & very active & still active \\
+Asians & active & active \\
+Digitals & active & active \\
+Basket / worst-of & growing & \emph{very active} \\
+Cliquets & active (aggressive) & reduced (insurance-driven) \\
+Long-dated exotics & common & reduced \\
+Autocallables & growing & \emph{dominant in equity SPs} \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent The driving trend: markets now prefer products that are easier to hedge, easier to model,
+easier to explain to regulators, and more liquid. The two products that \emph{grew} (basket/worst-of,
+autocallables) did so because retail yield demand outran the correlation-modelling caveats.
+
+\section{Asian options}
+
+\paragraph{Payoff.} Asian payoffs depend on the average of the underlying over monitoring dates
+$t_1,\dots,t_n$. \emph{Fixed-strike arithmetic-average call:}
+\[
+\Big(\tfrac1n{\textstyle\sum_{i=1}^n} S_{t_i}-K\Big)^{\!+},
+\qquad
+\text{\emph{geometric-average call:}}\quad
+\Big(\big({\textstyle\prod_{i=1}^n} S_{t_i}\big)^{1/n}-K\Big)^{\!+}.
+\]
+\emph{Floating-strike} variants replace $K$ by a multiple of $S_T$. Asians are path-dependent, carry
+\emph{reduced volatility exposure} (the average is less volatile than the terminal value), are
+\emph{cheaper} than the corresponding vanilla, and are popular in commodities and FX where the
+operational exposure is to an average and where averaging reduces fixing-manipulation risk.
+
+\paragraph{Why the geometric average has a closed form (worked).}
+Under GBM, $S_{t_i}=S_0\exp\!\big((r-q-\tfrac12\sigma^2)t_i+\sigma W_{t_i}\big)$. The geometric average is
+\[
+G=\Big({\textstyle\prod_{i=1}^n}S_{t_i}\Big)^{1/n}
+=S_0\exp\!\Big(\tfrac1n{\textstyle\sum_{i=1}^n}\big[(r-q-\tfrac12\sigma^2)t_i+\sigma W_{t_i}\big]\Big),
+\]
+i.e. $\ln G$ is an affine function of the jointly Gaussian vector $(W_{t_1},\dots,W_{t_n})$, hence
+$\ln G$ is itself normal. Therefore $G$ is \emph{lognormal} and the geometric Asian prices by a
+Black--Scholes-type formula. With $\bar t=\frac1n\sum_i t_i$ and using $\mathrm{Cov}(W_{t_i},W_{t_j})=\min(t_i,t_j)$,
+\[
+\mu_G\equiv\E[\ln G]=\ln S_0+(r-q-\tfrac12\sigma^2)\bar t,
+\qquad
+\sigma_G^2\equiv\mathrm{Var}(\ln G)=\frac{\sigma^2}{n^2}\sum_{i=1}^n\sum_{j=1}^n\min(t_i,t_j).
+\]
+For equally spaced dates $t_i=i\,\Delta t$, $\Delta t=T/n$, one gets the standard
+\[
+\bar t=\frac{(n+1)}{2n}T,\qquad
+\sigma_G^2=\sigma^2\,\Delta t\,\frac{(n+1)(2n+1)}{6n^2}
+\;\xrightarrow[n\to\infty]{}\;\frac{\sigma^2 T}{3}.
+\]
+Define an effective volatility $\hat\sigma^2=\sigma_G^2/T$ and an effective dividend
+$\hat q$ such that $\E[G]=S_0e^{(r-\hat q)T}$, i.e.
+$\hat q=r-\tfrac1T(\mu_G-\ln S_0)-\tfrac12\hat\sigma^2$. Then the geometric Asian call is the
+Black--Scholes call price $\,e^{-rT}\!\big[\E[G]\,N(d_1)-K\,N(d_2)\big]$ with
+\[
+d_{1,2}=\frac{\ln(\E[G]/K)\pm\tfrac12\hat\sigma^2 T}{\hat\sigma\sqrt T}.
+\]
+\emph{Key qualitative facts:} (a) the continuous-monitoring variance is $\sigma^2T/3$, one-third of the
+vanilla variance --- this is exactly why the Asian premium is lower; (b) the geometric Asian is the
+canonical \emph{control variate} for Monte Carlo pricing of the arithmetic Asian (Kemna--Vorst 1990).
+
+\paragraph{Why arithmetic Asians have no closed form.} A sum of lognormals is not lognormal, so
+$A_T=\frac1n\sum_i S_{t_i}$ has no elementary density and its characteristic function (CF) is
+\emph{not closed-form even under affine models}. This is the central numerical difficulty and dictates
+the method choice below.
+
+\paragraph{Numerical methods and why.}
+\begin{itemize}[leftmargin=2em]
+\item \emph{Moment matching (Turnbull--Wakeman, Levy).} Approximate $A_T$ by a lognormal with the same
+first two moments. Compute $m_1=\E[A_T]=\frac1n\sum_i F(0,t_i)$ (forwards) and
+$m_2=\E[A_T^2]=\frac1{n^2}\sum_i\sum_j\E[S_{t_i}S_{t_j}]$, fit $(\mu_A,\sigma_A)$, and price with a
+Black-style formula. Fast and accurate for moderate volatility, but it is an \emph{approximation} and
+degrades in the tails / at long maturity where higher cumulants matter.
+\item \emph{PDE.} The running average $A_t$ is an extra state, giving a 2-D PDE in $(S,A)$ with
+terminal $V(T,S,A)=(A-K)^+$. Vecer's similarity/numeraire trick (1995/2001) reduces this
+\emph{exactly} to a 1-D PDE; see \S\ref{sec:asiansv}.
+\item \emph{COS / Fourier (Zhang--Oosterlee 2013).} Either (i) approximate $\phi_{A_T}$ via cumulants
+and apply the European COS quadrature, or (ii) run \emph{backward COS recursion} over the monitoring
+dates using the one-step conditional CF. The COS price has the familiar form
+\[
+V_0=e^{-rT}\,{\sum_{k=0}^{N-1}}'\,
+\mathrm{Re}\!\Big[\phi_{A_T}\!\Big(\tfrac{k\pi}{b-a}\Big)e^{-ik\pi a/(b-a)}\Big]H_k,
+\]
+with payoff cosine coefficients $H_k$ and the truncation $[a,b]$ chosen from the \emph{cumulants of
+$A_T$}. The same $[a,b]$ pitfall as for vanilla COS applies: too narrow an interval at short
+maturity (small $c_2$) loses mass.
+\item \emph{Monte Carlo.} Most flexible, natural for path dependence: simulate $M$ GBM paths, form
+$A_T^{(m)}$, discount $X^{(m)}=e^{-rT}(A_T^{(m)}-K)^+$, average, and report a CI from
+$s_X/\sqrt M$. \emph{Variance reduction} (geometric-Asian control variate) is essentially mandatory.
+\end{itemize}
+
+\section{Asian under stochastic volatility: Fouque--Han PDE and Vecer reduction}
+\label{sec:asiansv}
+
+The slides develop the constant-vol PDE all the way to a stochastic-volatility model, so the examiner
+may push here. The reference is Fouque \& Han (2003).
+
+\paragraph{Model.} Risk-neutral dynamics with a mean-reverting volatility factor $Y$:
+\[
+\dd S_t=rS_t\dd t+f(Y_t)S_t\dd W^*_t,\qquad
+\dd Y_t=\big[\alpha(m-Y_t)-\beta\Lambda(Y_t)\big]\dd t
++\beta\big(\rho\dd W^*_t+\sqrt{1-\rho^2}\dd Z^*_t\big),
+\]
+with $W^*,Z^*$ independent, $\sigma_t=f(Y_t)$, leverage $\rho$, and $\Lambda$ the combined market
+price of risk. Path dependence enters through the running integral $I_t=\int_0^t S_u\dd u$,
+$\dd I_t=S_t\dd t$. The triple $(S_t,Y_t,I_t)$ is Markov.
+
+\paragraph{3-D pricing PDE.} For the floating-strike Asian call
+$P=\E^*[e^{-r(T-t)}(S_T-I_T/T)^+\mid\cdot]$, Feynman--Kac gives
+\[
+\partial_t P
++\tfrac12 f^2 s^2\partial_{ss}P+\rho\beta f s\,\partial_{sy}P+\tfrac12\beta^2\partial_{yy}P
++r(s\,\partial_s P-P)
++\big(\alpha(m-y)-\beta\Lambda\big)\partial_y P
++s\,\partial_I P=0,
+\]
+terminal $P(T,s,y,I)=(s-I/T)^+$. Read the four blocks: second-order $(s,y)$ diffusion (cross term
+carries $\rho$); first-order risk-neutral drift in $s$ and risk-adjusted drift in $y$; the pure-drift
+term $s\,\partial_I P$ (since $\dd I=S\dd t$); and $-rP$ discounting. \emph{Issue:} three spatial
+dimensions $\Rightarrow$ expensive grids.
+
+\paragraph{Vecer reduction (why it works).} Replicate $\frac1T\int_0^T S_u\dd u$ by a
+\emph{self-financing} portfolio holding a \emph{time-deterministic} number of shares
+$q(t)=\frac{1-e^{-r(T-t)}}{rT}$, with wealth
+$\dd X_t=rX_t\dd t+q(t)(\dd S_t-rS_t\dd t)$. Choosing $X_0=q(0)S_0-e^{-rT}K_2$ integrates to
+$X_T=\frac1T\int_0^T S_u\dd u-K_2$, so the unified payoff $h\!\big(\frac1T\int_0^T S_u\dd u-K_1S_T-K_2\big)=h(X_T-K_1S_T)$ covers fixed-strike ($K_1=0$) and floating-strike ($K_2=0$) Asians. The point: trading
+the deterministic $q(t)$ \emph{collapses the path-dependent state $I_t$ into the single stochastic
+state $X_t$}. Switching to the stock numeraire ($\Psi_t=X_t/S_t$) and using the positive homogeneity
+$h(xy)=xh(y)$ of calls/puts reduces the 3-D PDE to a 2-D PDE in $(\psi,y)$; in the constant-vol limit
+$Y$ drops and one recovers the celebrated \emph{1-D Vecer Asian PDE}. (Caveat: this prices the fresh
+Asian at $t=0$; a seasoned Asian uses Asian put--call parity.)
+
+\section{Digital / binary options}
+\label{sec:digital}
+
+\paragraph{Payoff.} \emph{Cash-or-nothing call:} $\mathbf 1_{\{S_T>K\}}$ (times a notional $Q$).
+\emph{Asset-or-nothing call:} $S_T\mathbf 1_{\{S_T>K\}}$. The payoff is discontinuous at $K$. Digitals
+are a building block of structured products (range accruals, autocallables, structured deposits) and
+are directly tied to the risk-neutral CDF.
+
+\paragraph{Closed form (derive).} A cash-or-nothing call pays $\$1$ on $\{S_T>K\}$, so
+\[
+C_{\text{dig}}=e^{-rT}\,\Q(S_T>K).
+\]
+Under GBM, $\ln S_T=\ln S_0+(r-q-\tfrac12\sigma^2)T+\sigma\sqrt T\,Z$, $Z\sim N(0,1)$, hence
+$\{S_T>K\}=\{Z>-d_2\}$ with
+\[
+d_2=\frac{\ln(S_0/K)+(r-q-\tfrac12\sigma^2)T}{\sigma\sqrt T},
+\qquad
+\Q(S_T>K)=\Q(Z>-d_2)=N(d_2).
+\]
+Therefore $C_{\text{dig}}=e^{-rT}N(d_2)$ (notional $Q$: multiply by $Q$). A digital \emph{prices a
+risk-neutral probability}. The asset-or-nothing call equals $S_0e^{-qT}N(d_1)$, and the vanilla call
+decomposes as (asset-or-nothing) $-K\times$(cash-or-nothing), recovering
+$C=S_0e^{-qT}N(d_1)-Ke^{-rT}N(d_2)$.
+
+\paragraph{Static-replication / Breeden--Litzenberger link.} Differentiating the vanilla call price in
+strike,
+\[
+\frac{\partial C}{\partial K}=-e^{-rT}\Q(S_T>K)=-C_{\text{dig}},
+\]
+so a digital is (minus) the strike-derivative of vanilla prices --- this connects digitals to the
+implied distribution, local-vol extraction, and static replication. Concretely, approximate
+\[
+\mathbf 1_{\{S_T>K\}}\approx\frac{(S_T-K+\tfrac\varepsilon2)^+-(S_T-K-\tfrac\varepsilon2)^+}{\varepsilon}:
+\]
+buy $1/\varepsilon$ calls at $K-\tfrac\varepsilon2$, sell $1/\varepsilon$ calls at $K+\tfrac\varepsilon2$.
+\emph{Centring} around $K$ gives second-order accuracy in $\varepsilon$; a one-sided spread gives only
+first-order.
+
+\paragraph{The hedging-blow-up (this is the examiner's favourite).} The closed form is clean, but the
+\emph{hedge} is not. The notional of the replicating call spread is $1/\varepsilon\to\infty$ as the spread
+tightens. Equivalently, near expiry and near the strike the digital's delta spikes
+(Dirac-like) and gamma flips sign --- ``\emph{pin risk}''. A bank delta-hedging a sold digital must
+trade a huge, sign-changing position in a vanishingly small neighbourhood of $K$ as $t\to T$, which is
+impossible to execute cleanly; in practice desks over-hedge by pricing/hedging a \emph{call spread}
+(a slightly conservative super-replicating digital) rather than the exact digital. This is why the
+``closed form exists'' fact is misleading: the difficulty is risk management, not valuation.
+
+\paragraph{Numerical methods and why.}
+\begin{itemize}[leftmargin=2em]
+\item \emph{Closed form / Black--Scholes:} exact under GBM as above.
+\item \emph{COS / Fourier (Fang--Oosterlee 2008):} \emph{very} well suited --- the indicator payoff has
+closed-form cosine coefficients, and a digital is just the original European COS method with a
+different $H_k$. No discontinuity penalty in the payoff side, since the cosine coefficients are
+computed analytically.
+\item \emph{PDE:} terminal condition $V(T,S)=\mathbf 1_{\{S>K\}}$ has a jump; one must align the grid
+to $K$ or smooth the discontinuity, then step back with an implicit / Crank--Nicolson scheme
+(Crank--Nicolson can oscillate near the kink, so smoothing/Rannacher start-up helps).
+\item \emph{Monte Carlo:} trivial to code ($e^{-rT}\mathbf 1_{\{S_T>K\}}$) but the indicator makes the
+estimator high-variance near $K$ and the pathwise Greeks ill-defined; use conditional MC / smoothing.
+\end{itemize}
+
+\section{Basket and worst-of options}
+
+\paragraph{Payoff.} \emph{Basket call:} $\big(\sum_{i=1}^n w_iS_i(T)-K\big)^+$ on a weighted sum.
+\emph{Worst-of call:} $\big(\min_i S_i(T)-K\big)^+$ on the worst performer. Market term sheets express
+everything in \emph{performances} $S_i(T)/S_i(0)$ so strikes are percentages and assets at different
+absolute levels are comparable. The dominant risk factor is \emph{correlation}.
+
+\begin{remark}[textbook vs.\ traded structure]
+The clean ``call on the min'' is rarely the traded payoff. In a worst-of autocallable the embedded
+option is almost always a worst-of \emph{put}: the investor is \emph{short} downside on the weakest
+index (e.g.\ redemption reduced if $\min_i S_i(T)/S_i(0)$ falls below a $60\%$ barrier). The high
+coupon is funded by the investor selling that correlation/downside risk. Be ready to state this
+distinction.
+\end{remark}
+
+\paragraph{Why correlation dominates (worked for the basket).} For the basket $B_T=\sum_i w_iS_i(T)$,
+\[
+\mathrm{Var}(B_T)=\sum_{i}\sum_{j}w_iw_j\,\mathrm{Cov}(S_i,S_j)
+=\sum_i w_i^2\,\mathrm{Var}(S_i)+\sum_{i\neq j}w_iw_j\rho_{ij}\sqrt{\mathrm{Var}(S_i)\mathrm{Var}(S_j)}.
+\]
+The off-diagonal $\rho_{ij}$ terms drive the variance: a basket of \emph{positively} correlated
+assets is more volatile (so a call on it is dearer) than one of weakly/negatively correlated assets,
+which diversify. A worst-of is even more correlation-sensitive: as correlation $\to 1$ the worst-of
+approaches a single-asset option (less downside), and as correlation falls the minimum is dragged
+down by idiosyncratic moves (more downside, so a worst-of put is dearer). The 2008 break-down of
+correlation structure is precisely what made these books dangerous.
+
+\paragraph{Numerical methods and why.} The challenge is \emph{multi-dimensionality}.
+\begin{itemize}[leftmargin=2em]
+\item \emph{Moment matching / lognormal approximation:} approximate $B_T$ by a single lognormal with
+$m_1=\sum_i w_iF_i(0,T)$ and $m_2=\sum_i\sum_j w_iw_j\E[S_i(T)S_j(T)]$, then a Black-style formula.
+Cheap, but only for the (positively weighted) basket; it cannot handle the $\min$ in a worst-of and
+breaks for low/negative weights.
+\item \emph{PDE:} dimension-$n$ grid with correlation cross-terms
+$\rho_{ij}\sigma_i\sigma_j S_iS_j\,\partial_{S_iS_j}V$. \emph{Curse of dimensionality}: cost grows like
+$M^n$, so practical only for $n\le 2$--$3$.
+\item \emph{COS / Fourier:} efficient under an affine \emph{joint} CF. Concretely, 2-D COS for a
+2-asset basket / call-on-min (Ruijter--Oosterlee 2012), and a 3-asset spread (Pellegrino--Sabino
+2016). For $\ge 4$ assets \emph{no dedicated COS paper exists} --- the tensor-product cosine grid
+suffers the same curse of dimensionality as the PDE. \textbf{[Honest gap: the slides explicitly flag
+that no COS method is available for high-dimensional worst-of/basket.]}
+\item \emph{Monte Carlo:} the \emph{industry standard}. Estimate the volatility vector and correlation
+matrix, Cholesky-factor $\Sigma=LL^\top$, generate independent normals $Z$, correlate by
+$\tilde Z=LZ$, simulate each asset, and evaluate e.g.
+$X^{(m)}=e^{-rT}(\min_i S_i^{(m)}(T)-K)^+$. MC handles arbitrary dimension and correlation naturally;
+enhance with antithetics, quasi-MC, control variates. This is \emph{the} reason MC dominates the
+multi-asset book.
+\end{itemize}
+
+\section{Cliquet options}
+
+\paragraph{Payoff.} A cliquet (``ratchet'') locks in periodic, capped/floored returns. With period
+returns $R_i=S_{t_i}/S_{t_{i-1}}-1$, local floor $F$ and cap $C$,
+\[
+\text{Payoff}=\sum_{i=1}^n \min\!\big(\max(R_i,F),\,C\big),
+\qquad \ell_i=\min(\max(R_i,F),C).
+\]
+A global cap/floor may be applied to the accumulated sum $G=\sum_i\ell_i$. Cliquets are
+path-dependent (via the resets), carry a \emph{periodic reset / ratchet} feature, are highly sensitive
+to \emph{forward skew / forward volatility} and to \emph{local-volatility} dynamics, and are a
+workhorse of insurance and capital-protected notes (e.g.\ principal-guaranteed with an $8\%$ annual
+cap and $0\%$ floor --- a smooth, behaviourally appealing return profile).
+
+\paragraph{Why the structure matters.} A cliquet is essentially a strip of \emph{forward-starting}
+capped/floored options: each $\ell_i$ is determined over the future window $[t_{i-1},t_i]$, so its
+value depends on the \emph{forward} volatility and forward skew prevailing then, not on today's
+spot-starting smile. This is precisely the exposure a vanilla portfolio (whose options all start
+today) cannot replicate, and it is why cliquet pricing is so sensitive to the smile-dynamics
+assumption: a model that fits today's smile but extrapolates forward skew poorly will misprice the
+cliquet. The reset feature also makes the product \emph{vega-rich across reset dates}.
+
+\paragraph{Numerical methods and why.}
+\begin{itemize}[leftmargin=2em]
+\item \emph{Monte Carlo:} simulate at the reset dates $t_0,\dots,t_n$, form
+$R_i^{(m)}$, apply $\ell_i^{(m)}=\min(\max(R_i^{(m)},F),C)$, aggregate $G^{(m)}=\sum_i\ell_i^{(m)}$,
+apply any global cap/floor, then $\hat V_0=\frac1M\sum_m e^{-rT}G^{(m)}$. \emph{Widely used}, because
+it combines trivially with local-vol, stochastic-vol and hybrid models --- the very models needed to
+get the forward skew right.
+\item \emph{PDE:} reset features create \emph{jump conditions}; carry the accumulated-return state $G$,
+solve between reset dates, and at each $t_i$ update $G_i=G_{i-1}+\ell_i$. A global cap/floor adds a
+state variable.
+\item \emph{COS / Fourier:} efficient for the periodic structure --- one CF per reset period
+(forward log-return), expand the capped/floored return payoff in a cosine series, and recursively
+aggregate the resets. \textbf{[Honest gap: the slides note no dedicated COS paper for the pure cliquet
+derivative; the closest is COS for cliquet-style equity-indexed annuities (Deng, Dulaney, McCann \&
+Yan, 2017); an alternative Fourier route is PROJ / frame-duality (Kirkby--Nguyen), which is \emph{not}
+the COS method.]}
+\item \emph{Tree / lattice:} pedagogically useful, impractical in higher dimensions.
+\end{itemize}
+
+\section{Barrier options (cross-reference)}
+
+Barriers are listed as a surviving, still-active exotic but the lecture explicitly defers them to
+Lecture 10. \emph{In one line for completeness:} a knock-in/knock-out call pays the vanilla payoff
+only if the path does/does not breach a barrier $H$ before maturity. The appropriate method is the COS
+backward recursion over monitoring dates (the cosine coefficients are restricted to the survival
+region $[\,\cdot\,]$ at each step), with Richardson extrapolation in the number of monitoring dates
+to recover the continuous-barrier limit; see \texttt{notes/Lecture10-notes.pdf} for the full treatment
+of the truncation range, the $\chi$/$\psi$ integrals on the survival interval, and the
+discrete-to-continuous correction.
+
+\section{Numerical-method map (the takeaway table)}
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Exotic & First-choice method & Why \\
+\hline
+Geometric Asian & closed form & sum of normals $\Rightarrow$ lognormal $G$ \\
+Arithmetic Asian & MC (+ geo.\ control variate) / 1-D Vecer PDE & no closed-form CF; path-dependent average \\
+Digital & closed form $e^{-rT}N(d_2)$ / COS & probability under $\Q$; indicator has clean $H_k$ \\
+Basket ($n\le 2$--3) & 2-D COS / moment matching & affine joint CF available in low dim \\
+Basket / worst-of ($n\ge 4$) & Monte Carlo & curse of dimensionality kills PDE \& COS \\
+Cliquet & MC (local/stoch-vol) & forward-skew sensitive; reset jumps \\
+Barrier & COS backward recursion (Lec.\ 10) & monitoring-date survival integrals \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Course-level conclusions.} (i) Exotics exist to match real exposures vanillas cannot.
+(ii) Post-2008 markets shifted toward simpler, hedgeable, modellable, liquid products. (iii) Asians,
+digitals, baskets/worst-of and cliquets remain relevant. (iv) Numerical methods are central because
+closed forms are usually unavailable --- and \emph{Monte Carlo remains dominant in industry} precisely
+because of path dependence, high dimensionality, and the need for local/stochastic-vol models.
+(v) Modern themes: correlation risk, volatility-smile dynamics, XVA/funding, regulatory capital.
+
+\section{Likely examiner questions (with the trap)}
+
+\begin{itemize}[leftmargin=2em]
+\item \emph{``Why is the geometric Asian closed-form but the arithmetic one not?''} Sum of lognormals
+is not lognormal; product is. Give $\sigma_G^2\to\sigma^2T/3$.
+\item \emph{``A digital has a closed form $e^{-rT}N(d_2)$ --- so why is it considered hard?''} The
+\emph{valuation} is easy; the \emph{hedge} blows up (delta spike, gamma sign-flip, pin risk near $K$ at
+expiry; replicating call-spread notional $1/\varepsilon\to\infty$). Desks hedge a call spread, not the
+exact digital.
+\item \emph{``Why Monte Carlo for a 5-asset worst-of and not COS?''} Curse of dimensionality: tensor
+cosine grid / PDE grid cost $\sim M^n$. No COS paper beyond 3 assets.
+\item \emph{``What is the single most important risk in a basket/worst-of, and show it.''}
+Correlation; $\mathrm{Var}(B_T)=\sum_i\sum_j w_iw_j\mathrm{Cov}(S_i,S_j)$, off-diagonal terms dominate.
+\item \emph{``Why is COS natural for the arithmetic Asian despite no closed-form CF?''} Approximate
+$\phi_{A_T}$ via cumulants (set $[a,b]$ from cumulants) or recurse over monitoring dates with the
+one-step conditional CF (Zhang--Oosterlee 2013); watch the $[a,b]$ width at short maturity.
+\end{itemize}
+
+\end{document}

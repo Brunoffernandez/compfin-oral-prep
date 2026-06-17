@@ -73,3 +73,20 @@ Filled in per cluster as I study. Format: question -> my short answer -> (gap?).
 
 ## Cluster 5 — American options
 ## Cluster 6 — Exotics
+
+### Lecture 11
+1. Give the precise payoff of an arithmetic-average Asian call and a geometric-average Asian call. -> -> (gap?)
+2. What economic need does an Asian option serve that a vanilla cannot, and why is the premium lower? (airline fuel hedge; average exposure; effective variance reduced) -> -> (gap?)
+3. Derive the geometric-Asian closed form: why is G lognormal, and what are mu_G and sigma_G^2 for equally spaced dates? Show sigma_G^2 -> sigma^2 T/3 in the continuous limit. -> -> (gap?)
+4. Why does the arithmetic Asian have NO closed form / no closed-form CF, and what does that imply for method choice? (sum of lognormals not lognormal) -> -> (gap?)
+5. List the four numerical methods for arithmetic Asians and the one-line reason for each; what is the standard control variate for the MC? (geometric Asian) -> -> (gap?)
+6. State the Fouque-Han 3D Asian PDE and identify the four blocks. Then explain Vecer's reduction: what does q(t) replicate, and how does it collapse the path-dependent state I_t? -> -> (gap?)
+7. Give both digital payoffs (cash-or-nothing, asset-or-nothing). Derive the cash-or-nothing call price = e^{-rT} N(d2) from Q(S_T > K). -> -> (gap?)
+8. A digital has a clean closed form. Why is it nonetheless considered a hard/dangerous product? (delta spike, gamma sign-flip, pin risk; call-spread notional 1/eps -> infinity near K at expiry) -> -> (gap?)
+9. State the Breeden-Litzenberger link dC/dK = -e^{-rT} Q(S_T > K) and explain the centred call-spread static replication (and why centring gives 2nd-order accuracy). -> -> (gap?)
+10. Which numerical method is most natural for a digital and why? (COS: indicator payoff has closed-form cosine coefficients; it's the European COS method as a special case) -> -> (gap?)
+11. Give the basket and worst-of payoffs. Show Var(B_T) = sum_i sum_j w_i w_j Cov(S_i,S_j) and explain why correlation is the dominant risk. -> -> (gap?)
+12. Why is Monte Carlo (not PDE or COS) the method for a >=4-asset worst-of? State the COS availability honestly. (curse of dimensionality; Ruijter-Oosterlee 2D only, no dedicated COS for n>=4) -> -> (gap?)
+13. In a worst-of autocallable, is the embedded option a call-on-min or a worst-of put? Explain who is short what. -> -> (gap?)
+14. Give the cliquet payoff with local cap C and floor F. Why is it forward-skew / forward-volatility sensitive, and why is MC with local/stochastic vol the practical method? -> -> (gap?)
+15. Pre-2008 vs post-2008: which exotics grew, which shrank, and what is the unifying post-crisis preference? (hedgeable, modellable, explainable, liquid; basket/worst-of and autocallables grew; bespoke/long-dated/aggressive cliquets shrank) -> -> (gap?)
