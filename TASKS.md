@@ -1,38 +1,37 @@
-# TASKS.md — ordered backlog for autonomous work
+# TASKS.md — revision checklist (documents already generated)
 
-Work top to bottom, one item at a time. After finishing an item: tick its box, commit, move on.
-Read `CLAUDE.md` first. COS (Lectures 6 and 10) comes first because the professor invented it.
+The autonomous generation pass is DONE. Do NOT regenerate everything from scratch.
+The generated notes/defense-sheets are DRAFTS and reference material, not my understanding.
+The work now is to OWN the material and rehearse. Use the agent to QUIZ me, not to re-explain.
 
-For each LECTURE task, produce:
-- A complete LaTeX study note (~10 pages from ~50 slides) with full derivations worked out (not bullet points), clear structure, key concepts and pitfalls. Compile to PDF in `notes/` as `Lecture<NN>-notes.pdf` (keep the `.tex` too).
-- A matching set of exam-style questions in `question-bank/` (append to `theory-questions.md`, and to `cos-deep-dive.md` for COS).
+Exam reality (professor's instructions): centred on exercises/assignments, smaller theory
+portion, NO detailed derivations.
 
-For each ASSIGNMENT task, produce:
-- A filled defense sheet in `defense-sheets/<set>.md` drafted from my ACTUAL code and report (task, approach, key code sections by file+line, results, hardest likely question). Leave a clearly marked TODO wherever the *reason* for a design choice needs my input — you can describe what the code does, but not why I chose it.
-- Code-level "open your file and explain line X" questions in `question-bank/assignment-defense-questions.md`.
+## Priority 1 — Own and rehearse the assignment defenses (the bulk of the exam)
+For each of the four: reopen MY actual code/report alongside the generated defense sheet,
+fill every TODO with MY reasoning in my own words, then have the agent quiz me out loud
+and log misses to mock-orals/gaps-log.md.
+- [ ] exercise-set-1
+- [ ] assignment-set-1
+- [ ] exercise-set-2   (Heston COS ground truth + my truncation-range fix)
+- [ ] assignment-set-2
 
-## Priority — COS
-- [x] Lecture 06 — Fourier family, COS for density recovery, COS for option pricing
-- [x] Lecture 10 — pricing problem, analytical under GBM, PDE + COS for Barrier options
+## Priority 2 — Condense + review theory (small portion, no full derivations)
+The generated lecture notes are longer than the exam needs. Light agent task:
+- [ ] Build notes/THEORY-cheatsheet.md from the existing notes: ONE consolidated sheet,
+      a short block per lecture (main concepts + key results + the main line of reasoning,
+      NO derivations). This becomes my daily review doc; long notes stay as backup.
+Then review + self-test, COS first:
+- [ ] COS (L6, L10)        - [ ] L7 Heston          - [ ] L4 Monte Carlo
+- [ ] L9 American          - [ ] L5 binomial/FD/PDE  - [ ] L8 jumps
+- [ ] L11 exotics          - [ ] L1–L3 foundations (brief)
 
-## Lectures (numeric order)
-- [x] Lecture 01
-- [x] Lecture 02
-- [x] Lecture 03
-- [x] Lecture 04 — Monte Carlo integration, MC for SDEs, variance reduction
-- [x] Lecture 05 — Binomial, finite differences, BS PDE, binomial-as-FD
-- [x] Lecture 07 — Heston, CIR variance, affine structure & characteristic function, MC under Heston
-- [x] Lecture 08 — Poisson, jump diffusion, affine jump diffusion
-- [x] Lecture 09 — American options (call/put, Euro/Am equivalence, FD/MC/COS/binomial-tree)
-- [x] Lecture 11 — exotics overview (barrier/Asian/digital/basket/cliquet)
+## Priority 3 — Mock orals
+- [ ] Mock oral 1 — 25 min, out loud, mostly assignment defense + some theory
+- [ ] Mock oral 2 — repeat, focus on the gaps log
+- [ ] Clear everything still open in mock-orals/gaps-log.md
 
-## Assignments (defense sheets)
-- [x] exercise-set-1
-- [x] assignment-set-1
-- [x] exercise-set-2
-- [x] assignment-set-2
-
-## Rules
-- Commit after each item with a clear message.
-- Stop and ask me only if a slide PDF is unreadable or a file is missing.
-- Do not invent the reasoning behind my code choices — mark those as TODO for me.
+## Rules for the agent
+- Do not regenerate existing files unless I explicitly ask.
+- When quizzing: open my REAL code and ask about specific parts; be adversarial.
+- Never supply the reasoning behind my code choices — that is mine to fill.
