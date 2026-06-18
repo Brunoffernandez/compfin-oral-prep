@@ -1,0 +1,537 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\Imag}{\operatorname{Im}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ch}{\varphi}
+\newcommand{\Max}{\Xi}
+\newcommand{\psumN}{{\sum_{k=0}^{N-1}}'}
+\newcommand{\om}{\omega_k}
+
+\newtcolorbox{key}{colback=blue!4!white,colframe=blue!45!black,boxrule=0.4pt,
+  left=4pt,right=4pt,top=3pt,bottom=3pt,arc=2pt}
+\newtcolorbox{trap}{colback=red!4!white,colframe=red!55!black,boxrule=0.5pt,
+  left=4pt,right=4pt,top=3pt,bottom=3pt,arc=2pt}
+
+\setlist[itemize]{leftmargin=1.4em,topsep=2pt,itemsep=1.5pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=1.6em,topsep=2pt,itemsep=1.5pt,parsep=0pt}
+
+\newcommand{\lec}[2]{\subsection*{Lecture #1 --- #2}\addcontentsline{toc}{subsection}{Lecture #1 --- #2}}
+\newcommand{\core}[1]{\noindent\textbf{Core idea.}\ #1\par\smallskip}
+\newcommand{\why}[1]{\smallskip\noindent\textbf{Reasoning line.}\ #1\par}
+\newcommand{\pit}[1]{\noindent\textbf{Exam trap.}\ #1\par}
+\newcommand{\ask}[1]{\noindent\textit{Likely question:}\ #1\par}
+
+\title{\textbf{Computational Finance (WI4151) --- Theory Cheat-Sheet}\\[3pt]
+\large One block per lecture: core idea, key results, the line of reasoning. No derivations.}
+\author{TU Delft --- F.\ Fang \quad\textbar\quad companion to \texttt{notes/Lecture<NN>-notes.pdf}}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.3em}
+
+\begin{center}\small
+\fbox{\parbox{0.96\textwidth}{\centering
+\textbf{Notation.} $x=\ln S$ or $\ln(S/K)$ \;\textbar\; $\ch_X(u)=\E[e^{\ii uX}]$ (cf) \;\textbar\;
+$N(\cdot)$ normal CDF, $\phi(\cdot)$ normal pdf \;\textbar\; $[a,b]$ COS range \;\textbar\;
+$\psumN$ first term halved \;\textbar\; $c_1,c_2,c_4$ cumulants \;\textbar\;
+$\om=\tfrac{k\pi}{b-a}$ \;\textbar\; $r,T,\sigma,K$ as usual.}}
+\end{center}
+
+\noindent\textbf{The single through-line.} Every price is a discounted risk-neutral expectation
+\[
+V=e^{-rT}\,\E^{\Q}[\text{payoff}]=e^{-rT}\!\int_{\R} V(y,T)\,f(y\mid x_0)\dd y .
+\]
+If the \emph{density} $f$ is known (GBM) use closed forms / PDEs / trees; if only the \emph{cf} $\ch$ is known
+(Heston, jumps, AJD) use \textbf{COS}. Early exercise (L9) and discrete barriers (L10) reuse COS as a backward
+recursion; high-dimensional or averaging payoffs (L11) fall back to Monte Carlo (L4). \textbf{COS (L6, L10) is
+the centre of gravity of the course.}
+
+\tableofcontents
+\bigskip
+
+% ==================================================================
+\section{Cluster 1 --- Foundations, lattice, PDE \quad{\normalfont(L1--L3, L5)}}
+% ==================================================================
+
+\lec{01}{Asset classes, no-arbitrage, the Wiener process}
+\core{The pricing primitives: time value of money, no-arbitrage replication, and the stochastic model of $S$.}
+\begin{itemize}
+  \item \textbf{Discounting.} $\dd M=rM\dd t\Rightarrow M(t)=e^{rt}$; one euro at $T$ is worth $e^{-r(T-t)}$.
+  Covered interest-rate parity $(1+i_s)=(F_t/S_t)(1+i_c)$ by static replication; the ``FX basis'' is the
+  empirical correction restoring equality.
+  \item \textbf{Payoffs \& decomposition.} Call $(S_T-K)^+$, put $(K-S_T)^+$; value $=$ intrinsic $+$ time
+  value; both payoffs kink at $S=K$ (the kink is why a \emph{direct} Fourier expansion of the payoff rings;
+  COS expands the smooth density instead).
+  \item \textbf{One-step replication.} Hedge ratio $\Delta=\dfrac{V_u-V_d}{S_u-S_d}$; the no-arbitrage price
+  equals $\E^{\Q}[\text{payoff}]$ and physical probabilities never enter. Risk-neutral
+  $q=\dfrac{S_0-S_d}{S_u-S_d}$ (with $r=0$) makes $\E^{\Q}[S_T]=S_0$. A perfectly hedged writer makes zero in
+  both states ($\Pi_u=\Pi_d=0$): the fair price is exactly the replication cost.
+  \item \textbf{Bounds \& parity.} $C\ge\big(S-Ke^{-r(T-t)}\big)^+>S-K$ for $r>0$ $\Rightarrow$ an American call
+  on a non-dividend stock is \emph{never} exercised early ($=$ European). Put--call parity
+  $C+Ke^{-r(T-t)}=P+S$ is model-free (static $S_T-K$ replication).
+  \item \textbf{Model.} GBM $S_t=S_0e^{(\mu-\frac12\sigma^2)t+\sigma W_t}$, so
+  $\ln(S_T/S_0)\sim N\!\big((\mu-\tfrac12\sigma^2)T,\sigma^2T\big)$, $\E[S_t]=S_0e^{\mu t}$. Wiener: $W_0=0$,
+  independent stationary increments, $W_t\sim N(0,t)$, continuous paths; $\E[\dd W]=0$, $(\dd W)^2=\dd t$,
+  $[W]_t=t$. A zoo of SDEs: ABM (can go negative), GBM (multiplicative, positive), OU (mean-reverting) ---
+  OU is the template for the Heston/CIR variance.
+\end{itemize}
+\why{Price $=$ cost of the replicating hedge $\Rightarrow$ risk-neutral expectation; $(\dd W)^2=\dd t$ forces
+It\^o calculus; GBM is the baseline every later model perturbs.}
+\ask{Why do the physical probabilities $p$ never enter the one-step price?}
+
+\lec{02}{It\^o, the Black--Scholes PDE, risk-neutral valuation, Feynman--Kac}
+\core{Three equivalent views of the European price: a hedging PDE, a $\Q$-expectation, and Feynman--Kac
+between them.}
+\begin{itemize}
+  \item \textbf{It\^o.} $\dd g=(g_t+\mu g_x+\tfrac12\sigma^2g_{xx})\dd t+\sigma g_x\dd W$; second-order term
+  survives because $(\dd W)^2=\dd t$. On $g=\ln S$: $\dd\ln S=(\mu-\tfrac12\sigma^2)\dd t+\sigma\dd W$ (the
+  $-\tfrac12\sigma^2$ is the convexity correction that keeps $\E[S_t]=S_0e^{\mu t}$).
+  \item \textbf{BS PDE.} $V_t+rSV_S+\tfrac12\sigma^2S^2V_{SS}-rV=0$; delta-hedge $\Delta=V_S$ cancels $\dd W$,
+  the riskless portfolio earns $r$, and the drift $\mu$ drops out. Solved backward from $V(S,T)=$ payoff.
+  \item \textbf{Risk-neutral measure.} Under $\Q$: $\mu\to r$, $\sigma$ unchanged (equivalence preserves
+  quadratic variation); $e^{-rt}V$ is a $\Q$-martingale. Feynman--Kac:
+  $V(S,t)=e^{-r(T-t)}\E^{\Q}[\text{payoff}\mid S_t]$.
+\end{itemize}
+\begin{key}
+\textbf{European call:}\ $C=S_0N(d_1)-Ke^{-rT}N(d_2)$,\quad
+$d_{1,2}=\dfrac{\ln(S_0/K)+(r\pm\frac12\sigma^2)T}{\sigma\sqrt T}$,\quad $d_2=d_1-\sigma\sqrt T$,\quad
+$N(d_2)=\Q(S_T>K)$.\\[3pt]
+\textbf{Greeks (call):}\ $\Delta=N(d_1)$,\ $\Gamma=\dfrac{\phi(d_1)}{S_0\sigma\sqrt T}$,\
+$\text{Vega}=S_0\sqrt T\,\phi(d_1)$,\
+$\Theta=-\dfrac{S_0\phi(d_1)\sigma}{2\sqrt T}-rKe^{-rT}N(d_2)$,\ $\rho=KTe^{-rT}N(d_2)$.\\[2pt]
+The BS PDE re-read at $S_0$: $\Theta+rS_0\Delta+\tfrac12\sigma^2S_0^2\Gamma=rC$ (an identity linking the Greeks).
+\end{key}
+\why{The hedge removes $\dd W$ so the portfolio earns $r$; $\mu$ cancels, which is precisely why the real-world
+drift is absent from every option price.}
+\ask{Where exactly in the delta-hedging derivation is $\Delta=V_S$ forced, and where does $\mu$ cancel?}
+
+\lec{03}{Implied volatility}
+\core{Invert the BS price for its one unknown $\sigma$; the IV surface is how the market's view is read off
+prices.}
+\begin{itemize}
+  \item Four knowns $(S,K,T,r)$, one unknown $\sigma$: a monotone root-find, not a formula.
+  \item \textbf{Existence/uniqueness.} Vega $=S\sqrt T\,\phi(d_1)>0$ $\Rightarrow$ price strictly increasing in
+  $\sigma$ $\Rightarrow$ a unique IV, provided the quote sits inside the no-arbitrage interval
+  $\big[(S-Ke^{-rT})^+,\,S\big]$ (call).
+  \item \textbf{Inversion.} Bisection: linear, bracket-robust, $\sim\!\log_2(\text{width}/\text{tol})$ steps.
+  Newton: quadratic but the step $\sigma\!-\!f/\text{vega}$ blows up where vega $\to0$ (deep OTM / short $T$);
+  globalise by seeding at the price-curve inflection point in $\sigma$ (monotone convergence from there).
+  \item Put and call at the same $(K,T)$ share one IV (parity). Surface: smile/skew across $K$, term structure
+  across $T$; the SPX QQ-plot (fat tails) is the empirical reason BS fails.
+  \item \textbf{Three notions:} \emph{implied} (a quoting convention, one number per quote), \emph{local}
+  $\sigma(S,t)$ (a deterministic function fitting the whole surface), \emph{stochastic} (variance has its own
+  SDE --- Heston).
+\end{itemize}
+\why{Monotonicity (vega $>0$) guarantees a unique root; a non-flat surface is the empirical proof that
+constant-$\sigma$ BS is wrong --- this is what motivates Heston (L7) and jumps (L8).}
+\pit{Newton's $1/\text{vega}$ step is unsafe where vega $\to0$; bisection is the safe fallback.}
+
+\lec{05}{Binomial trees and finite differences}
+\core{Two lattice/grid pricers --- and the fact that a binomial tree \emph{is} an explicit FD scheme.}
+\begin{itemize}
+  \item \textbf{CRR.} $u,d,p$ from matching the mean and variance of the tree log-return to BS; the
+  It\^o-corrected drift $r-\tfrac12\sigma^2$ (not $r$) sits inside $u,d$. Price by risk-neutral backward
+  induction $V_m^n=e^{-r\Delta t}\big(pV^{n+1}_{m+1}+(1-p)V^{n+1}_m\big)$. Convergence $O(1/M)$, \emph{non-
+  monotone} (sign-oscillating as the strike straddles nodes).
+  \item \textbf{FD on the heat equation $u_t=u_{xx}$.} FTCS (explicit), BTCS (implicit), Crank--Nicolson
+  ($\tfrac12$FTCS$+\tfrac12$BTCS). Local truncation: FTCS/BTCS $O(k+h^2)$, CN $O(k^2+h^2)$.
+  \item \textbf{Von Neumann.} $\xi_{\text{FTCS}}=1-4\nu\sin^2(\beta h/2)$ with $\nu=k/h^2$; $|\xi|\le1\Rightarrow
+  \nu\le\tfrac12$ (CFL: $k\le h^2/2$). $\xi_{\text{BTCS}}=\big(1+4\nu\sin^2(\beta h/2)\big)^{-1}$,
+  unconditionally stable.
+  \item \textbf{Lax:} consistency $+$ stability $\Rightarrow$ convergence (consistency alone is not enough).
+  \item \textbf{BS$\to$heat.} $x=\ln S$ (constant coefficients), reverse time $\tau=T-t$, $V=e^{-r\tau}W$.
+  Binomial $=$ FTCS with the coupling $h^2=\sigma^2k$ collapsing the centre node into the two-point recursion.
+\end{itemize}
+\why{Explicit schemes are cheap but the CFL bound forces $k=O(h^2)$; working in $x=\ln S$ gives constant
+coefficients and tames the large-$S$ diffusion weight $\propto j^2$ --- the same domain-truncation lesson as
+the COS range $[a,b]$.}
+\ask{In what precise sense is the binomial tree an explicit FD scheme ``specialised to a single time-zero
+value''?}
+
+% ==================================================================
+\section{Cluster 2 --- Monte Carlo \quad{\normalfont(L4)}}
+% ==================================================================
+
+\lec{04}{MC integration, SDE simulation, variance reduction}
+\core{An unbiased sampling estimator with \emph{dimension-independent} $O(N^{-1/2})$ error --- plus the tools
+that shrink its constant.}
+\begin{itemize}
+  \item \textbf{Estimator.} $\hat I=\tfrac1N\sum_i g(X_i)$, unbiased, $\mathrm{Var}(\hat I)=\sigma^2/N$,
+  standard error $s_N/\sqrt N$ (use the $N-1$ sample variance), CLT interval $\hat I\pm z_{\alpha/2}s_N/\sqrt N$.
+  The rate is $d$-independent, unlike tensor quadrature $O(N^{-k/d})$.
+  \item \textbf{QMC.} Low-discrepancy points $\Rightarrow$ error $\le D_N^\ast(\text{star discrepancy})\times
+  V(g)$ (Koksma--Hlawka), giving $\sim(\log N)^d/N$, near $O(N^{-1})$. Degrades in high effective dimension;
+  randomised QMC restores an error estimate.
+  \item \textbf{SDE schemes.} Euler--Maruyama $X_{n+1}=X_n+a\,h+b\,\Delta W$ (strong $\tfrac12$, weak $1$);
+  Milstein adds $\tfrac12bb'\big[(\Delta W)^2-h\big]$ from the It\^o--Taylor expansion (strong $1$). Strong
+  $=$ pathwise error, weak $=$ error in distribution / expectations.
+  \item \textbf{Variance reduction.} Antithetic ($\pm Z$; needs monotone payoff so the pair is negatively
+  correlated); control variate (optimal $c^\ast=\mathrm{Cov}(X,Y)/\mathrm{Var}(Y)$, residual variance factor
+  $1-\rho^2$); importance sampling (likelihood-ratio reweight / Girsanov drift shift; beware blow-up to
+  infinite variance).
+\end{itemize}
+\why{MC wins in high dimension because the rate is $d$-free; it is the slow $O(N^{-1/2})$ benchmark that COS
+and FFT beat for smooth, low-dimensional European problems.}
+\ask{Derive the Milstein correction term and state the strong/weak orders of Euler vs Milstein.}
+
+% ==================================================================
+\section{Cluster 3 --- Fourier / COS \quad{\normalfont(L6, L10) --- PRIORITY}}
+% ==================================================================
+
+\lec{06}{The Fourier family and the COS method}
+\core{Compute $e^{-rT}\E[\text{payoff}]$ using \emph{only} the cf, by expanding the density in a cosine series
+whose coefficients are read straight off $\ch$.}
+\begin{itemize}
+  \item \textbf{Fourier family.} cf $\ch_X(u)=\int e^{\ii ux}f(x)\dd x$ is the Fourier dual of $f$; inversion
+  $f(x)=\tfrac1{2\pi}\int e^{-\ii ux}\ch_X(u)\dd u$. The cf is known in closed form for a long list of models
+  even when $f$ is not. DFT/FFT is $O(N\log N)$; the half-range \emph{cosine} series (even extension) underlies
+  COS.
+  \item \textbf{Carr--Madan (precursor).} Undamped call is not $L^1$ in log-strike $k$; damp
+  $c_T(k)=e^{\alpha k}C_T(k)$, then $\psi_T(v)=\dfrac{e^{-rT}\ch(v-(\alpha+1)\ii)}{\alpha^2+\alpha-v^2+\ii(2\alpha
+  +1)v}$, invert by FFT. Weaknesses COS removes: a numerical integration and a free $\alpha$.
+  \item \textbf{Density recovery (engine).} On $[a,b]$,
+  $f(y)\approx\psumN A_k\cos\!\big(\om(y-a)\big)$ with the cf-sampled coefficient
+  \[
+  A_k\approx F_k=\frac{2}{b-a}\,\Real\!\Big\{\ch\!\big(\om\big)\,e^{-\ii \om a}\Big\},
+  \qquad \om=\frac{k\pi}{b-a}
+  \]
+  (the \emph{only} approximation is extending the integral to $\R$, i.e. range truncation).
+\end{itemize}
+\begin{key}
+\textbf{European COS price:}\quad
+$\displaystyle P\approx e^{-rT}\psumN
+\Real\!\Big\{\ch_{X_T}\!\big(\om;x_0\big)\,e^{-\ii \om a}\Big\}\,V_k$.\\[4pt]
+\textbf{Payoff coefficients} ($y=\ln(S_T/K)$): call $V_k=\tfrac{2}{b-a}K\big[\chi_k(0,b)-\psi_k(0,b)\big]$,
+put $V_k=\tfrac{2}{b-a}K\big[\psi_k(a,0)-\chi_k(a,0)\big]$, with the elementary closed forms
+\[
+\chi_k(c,d)=\frac{1}{1+\om^2}\Big[\cos(\om(d{-}a))e^d-\cos(\om(c{-}a))e^c+\om\sin(\om(d{-}a))e^d-\om\sin(\om(c{-}a))e^c\Big],
+\]
+\[
+\psi_k(c,d)=\begin{cases}\big[\sin(\om(d{-}a))-\sin(\om(c{-}a))\big]/\om, & k\neq0,\\ d-c,& k=0.\end{cases}
+\]
+\textbf{Cumulant range:}\quad $[a,b]=\big[c_1-L\sqrt{c_2+\sqrt{c_4}},\ c_1+L\sqrt{c_2+\sqrt{c_4}}\big]$,
+$L\approx8\text{--}12$. BS: $c_1=\ln\tfrac{S_0}{K}+(r-\tfrac12\sigma^2)T$, $c_2=\sigma^2T$, $c_4=0$.
+\end{key}
+\begin{itemize}
+  \item \textbf{Cost \& convergence.} $O(N)$ per price, \emph{no FFT, no quadrature}; exponential convergence
+  for smooth (analytic-strip) densities, saturating at the range-truncation floor. Three errors: range
+  truncation (fixed floor), series truncation (set by smoothness $\Rightarrow$ $A_k$ decay), cf/model error.
+  Algebraic only when $f$ has finite smoothness ($A_k=O(k^{-(\beta+1)})$), e.g. VG with small $\nu$.
+  \item \textbf{Why cosine, not complex Fourier:} (i) even extension $\Rightarrow$ real coefficients; (ii)
+  $A_k$ is literally $\Real\{\ch\}$ at the grid frequency; (iii) $V_k$ closes in $\chi_k,\psi_k$.
+  \item \textbf{Greeks free:} $S_0$ enters only through $\ch$ (for L\'evy/BS $\ch(u;x_0)=\ch_{\text{lvl}}(u)
+  e^{\ii ux_0}$), so $\Delta,\text{Vega}$ are termwise derivatives of the same sum; one set of $\{V_k\}$ prices
+  the whole grid.
+\end{itemize}
+\why{The cosine basis pairs the cf-derived density coefficients against closed-form payoff coefficients
+(a Parseval-style product); the only errors you control are the range $[a,b]$ and the term count $N$.}
+\begin{trap}
+\textbf{Short-maturity range collapse (Assignment 2 bug).} As $T\to0$, $c_2=\sigma^2T\to0$, so the half-width
+$L\sqrt{c_2+\sqrt{c_4}}\to0$ and $[a,b]$ collapses toward $c_1$ (Gaussian has $c_4=0$, no floor). \emph{Signature:}
+error \emph{grows} as $T\to0$ and does \emph{not} improve with larger $N$ --- the tell-tale of a \emph{range}
+error (a fixed floor), not a \emph{series} error (curable by more terms). \emph{Fix:} raise $L$ at short $T$,
+floor the half-width / retain the $\sqrt{c_4}$ term, and construct $[a,b]$ to cover the whole spot/strike grid,
+not a single point.
+\end{trap}
+
+\lec{10}{Barrier options}
+\core{Payoff $\times$ survival indicator. Analytic under GBM via the reflection principle; for discrete
+monitoring a COS \emph{backward recursion} that --- unlike European COS --- does use the FFT.}
+\begin{itemize}
+  \item \textbf{Definitions.} Eight types (up/down $\times$ in/out $\times$ call/put). In--out parity
+  $C_{\text{in}}+C_{\text{out}}=$ vanilla (price the easier leg, subtract; free correctness check).
+  \item \textbf{Two formulations.} Expectation $V=e^{-r(T-t)}\E_x\big[(\alpha(e^{X_T}-K))^+\mathbf
+  1_{\{\tau_B>T\}}\big]$ ($\alpha=\pm1$); localized BS PDE with \emph{absorbing} (Dirichlet) boundaries
+  $V(a,t)=V(b,t)=0$ at the knock-out level --- the barrier enters through the boundary, not the equation.
+  \item \textbf{Reflection principle (GBM).} $\Prob(\tau_a\le T)=2\Prob(W_T\ge a)$ $\Rightarrow$ running-max
+  density $p_{\Max}(a)=\sqrt{2/\pi T}\,e^{-a^2/2T}\mathbf 1_{a\ge0}$; joint density
+  $p_{\Max,W_T}(a,b)=\sqrt{2/\pi}\,\dfrac{2a-b}{T^{3/2}}e^{-(2a-b)^2/2T}\mathbf 1_{a\ge\max(b,0)}$. This $p(\xi,y)$
+  integrates against the payoff to give closed-form barrier prices (drifted case by Girsanov).
+  \item \textbf{PDE routes.} Method of images $U(S,t)=S^{2\alpha}V(B^2/S,t)$, $\alpha=\tfrac12(1-2r/\sigma^2)$,
+  e.g. $C_{\text{down-out}}=C_{\text{van}}(S,K)-(S/B)^{2\alpha}C_{\text{van}}(B^2/S,K)$; or a sine-series
+  solution of the reduced heat equation (homogeneous Dirichlet $\Rightarrow$ sine basis).
+\end{itemize}
+\begin{key}
+\textbf{Discrete COS (backward recursion).} For $m=M,\dots,2$:
+$\hat c(x,t_{m-1})=e^{-r\Delta t}\sum'_k F_k(x)V_k(t_m)$, $F_k(x)=\Real\{\ch(\om;x)e^{-\ii\om a}\}$. Knock-out
+overwrites $v=R$ (rebate) above the barrier $h=\ln(H/K)$, splitting $V_k$ into a payoff piece $\Psi_k(h,b)$ and
+a continuation piece $\hat C_k$ built from the previous $\{V_j\}$ through a coupling $M_{k,j}$ that is
+\textbf{Hankel\,+\,Toeplitz} $\Rightarrow$ each step is a convolution by \textbf{FFT}. Total cost
+$O\big((M-1)N\log_2 N\big)$.
+\end{key}
+\why{The Markov property factorises the survival product $\prod_m\mathbf 1_{\{x_m<h\}}$ into one-step
+transitions, turning the price into a backward recursion of European-COS steps. \textbf{Key contrast:} European
+COS needs no FFT, but the discrete barrier must propagate \emph{all} $\{V_k\}$ each step --- a structured
+matrix--vector product --- so the FFT returns. Continuous monitoring is the $M\to\infty$ limit (extrapolate in
+$\Delta t$); Heston barriers go 2-D (1-D COS in log-stock $+$ integration over variance, or full 2-D COS).}
+
+% ==================================================================
+\section{Cluster 4 --- Models \quad{\normalfont(L7, L8)}}
+% ==================================================================
+
+\lec{07}{Heston stochastic volatility}
+\core{Give variance its own mean-reverting Brownian shock; price by plugging the affine cf into COS.}
+\begin{itemize}
+  \item \textbf{Dynamics.} $\dd S=rS\,\dd t+\sqrt v\,S\,\dd W_1$, $\dd v=\kappa(\bar v-v)\dd t+\eta\sqrt v\,\dd
+  W_2$, $\dd\langle W_1,W_2\rangle=\rho\,\dd t$. Variance is CIR; $v_T\mid v_t$ is noncentral $\chi^2$.
+  \item \textbf{Feller.} $2\kappa\bar v\ge\eta^2$ keeps $v>0$ a.s.\ (else $v$ touches $0$ and the
+  density/cf misbehave); derived from the noncentral-$\chi^2$ density not blowing up at the origin.
+  \item \textbf{Affine.} Not affine in $(S,v)$ but \emph{is} in $(\ln S,v)$, so the log-price cf is
+  exponential-affine, from \textbf{Riccati ODEs}:
+\end{itemize}
+\begin{key}
+$\ch(u,\tau)=\exp\!\Big(\ii u(\ln S_0+r\tau)+\tfrac{v_0}{\eta^2}\tfrac{1-e^{-D\tau}}{1-Ge^{-D\tau}}(\kappa-\ii\rho\eta u-D)
++\tfrac{\kappa\bar v}{\eta^2}\big[(\kappa-\ii\rho\eta u-D)\tau-2\ln\tfrac{1-Ge^{-D\tau}}{1-G}\big]\Big)$,\\[3pt]
+$D=\sqrt{(\kappa-\ii\rho\eta u)^2+\eta^2(u^2+\ii u)}$,\quad
+$G=\dfrac{\kappa-\ii\rho\eta u-D}{\kappa-\ii\rho\eta u+D}$.
+\end{key}
+\begin{itemize}
+  \item \textbf{Simulation.} Euler can make $v<0$ (full-truncation / reflection / log-$v$ fixes, each biased);
+  Broadie--Kaya \emph{exact} via noncentral-$\chi^2$ sampling of $v$ $+$ the cf of the integrated variance
+  (generator $/$ time-change $/$ Girsanov machinery).
+  \item \textbf{Smile intuition.} $\eta$ controls curvature (smile), $\rho$ the skew sign, $\kappa$ the term-
+  structure speed, $v_0/\bar v$ the level/long-run.
+\end{itemize}
+\why{Heston is the headline COS use case: one analytic cf prices the whole smile in a single $O(N)$ sum.}
+\pit{The ``little Heston trap'': the complex $\log/\sqrt{}$ branch cut destabilises the cf at long maturities ---
+use the stable grouping (the form above). Negative $\rho$ and small $c_2$ worsen the short-maturity range trap.}
+
+\lec{08}{Jumps and the affine jump-diffusion framework}
+\core{Add discontinuities; the cf still closes in elementary form, so COS still applies unchanged.}
+\begin{itemize}
+  \item \textbf{Poisson.} $\Prob(N_t=k)=e^{-\lambda t}(\lambda t)^k/k!$, mean $=$ var $=\lambda t$; compensated
+  $N_t-\lambda t$ is a martingale; intensity may be time-dependent ($\Lambda=\int\lambda$) or stochastic (Cox).
+  \item \textbf{Compound Poisson cf.} $Q_t=\sum_{i=1}^{N_t}Y_i$ has $\ch(u)=\exp\!\big(t\lambda(\hat\nu(u)-1)\big)$
+  (the L\'evy--Khintchine jump exponent), by conditioning on $N_t$. Adding a diffusion gives the full
+  jump-diffusion log-price cf.
+  \item \textbf{Merton SDE.} $\dd S/S_{t^-}=(r-\lambda\E[J])\dd t+\sigma\dd W+(J-1)\dd N$; drift correction
+  $\mu=r-\lambda\E[J]$ (compensator) keeps $e^{-rt}S_t$ a $\Q$-martingale. Value solves a non-local
+  \textbf{PIDE}.
+  \item \textbf{Jump-size laws.} Merton (lognormal jumps): cumulants of $\ln S_T$ are
+  $c_1=(r-\tfrac12\sigma^2-\lambda\kappa)T+\lambda T\mu_J$, $c_2=T(\sigma^2+\lambda(\mu_J^2+\sigma_J^2))$,
+  $c_4=\lambda T(\mu_J^4+6\mu_J^2\sigma_J^2+3\sigma_J^4)$. Kou (double-exponential):
+  $\hat\nu(u)=\tfrac{p\eta_1}{\eta_1-\ii u}+\tfrac{(1-p)\eta_2}{\eta_2+\ii u}$, needs $\eta_1>1$.
+  \item \textbf{AJD (Duffie--Pan--Singleton).} cf $=\exp(\alpha(\tau)+\beta(\tau)\cdot x)$ from Riccati ODEs with
+  the jump-transform term $(\theta(\beta)-1)$; BS is the no-jump case.
+\end{itemize}
+\why{The compensator / $(\theta-1)$ motif recurs (compensated Poisson, drift correction, AJD ODE); the only
+thing COS needs from any of these is $\ch$ at $u=\om$. Heavy tails ($c_4>0$) widen $[a,b]$ --- exactly what
+keeps the short-$T$ range from collapsing.}
+
+% ==================================================================
+\section{Cluster 5 --- American options \quad{\normalfont(L9)}}
+% ==================================================================
+
+\lec{09}{Early exercise: optimal stopping and four pricers}
+\core{An optimal-stopping / free-boundary problem; price the Bermudan by backward recursion, then Richardson-
+extrapolate to the American.}
+\begin{itemize}
+  \item \textbf{Free boundary.} $v_0=\sup_\tau\E^{\Q}[e^{-r\tau}\Lambda(S_\tau,\tau)]$; value
+  $v=\max(\Lambda,\text{continuation})$; continuation region ($v>\Lambda$, BS PDE holds) vs stopping region
+  ($v=\Lambda$), smooth pasting ($v,v_S$ continuous) at the free boundary $S^\ast(t)$.
+  \item \textbf{Call $=$ European} on a non-dividend stock (dominating-strategy + parity bound
+  $C\ge S-Ke^{-r(T-t)}>S-K$); the \emph{put} breaks it because $Ke^{-r(T-t)}<K$ --- banking the strike early
+  to earn interest can win, so early exercise is genuinely optimal.
+  \item \textbf{LCP / obstacle.} $(v-\Lambda)\ge0$, $\mathcal Lv\le0$, $(v-\Lambda)\,\mathcal Lv=0$ ($\mathcal
+  L$ the BS operator); delta-hedging gives an equality for the European but only an inequality for the American
+  (the holder controls exercise).
+\end{itemize}
+\begin{key}
+\textbf{Bermudan backbone (log-space).}\ $c(x,t_{n-1})=e^{-r\Delta t}\E[v(X_{t_n})\mid x]$,
+$v=\max(\Lambda,c)$. Four ways to compute $c$:\\[2pt]
+\ \ \textbullet\ \textbf{Binomial:} $V=\max(\Lambda,e^{-r\Delta t}[pV^++(1-p)V^-])$ --- one line differs from
+European.\\
+\ \ \textbullet\ \textbf{FD$+$LCP:} projected update $V=\max(\Lambda,\text{BTCS stencil})$ via \textbf{PSOR}
+(project \emph{inside} each SOR sweep, not once at the end).\\
+\ \ \textbullet\ \textbf{LSM:} regress discounted future cash flows on a basis (monomials / weighted Laguerre)
+over \emph{in-the-money} paths; exercise if $\Lambda>\hat c$. Low-biased (suboptimal policy) with a competing
+in-sample foresight bias $\Rightarrow$ use out-of-sample. (8-path paper example: American $0.1144$ vs European
+$0.0564$.)\\
+\ \ \textbullet\ \textbf{COS-Bermudan:} split $V_k(t_n)=G_k(a,x_n^\ast)+C_k(x_n^\ast,b,t_n)$ at the early-
+exercise point $x_n^\ast$ (where $c=\Lambda$, found by Newton); $G_k$ closed-form ($\chi,\psi$), $C_k$ via FFT;
+cost $O(NK\log_2 K)$.
+\end{key}
+\why{All four pricers compute the same continuation value $\E[v(t_{n+1})\mid x]$ differently; the COS range
+caveat bites \emph{per step} because $c_2=\sigma^2\Delta t$ is small. Richardson extrapolates Bermudan $\to$
+American in the number of exercise dates.}
+
+% ==================================================================
+\section{Cluster 6 --- Exotics overview \quad{\normalfont(L11)}}
+% ==================================================================
+
+\lec{11}{Exotics map: payoff structure $\Rightarrow$ method}
+\core{A survey of path-dependent / multi-asset payoffs and the numerical method each one calls for.}
+\begin{itemize}
+  \item \textbf{Asian} (average-rate). Arithmetic average has no closed form (sum of correlated lognormals)
+  $\Rightarrow$ MC with the \emph{geometric}-average control variate (geometric Asian \emph{is} lognormal:
+  $\sigma_G^2\to\sigma^2T/3$, Black-style closed form). Under stochastic vol, the Fouque--Han 3-D PDE reduces
+  to 1-D by the Vecer numeraire/homogeneity change of variable.
+  \item \textbf{Digital / binary.} Price $=e^{-rT}N(d_2)$ ($=e^{-rT}\Q(S_T>K)$); $\partial C/\partial K$
+  (Breeden--Litzenberger) and a centred call-spread replicate it. Discontinuous payoff $\Rightarrow$ delta /
+  pin-risk blow-up ($\sim1/\varepsilon$ notional) near $K$ at expiry --- the recurring hedging trap.
+  \item \textbf{Basket / worst-of.} Correlation-driven; MC dominates, or moment-matching / 2-D COS
+  (factorises when $\rho=0$). No clean COS for $\ge4$-asset baskets.
+  \item \textbf{Cliquet.} Forward-starting capped/floored periodic returns; sensitive to the forward skew.
+  \item \textbf{Barrier.} See L10.
+\end{itemize}
+\why{Method follows structure: averaging / multi-asset / high dimension $\Rightarrow$ Monte Carlo; smooth,
+low-dimensional with a known cf $\Rightarrow$ COS; the digital's discontinuity is the recurring hedging
+difficulty.}
+
+% ==================================================================
+\section{Quick-reference cards}
+% ==================================================================
+
+\subsection*{COS in five lines (say it cold)}
+\begin{enumerate}
+  \item Price $=e^{-rT}\!\int_a^b V(y)f(y\mid x_0)\dd y$; I know $\ch$, not $f$.
+  \item Truncate to $[a,b]=c_1\pm L\sqrt{c_2+\sqrt{c_4}}$ and cosine-expand $f$ there.
+  \item Density coefficients come straight from the cf: $A_k=\tfrac{2}{b-a}\Real\{\ch(\om)e^{-\ii\om a}\}$.
+  \item Payoff coefficients $V_k$ are closed-form ($\chi_k,\psi_k$).
+  \item Pair them: $P\approx e^{-rT}\sum'_k\Real\{\ch\,e^{-\ii\om a}\}V_k$ --- $O(N)$, exponential
+  convergence; the only floors are $[a,b]$ and $N$.
+\end{enumerate}
+
+\subsection*{Convergence rates at a glance}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l l l}
+\toprule
+\textbf{Method} & \textbf{Error} & \textbf{Note}\\
+\midrule
+Monte Carlo & $O(N^{-1/2})$ & dimension-free; the benchmark\\
+QMC & $\sim(\log N)^d/N$ & needs low effective dimension\\
+Binomial / FTCS & $O(1/M)$, $O(k+h^2)$ & FTCS needs $k\le h^2/2$\\
+Crank--Nicolson & $O(k^2+h^2)$ & implicit, unconditionally stable\\
+COS (smooth $f$) & exponential in $N$ & floors at range truncation\\
+COS (finite smoothness) & algebraic $O(k^{-(\beta+1)})$ & e.g.\ VG small $\nu$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Method-selection table}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.7cm} >{\raggedright\arraybackslash}p{6.4cm} l}
+\toprule
+\textbf{Problem} & \textbf{Preferred method} & \textbf{Rate} \\
+\midrule
+European, cf known (BS/Heston/L\'evy) & COS & exponential in $N$ \\
+European, density known (GBM) & Black--Scholes closed form & exact \\
+Low-dim PDE, vanilla/American & Finite differences (CN; PSOR for LCP) & $O(k^2+h^2)$ \\
+American/Bermudan, cf known & COS-Bermudan (Newton + FFT) & exponential in $N$ \\
+American, general / high-dim & LSM regression Monte Carlo & $O(N^{-1/2})$ \\
+Discrete barrier, cf known & COS backward recursion (FFT) & $O((M{-}1)N\log N)$ \\
+High-dim / basket / arithmetic Asian & Monte Carlo ($+$ variance reduction / QMC) & $O(N^{-1/2})$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Characteristic functions to keep at hand}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{l l}
+\toprule
+\textbf{Model} & \textbf{Characteristic function} (argument $u$, horizon $t$)\\
+\midrule
+Black--Scholes & $\exp\!\big(\ii u(r-\tfrac12\sigma^2)t-\tfrac12\sigma^2u^2t\big)$\\
+Heston & $\exp\!\big(\alpha(t,u)+\beta(t,u)v_0+\ii u\ln S_0\big)$, $\alpha,\beta$ from Riccati ODEs\\
+Merton jumps & $\exp\!\big(\ii u\mu t-\tfrac12\sigma^2u^2t+\lambda t(e^{\ii u\mu_J-\frac12\sigma_J^2u^2}-1)\big)$\\
+Kou jumps & diffusion $\times\exp\!\big(\lambda t(\tfrac{p\eta_1}{\eta_1-\ii u}+\tfrac{(1-p)\eta_2}{\eta_2+\ii u}-1)\big)$\\
+Variance-Gamma & $\big(1-\ii u\theta\nu+\tfrac12\sigma^2\nu u^2\big)^{-t/\nu}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\smallskip
+\noindent\emph{The cf is the only model-specific input COS needs --- the $V_k$ and the cosine sum are identical
+across models.}
+
+\subsection*{Numbers \& facts worth memorising}
+\begin{itemize}
+  \item $(\dd W)^2=\dd t$; $\E[e^{\sigma W_t}]=e^{\sigma^2t/2}$; $\ln(S_T/S_0)\sim N((r-\tfrac12\sigma^2)T,
+  \sigma^2T)$ under $\Q$.
+  \item BS cumulants: $c_1=\ln\tfrac{S_0}{K}+(r-\tfrac12\sigma^2)T$, $c_2=\sigma^2T$, $c_3=c_4=0$;
+  range $=c_1\pm L\sigma\sqrt T$.
+  \item $N(d_2)=\Q(S_T>K)$; $\Delta_{\text{call}}=N(d_1)$; Vega $=S\sqrt T\phi(d_1)$.
+  \item Feller $2\kappa\bar v\ge\eta^2$; CFL $k\le h^2/2$; COS frequency $\om=k\pi/(b-a)$.
+  \item Costs: European COS $O(N)$; discrete barrier $O((M-1)N\log_2N)$; Bermudan COS $O(NK\log_2K)$;
+  MC $O(N^{-1/2})$.
+\end{itemize}
+
+\subsection*{The through-line, once more}
+Discounted expectation $\to$ if density known, closed form / PDE / tree; if only cf known, \textbf{COS} (cosine
+coefficients of $f$ from $\ch$, paired against closed-form payoff coefficients $V_k$, summed in $O(N)$).
+Early exercise and discrete barriers reuse COS as a \emph{backward recursion}; high-dimensional and averaging
+payoffs fall back to \emph{Monte Carlo}. Always set $[a,b]=c_1\pm L\sqrt{c_2+\sqrt{c_4}}$ and watch it collapse
+at short maturity --- the one trap Fang is most likely to probe.
+
+% ==================================================================
+\section{Derivation skeletons --- the logical chain, not the algebra}
+% ==================================================================
+\noindent For each marquee result, the \emph{steps} (so you can rebuild the algebra live, but recall the route
+under pressure). Full algebra is in the lecture notes.
+
+\begin{description}[leftmargin=0pt,style=nextline,itemsep=4pt]
+  \item[BS PDE (delta-hedging).] Form $\Pi=V-\Delta S$ $\to$ It\^o on $V$ $\to$ choose $\Delta=V_S$ to cancel
+  the $\dd W$ term $\to$ the residual is riskless so it must earn $r$ ($\dd\Pi=r\Pi\dd t$) $\to$ collect terms
+  $\Rightarrow$ $V_t+rSV_S+\tfrac12\sigma^2S^2V_{SS}-rV=0$; $\mu$ never appears.
+  \item[Closed-form call.] $C=e^{-rT}\E^{\Q}[(S_T-K)^+]$ $\to$ split into $\E[S_T\mathbf 1]-K\E[\mathbf 1]$
+  $\to$ the $S_T$ term is handled by a measure change (share numeraire) giving $N(d_1)$, the indicator gives
+  $\Q(S_T>K)=N(d_2)$ $\to$ complete the square in the lognormal integral for the $d_2\to d_1$ shift.
+  \item[COS coefficient $A_k$.] Start from $A_k=\tfrac{2}{b-a}\int_a^b f\cos(\om(y-a))\dd y$ $\to$ write
+  $\cos=\Real\{e^{\ii\cdot}\}$, pull out $e^{-\ii\om a}$ $\to$ extend $\int_a^b\to\int_\R$ (\emph{the} one
+  approximation) $\to$ the remaining integral is $\ch(\om)$ $\Rightarrow$
+  $A_k\approx\tfrac{2}{b-a}\Real\{\ch(\om)e^{-\ii\om a}\}$.
+  \item[COS price.] Insert $f\approx\sum'A_k\cos(\cdot)$ into $e^{-rT}\int Vf$ $\to$ swap $\sum/\int$ (uniform
+  convergence) $\to$ define $V_k$ $\to$ $P\approx e^{-rT}\tfrac{b-a}{2}\sum'A_kV_k$ $\to$ substitute
+  $\tfrac{b-a}{2}A_k=\Real\{\ch e^{-\ii\om a}\}$.
+  \item[Cumulant range.] Need $[a,b]$ to hold (almost) all mass of $X_T$ $\to$ centre at the mean $c_1$, scale
+  by $\sqrt{c_2}$ (an ``$L$-sigma'' box), fatten by $\sqrt{c_4}$ for heavy tails $\Rightarrow$ $c_1\pm
+  L\sqrt{c_2+\sqrt{c_4}}$.
+  \item[Reflection principle.] $\{\Max\ge a\}=\{\tau_a\le T\}$ $\to$ paths past $a$ finish above/below $a$
+  with prob $\tfrac12$ $\to$ $\Prob(\tau_a\le T)=2\Prob(W_T\ge a)$ $\to$ differentiate for $p_\Max$; reflect
+  the endpoint across $a$ ($b\mapsto 2a-b$) for the joint density.
+  \item[Heston cf.] Affine in $(\ln S,v)$ $\to$ ansatz $\ch=\exp(\alpha+\beta v_0+\ii u\ln S_0)$ $\to$
+  substitute into the Feynman--Kac PDE $\to$ match constant and $v$-linear terms $\Rightarrow$ a Riccati ODE for
+  $\beta$ and a quadrature for $\alpha$ $\to$ solve $\beta$ via $g=1/\beta$, integrate $\alpha$.
+  \item[Discrete-barrier COS.] Survival $=\prod_m\mathbf 1_{\{x_m<h\}}$ $\to$ Markov factorises the joint
+  density $\to$ nested 1-D integrals $=$ backward recursion $\to$ each step is a European-COS continuation $\to$
+  knock-out splits $V_k$ at $h$ $\to$ the coupling is Toeplitz$+$Hankel $\to$ FFT.
+\end{description}
+
+% ==================================================================
+\section{One question per lecture to be airtight on}
+% ==================================================================
+\begin{enumerate}
+  \item[L1.] Why do the physical probabilities never enter the replication price?
+  \item[L2.] Pinpoint where $\Delta=V_S$ is forced and where $\mu$ cancels in the BS derivation.
+  \item[L3.] Prove the implied vol is unique; why is Newton unsafe deep OTM?
+  \item[L4.] Derive the Milstein term; state strong vs weak orders.
+  \item[L5.] Derive the FTCS stability bound $\nu\le\tfrac12$ by von Neumann; why is BTCS unconditional?
+  \item[L6.] Derive the European COS formula and say exactly where the cf enters.
+  \item[L7.] Write the Heston cf and state + justify the Feller condition.
+  \item[L8.] Derive the compound-Poisson cf and the risk-neutral drift correction.
+  \item[L9.] Prove American call $=$ European; why does the put differ?
+  \item[L10.] Why is discrete-barrier COS a backward recursion, and why does the FFT reappear?
+  \item[L11.] Give the digital price $e^{-rT}N(d_2)$ and explain its hedging blow-up near expiry.
+  \item[COS.] How do you pick $[a,b]$, what breaks at short maturity, and how did you fix it in Assignment~2?
+\end{enumerate}
+
+\end{document}
