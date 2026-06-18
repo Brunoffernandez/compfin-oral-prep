@@ -41,7 +41,7 @@ range; `Σ'` = first term halved; cumulants `c1,c2,c4`; `N(·)` = standard norma
 
 ---
 
-## Cluster 3 — Fourier / COS ★ priority (L6, L10)
+## Cluster 3 — Fourier / COS (priority) (L6, L10)
 
 ### Lecture 06 — The Fourier family & the COS method
 - **Core:** compute `e^{-rT}E[payoff]` using only the cf, by expanding the density in a cosine series whose coefficients come straight from `φ`.
