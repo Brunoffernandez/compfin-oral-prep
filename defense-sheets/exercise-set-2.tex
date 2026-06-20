@@ -1,0 +1,563 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  10pt,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmainfont[]{DejaVu Serif}
+  \setsansfont[]{DejaVu Sans}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=2cm]{geometry}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  colorlinks=true,
+  linkcolor={Maroon},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\hypertarget{defense-sheet-exercise-set-2}{%
+\section{Defense sheet --- Exercise set
+2}\label{defense-sheet-exercise-set-2}}
+
+This set has two problems, each in its own file: - \textbf{Exercise 1
+--- Least-Squares Monte Carlo (LSM / Longstaff--Schwartz):}
+\texttt{exercise1\_def\ (2).py} - \textbf{Exercise 2 --- Finite
+Difference (FTCS) for European and American puts:}
+\texttt{exercise2\_def\ (2).py}
+
+Line numbers below refer to those two files. Where a ``why'' requires my
+own reasoning, it is left as a \texttt{TODO\ (Bruno)} for me to answer
+out loud.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{the-task-in-my-own-words}{%
+\subsection{The task (in my own words)}\label{the-task-in-my-own-words}}
+
+\textbf{Exercise 1 --- LSM (Longstaff--Schwartz, 2001).} - Part (i):
+reproduce the textbook 8-path numerical example from the paper. Strike
+\texttt{K\ =\ 1.10}, \texttt{r\ =\ 6\%}, three yearly exercise dates
+(\texttt{dt\ =\ 1}, \texttt{T\ =\ 3}). Print the cash-flow matrix at
+each time, the in-the-money regression tables, the fitted
+\texttt{E{[}Y\textbar{}X{]}\ =\ a0\ +\ a1\ X\ +\ a2\ X\^{}2}, the
+optimal early-exercise decisions, the stopping rule, the option
+cash-flow matrix, and finally the American and European put prices to 5
+decimals. - Part (ii): replace the 8 hard-coded paths with
+\texttt{N\ =\ 100,000} simulated GBM paths (50k + 50k antithetic),
+\texttt{K\ =\ 40}, \texttt{M\ =\ 50} exercise dates per year, and
+replicate the ``red box'' columns of Table 1 of the paper (Simulated
+American, s.e., closed-form European, early-exercise value) for the 20
+\texttt{(S0,\ sigma,\ T)} combinations. Here the basis is the first
+three weighted Laguerre polynomials evaluated at \texttt{x\ =\ S/K}.
+
+\textbf{Exercise 2 --- Finite Difference (FTCS).} - Part (i): adapt a
+provided \texttt{ftcs\_bs\_put.py} to price European puts via an
+explicit (forward-time, central-space) scheme in log-price space
+\texttt{m\ =\ log\ S}, for the same 20 parameter combinations, and
+compare against closed-form Black--Scholes. - Part (ii): turn the
+European FTCS solver into an American one by adding the early-exercise
+(free-boundary) projection \texttt{U\ =\ max(U,\ intrinsic)} after each
+time step. Compare FD-American against the LSM-American of Exercise 1 as
+a correctness check. - Part (iii): assemble the full ``outside the red
+box'' columns of Table 1 (FD American, closed-form European, FD
+early-exercise value, and the FD-minus-LSM difference in early-exercise
+value).
+
+\textbf{TODO (Bruno):} In one sentence, why does the American put price
+exceed the European put price here, and why is that \emph{not} true for
+an American call on a non-dividend stock?
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{my-approach-and-why}{%
+\subsection{My approach and why}\label{my-approach-and-why}}
+
+\textbf{Exercise 1 --- LSM.} - Backward induction over exercise dates.
+At each date, regress discounted realized future cash flows \texttt{Y}
+on a basis in the current spot \texttt{X}, but \textbf{only over
+in-the-money paths}, then compare immediate exercise against the fitted
+continuation value. - Part (i) uses a degree-2 monomial basis
+\texttt{\{1,\ X,\ X\^{}2\}} via an sklearn pipeline
+(\texttt{exercise1\_def\ (2).py:107}). - Part (ii) uses the first three
+weighted Laguerre polynomials in \texttt{x\ =\ S/K}
+(\texttt{exercise1\_def\ (2).py:185-191}). - Variance reduction by
+antithetic paths (\texttt{exercise1\_def\ (2).py:177-178}).
+
+\textbf{TODO (Bruno):} Why regress only on in-the-money paths rather
+than all paths? (Out-of-the-money continuation values are irrelevant to
+the exercise decision --- but say \emph{why} in your own words and tie
+it to the paper.)
+
+\textbf{TODO (Bruno):} Why monomials \texttt{\{1,\ X,\ X\^{}2\}} in Part
+(i) but weighted Laguerre in Part (ii)? Was this just ``match the
+paper,'' or numerical conditioning? Be ready to defend both.
+
+\textbf{TODO (Bruno):} Antithetic variates: why does pairing \texttt{Z}
+with \texttt{-Z} reduce variance for this payoff, and what property of
+the estimator makes the variance reduction work? State the covariance
+argument.
+
+\textbf{Exercise 2 --- FTCS.} - Work in log-price \texttt{m\ =\ log\ S}
+so the Black--Scholes PDE has constant coefficients, build the explicit
+evolution matrix \texttt{F} once per parameter set, and march forward in
+transformed time (time-to-maturity). - American: project onto the payoff
+after each step (\texttt{exercise2\_def\ (2).py:105}).
+
+\textbf{TODO (Bruno):} Why transform to log-price \texttt{m\ =\ log\ S}
+before discretizing instead of working directly in \texttt{S}? (Constant
+coefficients / uniform grid --- but explain the consequence for the
+matrices \texttt{T1}, \texttt{T2}.)
+
+\textbf{TODO (Bruno):} FTCS is \emph{explicit}. Why is that an
+acceptable choice here, and what stability condition are you implicitly
+relying on with \texttt{Nt\ =\ 40000*T}? (See ``hardest question'' below
+--- this is the danger zone.)
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{key-code-sections-file-what-it-does-why-i-wrote-it-that-way}{%
+\subsection{Key code sections (file + what it does + why I wrote it that
+way)}\label{key-code-sections-file-what-it-does-why-i-wrote-it-that-way}}
+
+\hypertarget{exercise-1-exercise1_def-2.py}{%
+\subsubsection{\texorpdfstring{Exercise 1 ---
+\texttt{exercise1\_def\ (2).py}}{Exercise 1 --- exercise1\_def (2).py}}\label{exercise-1-exercise1_def-2.py}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{:11-24}} --- Part (i) parameters and the 8 hard-coded
+  paths from the paper. \texttt{C} (cash-flow matrix) initialized to
+  zeros at \texttt{:27}, shape \texttt{(8,\ 3)}.
+\item
+  \textbf{\texttt{:32-86}} --- three printing helpers
+  (\texttt{print\_formatted\_table}, \texttt{print\_regression\_table},
+  \texttt{optimal\_table}) that produce the per-time tables shown in the
+  report. Pure presentation, no pricing logic.
+\item
+  \textbf{\texttt{:89} \texttt{LSQM(S,C,dt,T,K,r)}} --- the Part (i) LSM
+  engine.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{:91} terminal payoff
+    \texttt{C{[}:,T-1{]}\ =\ max(K\ -\ S{[}:,T{]},\ 0)}.
+  \item
+    \texttt{:93} \texttt{C\_european} keeps a copy of the terminal
+    payoff for the European price later.
+  \item
+    \texttt{:96} backward loop \texttt{i\ =\ T-2\ ...\ 0}.
+  \item
+    \texttt{:98} regressor \texttt{X\ =\ S{[}:,i+1{]}} masked by
+    \texttt{\textless{}K} (so OTM entries are zeroed before the ITM
+    filter), reshaped to 2D.
+  \item
+    \texttt{:99-101} builds \texttt{Y} = sum of \emph{all} future cash
+    flows discounted back to time \texttt{i+1} using
+    \texttt{discount\_factors\ =\ exp(-r*dt*(u-i))} with
+    \texttt{u\ =\ arange(i+1,\ ncols)}.
+  \item
+    \texttt{:102-104} ITM mask \texttt{S{[}:,i+1{]}\ \textless{}\ K};
+    restrict \texttt{X}, \texttt{Y} to ITM.
+  \item
+    \texttt{:107-108} degree-2 polynomial + linear regression pipeline,
+    fit on ITM data.
+  \item
+    \texttt{:111-112} extracts intercept \texttt{a0} and coefficients
+    \texttt{a1,\ a2}.
+  \item
+    \texttt{:117-120} continuation = model prediction on ITM paths;
+    exercise = \texttt{K\ -\ S} on ITM paths.
+  \item
+    \texttt{:122-127} exercise rule: if
+    \texttt{exercise\ \textgreater{}\ continuation}, set
+    \texttt{C{[}j,i{]}} to exercise value and \textbf{zero out all later
+    cash flows} \texttt{C{[}j,i+1:{]}\ =\ 0}; else
+    \texttt{C{[}j,i{]}\ =\ 0}.
+  \item
+    \texttt{:131} stopping matrix from \texttt{C\ !=\ 0}.
+  \item
+    \texttt{:147-152} American price: discount each path's cash flows by
+    \texttt{exp(-r*dt*t)} for \texttt{t=1..T}, sum per path, average.
+  \item
+    \texttt{:156} European price:
+    \texttt{mean(C\_european\ *\ exp(-r*dt*T))}.
+  \end{itemize}
+\item
+  \textbf{\texttt{:167-173}} --- Part (ii) parameters (\texttt{K=40},
+  \texttt{M=50}, \texttt{N=100000}).
+\item
+  \textbf{\texttt{:175-183} \texttt{simulate\_paths}} --- GBM exact-step
+  simulation; \texttt{:177} draws \texttt{N//2} normals, \texttt{:178}
+  stacks \texttt{-Z} for antithetics; \texttt{:181-182} exact log-Euler
+  update
+  \texttt{S{[}:,i+1{]}\ =\ S{[}:,i{]}*exp((r-0.5\ sigma\^{}2)dt\ +\ sigma\ sqrt(dt)\ Z)}.
+\item
+  \textbf{\texttt{:185-191} \texttt{laguerre\_basis}} ---
+  \texttt{x=S/K}; \texttt{L0=exp(-x/2)}, \texttt{L1=exp(-x/2)(1-x)},
+  \texttt{L2=exp(-x/2)(1-2x+x\^{}2/2)}; stacked column-wise.
+\item
+  \textbf{\texttt{:193-196} \texttt{black\_scholes\_put}} ---
+  closed-form European put.
+\item
+  \textbf{\texttt{:198-235} \texttt{LSM\_pricing}} --- Part (ii) LSM
+  engine; same backward structure as \texttt{LSQM} but basis is
+  \texttt{laguerre\_basis} (\texttt{:212}) and
+  \texttt{LinearRegression()} with default intercept (\texttt{:215}).
+  Returns per-path discounted cash flows.
+\item
+  \textbf{\texttt{:237-267}} --- loop over the 20
+  \texttt{(S0,\ sigma,\ T)} combos: \texttt{M\_total\ =\ M*T},
+  \texttt{dt\ =\ 1/M}, simulate, price, compute
+  \texttt{american\ =\ mean(cashflow)},
+  \texttt{european\ =\ black\_scholes\_put(...)},
+  \texttt{ee\ =\ \textbar{}american\ -\ european\textbar{}}
+  (\texttt{:257}), \texttt{se\ =\ std(cashflow)/sqrt(N)}
+  (\texttt{:258}).
+\end{itemize}
+
+\textbf{TODO (Bruno):} \texttt{:91} and \texttt{:203} index
+\texttt{S{[}:,\ T{]}} / \texttt{S{[}:,\ M\_total{]}} for the terminal
+payoff while the cash-flow matrix \texttt{C} has only \texttt{T} (resp.
+\texttt{M\_total}) columns indexed \texttt{0..T-1}. Explain the
+off-by-one convention: \texttt{S} has one more column (the \texttt{t=0}
+spot) than \texttt{C}. Be ready to point at exactly which column of
+\texttt{S} is ``today'' and which is maturity.
+
+\textbf{TODO (Bruno):} \texttt{:257} uses
+\texttt{ee\ =\ np.abs(american\ -\ european)} (absolute value) in the
+Part (ii) block of \texttt{exercise1\_def}, but the copy in
+\texttt{exercise2\_def\ (2).py:223} uses the \emph{signed}
+\texttt{ee\ =\ american\_value\ -\ european\_value}. Which one matches
+the paper's ``early exercise value'' column, and is the absolute value
+ever wrong (can LSM-American dip below European by noise)?
+
+\textbf{TODO (Bruno):} Standard error
+\texttt{se\ =\ std(cashflow)/sqrt(N)} at \texttt{:258}. With antithetic
+sampling the \texttt{N} draws are \textbf{not independent} (each path is
+paired with its antithetic). Is dividing by \texttt{sqrt(N)} the correct
+s.e., or does it understate/overstate it? Defend your formula.
+
+\hypertarget{exercise-2-exercise2_def-2.py}{%
+\subsubsection{\texorpdfstring{Exercise 2 ---
+\texttt{exercise2\_def\ (2).py}}{Exercise 2 --- exercise2\_def (2).py}}\label{exercise-2-exercise2_def-2.py}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{:5-14}} --- parameters \texttt{K=40}, \texttt{r=0.06},
+  and the 20 \texttt{(S0,\ sigma,\ T)} combos.
+\item
+  \textbf{\texttt{:18-64}} --- \textbf{Part (i) European FTCS} loop:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{:24-26} closed-form BS put for reference.
+  \item
+    \texttt{:29} domain length \texttt{L\ =\ 2*log(K)\ +\ 2};
+    \texttt{:30} \texttt{Nx\ =\ 1000}; \texttt{:31}
+    \texttt{Nt\ =\ 40000*T}; \texttt{:32-33} steps \texttt{h\ =\ L/Nx},
+    \texttt{k\ =\ T/Nt}.
+  \item
+    \texttt{:35-36} central-difference matrices: \texttt{T1} (first
+    derivative, \texttt{+1/-1} off-diagonals), \texttt{T2} (second
+    derivative, \texttt{-2} on diagonal, \texttt{1} off-diagonals), size
+    \texttt{(Nx-1)}.
+  \item
+    \texttt{:38-40} explicit evolution matrix
+    \texttt{F\ =\ (1\ -\ r\ k)\ I\ +\ 0.5\ k\ sigma\^{}2\ /\ h\^{}2\ *\ T2\ +\ k\ (r\ -\ 0.5\ sigma\^{}2)/(2h)\ *\ T1}.
+  \item
+    \texttt{:42-43} grid \texttt{mvec}, centered and shifted by
+    \texttt{+log(K)}.
+  \item
+    \texttt{:45-46} initial condition
+    \texttt{U{[}:,0{]}\ =\ max(K\ -\ exp(mvec),\ 0)} (payoff as the
+    time-0 condition in time-to-maturity).
+  \item
+    \texttt{:48-52} forward march; \texttt{:51} boundary correction term
+    \texttt{p{[}0{]}} injected at the low-\texttt{m} (deep ITM) boundary
+    node, scaled by \texttt{K*exp(-r*time2mat)}.
+  \item
+    \texttt{:54} \texttt{np.interp} to read off the price at
+    \texttt{log(S0)}.
+  \end{itemize}
+\item
+  \textbf{\texttt{:66-118}} --- \textbf{Part (ii) American FTCS} loop:
+  identical to Part (i) except
+  \texttt{intrinsic\ =\ max(K\ -\ exp(mvec),\ 0)} (\texttt{:95}) and the
+  single added projection line \texttt{:105}
+  \texttt{U{[}:,i+1{]}\ =\ np.maximum(U{[}:,i+1{]},\ intrinsic)}.
+  \texttt{ee\ =\ ftcs\_american\ -\ bs\_put} (\texttt{:108}).
+\item
+  \textbf{\texttt{:120-204}} --- re-imports and re-runs the
+  \textbf{Exercise 1 Part (ii) LSM} code (paths, Laguerre basis, BS put,
+  \texttt{LSM\_pricing}) to regenerate \texttt{results\_lsmc} for the
+  cross-check.
+\item
+  \textbf{\texttt{:235-248}} --- correctness test table:
+  \texttt{\textbar{}FD\ American\ -\ LSM\ American\textbar{}} per row.
+\item
+  \textbf{\texttt{:250-261}} --- full ``outside the red box'' table
+  including the signed \texttt{FD\ EE\ -\ LSM\ EE} difference.
+\end{itemize}
+
+\textbf{TODO (Bruno):} \texttt{:29} \texttt{L\ =\ 2*log(K)\ +\ 2}. Why
+this width, and why center the grid at \texttt{log(K)} (\texttt{:43})?
+What goes wrong at short maturity / high vol if the domain is too narrow
+--- and what is the analogy with the COS truncation-range
+\texttt{{[}a,b{]}} issue I hit in Assignment 2?
+
+\textbf{TODO (Bruno):} \texttt{:51} the boundary term \texttt{p{[}0{]}}.
+Explain in words what Dirichlet boundary condition this enforces at the
+deep-in-the-money edge, why it carries the factor
+\texttt{K*exp(-r*time2mat)}, and what happens at the \emph{other}
+(high-\texttt{S}) boundary where no correction is added.
+
+\textbf{TODO (Bruno):} \texttt{:105} is described in the report as ``the
+single line that changes.'' Explain why projecting
+\texttt{U\ =\ max(U,\ intrinsic)} after each explicit step is a valid
+(operator-splitting / explicit-penalty) treatment of the American free
+boundary, and what its accuracy cost is versus a proper LCP/PSOR solve.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{design-decisions-i-must-justify}{%
+\subsection{Design decisions I must
+justify}\label{design-decisions-i-must-justify}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{ITM-only regression} (\texttt{:103-104}, \texttt{:211-213}).
+  Factual: the mask is \texttt{S{[}:,i+1{]}\ \textless{}\ K}.
+  \textbf{TODO (Bruno):} justify why this is the Longstaff--Schwartz
+  prescription and not a shortcut.
+\item
+  \textbf{Basis choice:} monomials degree 2 in Part (i) (\texttt{:107})
+  vs weighted Laguerre in Part (ii) (\texttt{:185-191}). Factual: the
+  report says normalization \texttt{x=S/K} avoids underflow in
+  \texttt{exp(-x/2)} for \texttt{S\ in\ {[}36,44{]}}. \textbf{TODO
+  (Bruno):} confirm you can derive the underflow argument and say why
+  monomials were fine for the small \texttt{K=1.10} example.
+\item
+  \textbf{Antithetic variates} (\texttt{:177-178}). \textbf{TODO
+  (Bruno):} justify and quantify expected variance reduction.
+\item
+  \textbf{Exact GBM step} (\texttt{:182}) rather than Euler.
+  \textbf{TODO (Bruno):} why is the log update exact for GBM, and does
+  discretization bias still enter the American price through the
+  discrete exercise dates regardless?
+\item
+  \textbf{\texttt{M\ =\ 50} exercise dates/year as a proxy for
+  continuous American exercise} (\texttt{:172}, \texttt{:251}).
+  \textbf{TODO (Bruno):} why is a Bermudan with 50/100 dates a good
+  stand-in for the true American, and which direction is the bias?
+\item
+  \textbf{Explicit FTCS with \texttt{Nt\ =\ 40000*T}}
+  (\texttt{exercise2\_def\ (2).py:31}). \textbf{TODO (Bruno):} show that
+  this choice keeps the scheme inside the explicit stability region
+  (compute the CFL-type bound; see hardest question).
+\item
+  \textbf{\texttt{np.interp} to extract the price at \texttt{log(S0)}}
+  (\texttt{:54}, \texttt{:107}). Factual: linear interpolation between
+  grid nodes. \textbf{TODO (Bruno):} is linear interpolation accurate
+  enough given \texttt{h}, or should it be higher order?
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{results-and-what-they-mean}{%
+\subsection{Results and what they
+mean}\label{results-and-what-they-mean}}
+
+\textbf{Exercise 1, Part (i)} (from the report): American put price
+\textbf{0.11443}, European put price \textbf{0.05638} on the same 8
+paths. The fitted regressions match the paper: at \texttt{t=2},
+\texttt{E{[}Y\textbar{}X{]}\ =\ -1.06999\ +\ 2.98341\ X\ -\ 1.81358\ X\^{}2};
+at \texttt{t=1},
+\texttt{E{[}Y\textbar{}X{]}\ =\ 2.03751\ -\ 3.33544\ X\ +\ 1.35646\ X\^{}2}.
+Stopping rule and option cash-flow matrix reproduce the paper's table.
+
+\textbf{Exercise 1, Part (ii)} (report Fig. 13): the 20-row replication
+of the red-box columns; e.g.~\texttt{S=36,\ sigma=0.2,\ T=1} gives
+Simulated American \textbf{4.4714 (s.e. 0.0094)}, closed-form European
+\textbf{3.8443}, early-exercise value \textbf{0.6271}. s.e. all in the
+0.006--0.023 range.
+
+\textbf{Exercise 2, Part (i)} (report Fig. 14): FD-European vs
+BS-European agree to \textasciitilde1e-4 across all 20 rows (largest
+\texttt{\textbar{}Difference\textbar{}\ =\ 0.0008} at
+\texttt{S=40,\ sigma=0.2,\ T=1}).
+
+\textbf{Exercise 2, Part (ii)} (report Fig. 16): FD-American prices, all
+above the corresponding European, with early-exercise values matching
+the LSM ones in sign and magnitude.
+
+\textbf{Exercise 2 cross-check} (report Fig. 17):
+\texttt{\textbar{}FD\ American\ -\ LSM\ American\textbar{}} is below
+0.05 for all 20 rows (max \textasciitilde0.016), and the Part (iii)
+\texttt{FD\ EE\ -\ LSM\ EE} differences are small and alternate in sign.
+
+\textbf{TODO (Bruno):} The FD-European prices are \emph{systematically
+slightly below} BS (every \texttt{Difference} is negative,
+\textasciitilde{} -1e-4 to -8e-4). Is that a bias of the explicit
+scheme, the truncated domain, or the interpolation? Pick one and defend
+it --- Fang will ask why the sign is consistent.
+
+\textbf{TODO (Bruno):} The FD-American vs LSM-American differences are
+\textasciitilde0.005--0.016, an order of magnitude larger than the
+FD-European vs BS error (\textasciitilde1e-4). Why is the American
+comparison so much looser? (Hint: LSM bias + 50-date Bermudan +
+regression noise vs a near-exact PDE.)
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{the-hardest-question-fang-could-ask-here-and-my-answer}{%
+\subsection{The hardest question Fang could ask here --- and my
+answer}\label{the-hardest-question-fang-could-ask-here-and-my-answer}}
+
+\textbf{Likely hardest: ``Your FTCS scheme is explicit. Is it stable for
+\texttt{Nx\ =\ 1000}, \texttt{Nt\ =\ 40000*T}? Derive the condition and
+check it for your worst-case \texttt{sigma\ =\ 0.4}.''}
+
+Factual setup from the code: in log-space the diffusion coefficient is
+\texttt{0.5*sigma\^{}2}, \texttt{h\ =\ L/Nx} with
+\texttt{L\ =\ 2\ log\ K\ +\ 2\ =\ 2\ log\ 40\ +\ 2\ ≈\ 9.376}, so
+\texttt{h\ ≈\ 0.00938}; \texttt{k\ =\ T/Nt\ =\ 1/40000\ =\ 2.5e-5} per
+unit time.
+
+The explicit-scheme stability constraint for the diffusion part is
+roughly \texttt{0.5*sigma\^{}2\ *\ k\ /\ h\^{}2\ \textless{}=\ 1/2},
+i.e.~\texttt{k\ \textless{}=\ h\^{}2\ /\ sigma\^{}2}.
+
+\textbf{TODO (Bruno):} Plug in the numbers:
+\texttt{h\^{}2\ /\ sigma\^{}2\ =\ (0.00938)\^{}2\ /\ 0.16\ ≈\ 5.5e-4},
+and \texttt{k\ =\ 2.5e-5\ \textless{}\textless{}\ 5.5e-4}, so the
+diffusion number \texttt{≈\ 0.045\ \textless{}\textless{}\ 0.5}. State
+this out loud, confirm the scheme is comfortably stable, and explain
+\emph{why the author picked Nt so large} (was it stability, or matching
+the paper's accuracy?). Also be ready to say what the
+\texttt{(1\ -\ r\ k)} reaction term and the \texttt{T1} advection term
+contribute to the stability bound --- and whether the advection
+(first-derivative) term can cause spurious oscillations even when the
+diffusion bound is met.
+
+\textbf{Backup hardest (LSM): ``Is your LSM price biased high or low,
+and why?''} \textbf{TODO (Bruno):} Standard result --- using the
+\emph{same} paths to estimate the continuation regression and to value
+the option introduces a look-ahead/in-sample bias in the continuation
+estimate, so the exercise decision uses noisy information. State the
+direction of the resulting price bias and how an out-of-sample /
+two-pass scheme would fix it.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{show-me-in-your-code-where-you-do-x-anticipated-spots}{%
+\subsection{``Show me in your code where you do X'' --- anticipated
+spots}\label{show-me-in-your-code-where-you-do-x-anticipated-spots}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{``\ldots filter to in-the-money paths before regressing.''}
+  \texttt{exercise1\_def\ (2).py:102-104}
+  (\texttt{itm\_indexes\ =\ S{[}:,i+1{]}\ \textless{}\ K}), and
+  \texttt{:211-213} for Part (ii).
+\item
+  \textbf{``\ldots build the discounted continuation target Y.''}
+  \texttt{:99-101} (Part i) and \texttt{:207-209} / \texttt{:182-184}
+  (Part ii).
+\item
+  \textbf{``\ldots fit the continuation-value regression and read off
+  the coefficients.''} \texttt{:107-112} (monomial pipeline) and
+  \texttt{:215-217} (Laguerre).
+\item
+  \textbf{``\ldots make the exercise-vs-continue decision and zero out
+  future cash flows.''} \texttt{:122-127} (Part i), \texttt{:224-229} /
+  \texttt{:194-199} (Part ii).
+\item
+  \textbf{``\ldots compute the American and European prices.''}
+  \texttt{:147-157} (Part i American + European).
+\item
+  \textbf{``\ldots generate antithetic paths.''} \texttt{:177-178}.
+\item
+  \textbf{``\ldots evaluate the weighted Laguerre basis.''}
+  \texttt{:185-191}.
+\item
+  \textbf{``\ldots the closed-form Black--Scholes put.''}
+  \texttt{:193-196} (Ex.1), \texttt{exercise2\_def\ (2).py:24-26} and
+  \texttt{:74-76}.
+\item
+  \textbf{``\ldots assemble the explicit FTCS evolution matrix F.''}
+  \texttt{exercise2\_def\ (2).py:35-40} (and \texttt{:85-90}).
+\item
+  \textbf{``\ldots set the initial/boundary conditions of the PDE.''}
+  initial: \texttt{:45-46}; boundary term: \texttt{:51} (and
+  \texttt{:103}).
+\item
+  \textbf{``\ldots the one line that makes it American.''}
+  \texttt{exercise2\_def\ (2).py:105}
+  (\texttt{U\ =\ np.maximum(U,\ intrinsic)}).
+\item
+  \textbf{``\ldots read the price off the grid at S0.''} \texttt{:54}
+  and \texttt{:107}
+  (\texttt{np.interp(np.log(S0),\ mvec,\ U{[}:,\ Nt{]})}).
+\item
+  \textbf{``\ldots cross-check FD against LSM.''} \texttt{:235-248}
+  (\texttt{\textbar{}FD\ American\ -\ LSM\ American\textbar{}}).
+\end{itemize}
+
+\end{document}
