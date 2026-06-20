@@ -4,7 +4,7 @@
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
-  10pt,
+  11pt,
 ]{article}
 \usepackage{amsmath,amssymb}
 \usepackage{iftex}
@@ -20,9 +20,6 @@
 \usepackage{lmodern}
 \ifPDFTeX\else
   % xetex/luatex font selection
-  \setmainfont[]{DejaVu Serif}
-  \setsansfont[]{DejaVu Sans}
-  \setmonofont[]{DejaVu Sans Mono}
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -41,11 +38,105 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
-\usepackage[margin=2cm]{geometry}
+\usepackage[margin=2.2cm]{geometry}
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\setcounter{secnumdepth}{5}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{newunicodechar}
+\newunicodechar{}{\ensuremath{\bar\nu}}
+\newunicodechar{}{\ensuremath{\hat\nu}}
+\newunicodechar{}{\ensuremath{\tilde\sigma}}
+\newunicodechar{}{\ensuremath{\bar v}}
+\newunicodechar{}{\ensuremath{\hat\sigma}}
+\newunicodechar{}{\ensuremath{\bar X}}
+\newunicodechar{}{\ensuremath{\hat X}}
+\newunicodechar{}{\ensuremath{\tilde W}}
+\newunicodechar{}{\ensuremath{\dot\alpha}}
+\newunicodechar{}{\ensuremath{\dot\beta}}
+\newunicodechar{}{\ensuremath{\hat f}}
+\newunicodechar{}{\ensuremath{\bar t}}
+\newunicodechar{}{\ensuremath{\hat V}}
+\newunicodechar{Ĉ}{\ensuremath{\hat C}}
+\newunicodechar{ĉ}{\ensuremath{\hat c}}
+\newunicodechar{ġ}{\ensuremath{\dot g}}
+\newunicodechar{ᵀ}{\ensuremath{{}^{\mathsf{T}}}}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{²}{\ensuremath{{}^{2}}}
+\newunicodechar{³}{\ensuremath{{}^{3}}}
+\newunicodechar{¹}{\ensuremath{{}^{1}}}
+\newunicodechar{⁴}{\ensuremath{{}^{4}}}
+\newunicodechar{⁸}{\ensuremath{{}^{8}}}
+\newunicodechar{⁺}{\ensuremath{{}^{+}}}
+\newunicodechar{⁻}{\ensuremath{{}^{-}}}
+\newunicodechar{₂}{\ensuremath{{}_{2}}}
+\newunicodechar{½}{\ensuremath{\tfrac12}}
+\newunicodechar{¼}{\ensuremath{\tfrac14}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{÷}{\ensuremath{\div}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ν}{\ensuremath{\nu}}
+\newunicodechar{τ}{\ensuremath{\tau}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{ω}{\ensuremath{\omega}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{θ}{\ensuremath{\theta}}
+\newunicodechar{η}{\ensuremath{\eta}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{ξ}{\ensuremath{\xi}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{Λ}{\ensuremath{\Lambda}}
+\newunicodechar{Π}{\ensuremath{\Pi}}
+\newunicodechar{Ξ}{\ensuremath{\Xi}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}
+\newunicodechar{Θ}{\ensuremath{\Theta}}
+\newunicodechar{Ψ}{\ensuremath{\Psi}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{√}{\ensuremath{\surd}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\ge}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{≠}{\ensuremath{\ne}}
+\newunicodechar{≡}{\ensuremath{\equiv}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{⇒}{\ensuremath{\Rightarrow}}
+\newunicodechar{⇔}{\ensuremath{\Leftrightarrow}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{∝}{\ensuremath{\propto}}
+\newunicodechar{∏}{\ensuremath{\prod}}
+\newunicodechar{⊥}{\ensuremath{\perp}}
+\newunicodechar{‖}{\ensuremath{\|}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}
+\newunicodechar{…}{\ensuremath{\ldots}}
+\newunicodechar{̄}{}
+\newunicodechar{̂}{}
+\newunicodechar{̃}{}
+\newunicodechar{̇}{}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -53,30 +144,36 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
+  pdftitle={Theory Question Bank},
+  pdfauthor={Computational Finance (WI4151), TU Delft --- Prof.~Fang Fang},
   colorlinks=true,
-  linkcolor={Maroon},
+  linkcolor={blue},
   filecolor={Maroon},
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
 
-\author{}
+\title{Theory Question Bank}
+\author{Computational Finance (WI4151), TU Delft --- Prof.~Fang Fang}
 \date{}
 
 \begin{document}
+\maketitle
 
-\hypertarget{theory-question-bank}{%
-\section{Theory question bank}\label{theory-question-bank}}
-
+{
+\hypersetup{linkcolor=blue}
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
 Filled in per cluster as I study. Format: question -\textgreater{} my
 short answer -\textgreater{} (gap?).
 
 \hypertarget{cluster-1-foundations-lattice-pde}{%
-\subsection{Cluster 1 --- Foundations / lattice /
+\section{Cluster 1 --- Foundations / lattice /
 PDE}\label{cluster-1-foundations-lattice-pde}}
 
 \hypertarget{lecture-01}{%
-\subsubsection{Lecture 01}\label{lecture-01}}
+\subsection{Lecture 01}\label{lecture-01}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -236,7 +333,7 @@ PDE}\label{cluster-1-foundations-lattice-pde}}
 \end{enumerate}
 
 \hypertarget{lecture-02}{%
-\subsubsection{Lecture 02}\label{lecture-02}}
+\subsection{Lecture 02}\label{lecture-02}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -367,7 +464,7 @@ PDE}\label{cluster-1-foundations-lattice-pde}}
 \end{enumerate}
 
 \hypertarget{lecture-03}{%
-\subsubsection{Lecture 03}\label{lecture-03}}
+\subsection{Lecture 03}\label{lecture-03}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -410,13 +507,13 @@ PDE}\label{cluster-1-foundations-lattice-pde}}
   short τ; dividing by a near-zero vega makes the Newton step explode,
   so the inversion is ill-conditioned in the wings.
 \item
-  Globalised Newton: why seed at the price-curve inflection point σ̂?
+  Globalised Newton: why seed at the price-curve inflection point ?
   What property there makes Newton converge monotonically (no
   overshoot)? \textbf{A.} ∂²C/∂σ² ∝ d\_1d\_2, which vanishes at
-  σ̂=√(2\textbar ln(S\_t/K)+rτ\textbar/τ): C is convex for σ\textless σ̂,
-  concave for σ\textgreater σ̂, so σ̂ is the inflection point and where
+  =√(2\textbar ln(S\_t/K)+rτ\textbar/τ): C is convex for σ\textless,
+  concave for σ\textgreater, so  is the inflection point and where
   Vega=C' is \emph{maximal}. Starting there, the contraction ratio
-  1−F'(ξ)/F'(σ̂)∈(0,1) because F'(σ̂) is the maximum slope, so the first
+  1−F'(ξ)/F'()∈(0,1) because F'() is the maximum slope, so the first
   step cannot overshoot the root; the iterates then stay on the monotone
   (concave) side and converge monotonically and quadratically.
 \item
@@ -464,7 +561,7 @@ PDE}\label{cluster-1-foundations-lattice-pde}}
 \end{enumerate}
 
 \hypertarget{lecture-05}{%
-\subsubsection{Lecture 05}\label{lecture-05}}
+\subsection{Lecture 05}\label{lecture-05}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -623,21 +720,21 @@ PDE}\label{cluster-1-foundations-lattice-pde}}
 \end{enumerate}
 
 \hypertarget{cluster-2-monte-carlo}{%
-\subsection{Cluster 2 --- Monte Carlo}\label{cluster-2-monte-carlo}}
+\section{Cluster 2 --- Monte Carlo}\label{cluster-2-monte-carlo}}
 
 \hypertarget{lecture-04}{%
-\subsubsection{Lecture 04}\label{lecture-04}}
+\subsection{Lecture 04}\label{lecture-04}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
   Construct the MC integral estimator and prove it is unbiased. Derive
-  Var(X̄\_N)=σ²/N from independence and state the standard error.
+  Var(\_N)=σ²/N from independence and state the standard error.
   \textbf{A.} Write I=∫h g dx=E\_g{[}h(X){]}, estimate by
-  X̄\_N=(1/N)Σh(x\_i), x\_i\textasciitilde g i.i.d. Unbiased:
-  E{[}X̄\_N{]}=(1/N)ΣE{[}h(X){]}=I. Variance:
-  Var(X̄\_N)=(1/N²)ΣVar(X\_i)=(1/N²)·Nσ²=σ²/N (cross-covariances vanish
+  \_N=(1/N)Σh(x\_i), x\_i\textasciitilde g i.i.d. Unbiased:
+  E{[}\_N{]}=(1/N)ΣE{[}h(X){]}=I. Variance:
+  Var(\_N)=(1/N²)ΣVar(X\_i)=(1/N²)·Nσ²=σ²/N (cross-covariances vanish
   by independence). Standard error se=σ/√N=O(N\^{}\{-1/2\}).
 \item
   Why is the MC error O(N\^{}\{-1/2\}) independent of dimension, while
@@ -652,9 +749,9 @@ PDE}\label{cluster-1-foundations-lattice-pde}}
 \item
   Write a CLT-based confidence interval for the MC estimate. Why use the
   sample variance s\_N² with (N-1), and what does it cost? \textbf{A.}
-  By the CLT (X̄\_N−I)/(σ/√N)→N(0,1), so a (1−α) CI is X̄\emph{N ±
+  By the CLT (\_N−I)/(σ/√N)→N(0,1), so a (1−α) CI is \emph{N ±
   z}\{1−α/2\}·σ/√N (z=1.96 for 95\%). σ is unknown, so use
-  s\_N²=(1/(N−1))Σ(X\_i−X̄\_N)²; the N−1 (Bessel) makes it an
+  s\_N²=(1/(N−1))Σ(X\_i−\_N)²; the N−1 (Bessel) makes it an
   \emph{unbiased} variance estimate, at the cost of one degree of
   freedom (negligible for large N). The reported half-width z·s\_N/√N is
   exactly what variance reduction tries to shrink.
@@ -683,7 +780,7 @@ PDE}\label{cluster-1-foundations-lattice-pde}}
 \item
   Write the Euler-Maruyama scheme for dX=a dt+b dW. What iterated Itô
   integral does it drop? \textbf{A.}
-  X̂\emph{\{t\_k\}=X̂}\{t\_\{k−1\}\}+a(t\_\{k−1\},X̂)h+b(t\_\{k−1\},X̂)√h
+  \emph{\{t\_k\}=}\{t\_\{k−1\}\}+a(t\_\{k−1\},)h+b(t\_\{k−1\},)√h
   Z\_k, Z\_k\textasciitilde N(0,1), freezing coefficients at the left
   endpoint (Itô convention). It drops the iterated Itô integral ∫∫dW
   dW=½{[}(ΔW)²−h{]}, i.e.~the variation of b \emph{within} the step ---
@@ -701,9 +798,9 @@ PDE}\label{cluster-1-foundations-lattice-pde}}
   Define strong vs weak convergence order. Give the orders for Euler
   (½,1) and Milstein (1,1). Why does Milstein buy pathwise but not
   distributional accuracy? \textbf{A.} Strong order β:
-  E\textbar X̂\_\{Kh\}−X\_T\textbar≤ch\^{}β (pathwise, same Brownian
+  E\textbar\_\{Kh\}−X\_T\textbar≤ch\^{}β (pathwise, same Brownian
   path). Weak order β:
-  \textbar E{[}f(X̂\_\{Kh\}){]}−E{[}f(X\_T){]}\textbar≤ch\^{}β for smooth
+  \textbar E{[}f(\_\{Kh\}){]}−E{[}f(X\_T){]}\textbar≤ch\^{}β for smooth
   f (laws only). Euler: strong ½, weak 1; Milstein: strong 1, weak 1.
   Milstein improves the \emph{strong} (pathwise) rate but has the same
   weak rate as Euler --- so for a European price E{[}f(X\_T){]} it buys
@@ -763,7 +860,7 @@ PDE}\label{cluster-1-foundations-lattice-pde}}
 \end{enumerate}
 
 \hypertarget{cluster-3-fourier-cos}{%
-\subsection{Cluster 3 --- Fourier / COS}\label{cluster-3-fourier-cos}}
+\section{Cluster 3 --- Fourier / COS}\label{cluster-3-fourier-cos}}
 
 \begin{quote}
 COS-specific drilling lives in \texttt{cos-deep-dive.md}. This section
@@ -772,7 +869,7 @@ ask ``around'' COS.
 \end{quote}
 
 \hypertarget{lecture-6-the-fourier-family-around-cos}{%
-\subsubsection{Lecture 6 --- the Fourier family (around
+\subsection{Lecture 6 --- the Fourier family (around
 COS)}\label{lecture-6-the-fourier-family-around-cos}}
 
 \begin{enumerate}
@@ -782,7 +879,7 @@ COS)}\label{lecture-6-the-fourier-family-around-cos}}
   State the continuous Fourier transform and its inverse. Which
   scaling/sign convention did the slides use, and why does the
   convention not matter for the method? \textbf{A.} One convention:
-  f̂(ω)=∫f(x)e\^{}\{i2πωx\}dx, f(x)=(1/2π)∫f̂(ω)e\^{}\{−i2πωx\}dω. The
+  (ω)=∫f(x)e\^{}\{i2πωx\}dx, f(x)=(1/2π)∫(ω)e\^{}\{−i2πωx\}dω. The
   slides place the 2π and sign so that the characteristic function φ\_X
   is (up to that 2π-scaling) the Fourier transform of the density. The
   convention does not matter for COS because only internal consistency
@@ -871,7 +968,7 @@ COS)}\label{lecture-6-the-fourier-family-around-cos}}
 \end{enumerate}
 
 \hypertarget{lecture-10-barrier-options-theory-around-cos}{%
-\subsubsection{Lecture 10 --- barrier options (theory around
+\subsection{Lecture 10 --- barrier options (theory around
 COS)}\label{lecture-10-barrier-options-theory-around-cos}}
 
 \begin{quote}
@@ -967,11 +1064,11 @@ H--K). These are the surrounding theory items.
 \end{enumerate}
 
 \hypertarget{cluster-4-models-heston-jumps}{%
-\subsection{Cluster 4 --- Models (Heston /
+\section{Cluster 4 --- Models (Heston /
 jumps)}\label{cluster-4-models-heston-jumps}}
 
 \hypertarget{lecture-07}{%
-\subsubsection{Lecture 07}\label{lecture-07}}
+\subsection{Lecture 07}\label{lecture-07}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -979,9 +1076,9 @@ jumps)}\label{cluster-4-models-heston-jumps}}
 \item
   Write down the Heston SDE system under Q, naming every parameter, and
   state what dW\^{}S dW\^{}v = rho dt means physically. \textbf{A.}
-  dS\_t=rS\_t dt+√ν\_t S\_t dW\^{}S\_t, dν\_t=κ(ν̄−ν\_t)dt+γ√ν\_t
+  dS\_t=rS\_t dt+√ν\_t S\_t dW\^{}S\_t, dν\_t=κ(−ν\_t)dt+γ√ν\_t
   dW\^{}ν\_t, with dW\^{}S dW\^{}ν=ρ dt. Here ν\_t is the instantaneous
-  \emph{variance} (vol is √ν\_t), ν̄ the long-run variance,
+  \emph{variance} (vol is √ν\_t),  the long-run variance,
   κ\textgreater0 the mean-reversion speed, γ\textgreater0 the vol-of-vol
   (smile curvature), ρ the spot/variance correlation (skew slope).
   dW\^{}S dW\^{}ν=ρ dt means shocks to price and to variance are
@@ -993,7 +1090,7 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   \textbf{A.} Itô on ln S with (dS/S)²=ν dt: d ln S\_t=(r−½ν\_t)dt+√ν\_t
   dW\^{}S\_t. For Σ={[}{[}1,ρ{]},{[}ρ,1{]}{]}=LLᵀ,
   L={[}{[}1,0{]},{[}ρ,√(1−ρ²){]}{]}, write the correlated pair via
-  independent (W̃\_1,W̃\_2): W\^{}S=W̃\_1, W\^{}ν=ρW̃\_1+√(1−ρ²)W̃\_2, which
+  independent (\_1,\_2): W\^{}S=\_1, W\^{}ν=ρ\_1+√(1−ρ²)\_2, which
   checks Cov(W\textsuperscript{S,W}ν)=ρt. Equivalently, driving the
   variance by its own clean W\^{}ν, the log-spot diffusion becomes
   √ν\_t(ρ dW\textsuperscript{ν+√(1−ρ²)dW}⊥) with W\textsuperscript{ν⊥W}⊥
@@ -1003,13 +1100,13 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   chi-squared): give d, the noncentrality lambda, and the scaling c.
   \textbf{A.} ν\_T\textbar ν\_t \textasciitilde{} Y/(2c) with
   Y\textasciitilde χ*²\_d(λ) noncentral chi-squared,
-  c=2κ/(γ²(1−e\^{}\{−κτ\})), τ=T−t, degrees of freedom d=4κν̄/γ²,
+  c=2κ/(γ²(1−e\^{}\{−κτ\})), τ=T−t, degrees of freedom d=4κ/γ²,
   noncentrality λ=2c e\^{}\{−κτ\}ν\_t. So the variance is exactly a
   scaled noncentral χ² --- this is what the Broadie--Kaya exact scheme
   samples.
 \item
   State the Feller condition precisely. What exactly does it guarantee,
-  and what happens to nu\_t when it is violated? \textbf{A.} Feller: 2κν̄
+  and what happens to nu\_t when it is violated? \textbf{A.} Feller: 2κ
   ≥ γ². It guarantees the origin is inaccessible --- ν\_t stays strictly
   positive a.s. If violated, ν\_t can reach 0 (and reflects/leaves again
   for the pure CIR process), but it never goes negative. Practically the
@@ -1023,15 +1120,15 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   I\_\{d/2−1\}(√(λx))\textasciitilde(√(λx)/2)\^{}\{d/2−1\}/Γ(d/2), so
   the density behaves like
   x\textsuperscript{\{d/4−1/2\}·x}\{(d/2−1)/2\}=x\^{}\{d/2−1\}. For it
-  not to blow up at the origin we need d/2−1≥0, i.e.~d=4κν̄/γ²≥2, which
-  is 2κν̄≥γ² --- the Feller condition. A large γ relative to the
-  restoring force κν̄ makes excursions to zero likely.
+  not to blow up at the origin we need d/2−1≥0, i.e.~d=4κ/γ²≥2, which
+  is 2κ≥γ² --- the Feller condition. A large γ relative to the
+  restoring force κ makes excursions to zero likely.
 \item
   Is the Heston model affine in (S, nu)? Show why not, then show how
   moving to ln S restores the affine condition (give K0, K1, H0, H1).
   \textbf{A.} Not affine in (S,ν): the diffusion covariance has top-left
   entry νS², not affine in the state. Switching to x=ln S, the drift
-  becomes K0=(r, κν̄)ᵀ + K1·(x,ν)ᵀ with K1={[}{[}0,−½{]},{[}0,−κ{]}{]}
+  becomes K0=(r, κ)ᵀ + K1·(x,ν)ᵀ with K1={[}{[}0,−½{]},{[}0,−κ{]}{]}
   (affine), and σσᵀ=ν·{[}{[}1,γρ{]},{[}γρ,γ²{]}{]}, i.e.~H0=0 and H1 the
   tensor whose ν-slice is {[}{[}1,γρ{]},{[}γρ,γ²{]}{]} and x-slice is 0
   --- affine in ν. So in log-coordinates Heston is affine and the
@@ -1041,29 +1138,29 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   Riccati ODE system. Where does each ODE come from when you substitute
   into the Feynman-Kac PDE? \textbf{A.} Feynman--Kac: φ solves
   ∂\emph{tφ+Lφ−Rφ=0, φ(T,x)=e\^{}\{u·x\}. Substituting φ=e\^{}\{α+β·x\}
-  gives ∂}\{x\_i\}φ=β\_iφ, ∂\_\{x\_ix\_j\}φ=β\_iβ\_jφ, ∂\_tφ=(α̇+β̇·x)φ.
+  gives ∂}\{x\_i\}φ=β\_iφ, ∂\_\{x\_ix\_j\}φ=β\_iβ\_jφ, ∂\_tφ=(+·x)φ.
   Dividing by φ and using that μ, σσᵀ, R are affine in x, collect terms:
-  the part \emph{linear} in x must vanish, giving β̇=ρ\_1−K\_1ᵀβ−½βᵀH\_1β
+  the part \emph{linear} in x must vanish, giving =ρ\_1−K\_1ᵀβ−½βᵀH\_1β
   (the Riccati ODE); the part \emph{constant} in x gives
-  α̇=ρ\_0−K\_0·β−½βᵀH\_0β. Boundary conditions β(T,T)=u, α(T,T)=0.
+  =ρ\_0−K\_0·β−½βᵀH\_0β. Boundary conditions β(T,T)=u, α(T,T)=0.
   Affineness is what lets the x-dependence separate cleanly.
 \item
   Solve the scalar CIR Riccati dot-beta = -kappa beta + (1/2) gamma\^{}2
   beta\^{}2 explicitly via g = 1/beta. Then integrate for alpha.
-  \textbf{A.} Set g=1/β; then ġ=−β̇/β²=κg−½γ², a linear ODE. With
+  \textbf{A.} Set g=1/β; then ġ=−/β²=κg−½γ², a linear ODE. With
   integrating factor e\^{}\{−κt\}: d(g
   e\textsuperscript{\{−κt\})=−½γ²e}\{−κt\}dt, so
   g(t)=e\textsuperscript{\{κt\}(g(0)−γ²(1−e}\{−κt\})/(2κ)), g(0)=1/u.
   Inverting, β(t)=u e\^{}\{−κt\}/(1−½uγ²ξ\_κ(t)) with
-  ξ\_κ(t)=(1−e\^{}\{−κt\})/κ. Then α̇=κν̄β integrates (since
-  e\^{}\{−κs\}=ξ\_κ') to α(t)=−(2κν̄/γ²)ln(1−½uγ²ξ\_κ(t)). This is the
+  ξ\_κ(t)=(1−e\^{}\{−κt\})/κ. Then =κβ integrates (since
+  e\^{}\{−κs\}=ξ\_κ') to α(t)=−(2κ/γ²)ln(1−½uγ²ξ\_κ(t)). This is the
   same Riccati mechanism behind the full Heston cf.
 \item
   Write the closed-form Heston cf of ln S\_T: give b, a, s and the
   formulas for beta(tau,u) and alpha(tau,u). \textbf{A.} With b=γρu−κ,
   a=u(1−u), s=√(b²+aγ²):
   β(τ,u)=a(1−e\textsuperscript{\{−sτ\})/(2s−(s+b)(1−e}\{−sτ\})),
-  α(τ,u)=−rτ+ruτ−κν̄{[}(s+b)τ/γ²+(2/γ²)ln(1−((s+b)/2s)(1−e\^{}\{−sτ\})){]}.
+  α(τ,u)=−rτ+ruτ−κ{[}(s+b)τ/γ²+(2/γ²)ln(1−((s+b)/2s)(1−e\^{}\{−sτ\})){]}.
   Then φ\_\{ln S\_T\}(ω;τ)=exp(α(τ,iω)+iω ln S\_t+β(τ,iω)ν\_t). This is
   the load-bearing object COS consumes.
 \item
@@ -1107,7 +1204,7 @@ jumps)}\label{cluster-4-models-heston-jumps}}
 \item
   Why can the Euler scheme produce negative variance? List truncation,
   reflection, and log-variance fixes and state the drawback of each.
-  \textbf{A.} Euler updates ν\_\{i+1\}=ν\_i+κ(ν̄−ν\_i)Δ+γ√ν\_i √Δ Z with
+  \textbf{A.} Euler updates ν\_\{i+1\}=ν\_i+κ(−ν\_i)Δ+γ√ν\_i √Δ Z with
   Z Gaussian and unbounded below, so
   P(ν\_\{i+1\}\textless0)\textgreater0 always; then √ν is undefined.
   Fixes: (i) truncation/floor ν←max(ν,ε) --- simple but introduces
@@ -1122,7 +1219,7 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   -\textgreater{} COS inversion -\textgreater{} inverse sampling)?
   \textbf{A.} (1) Sample ν\_t\textbar ν\_u from the noncentral χ². (2)
   Sample ∫\_u\^{}t ν\_s ds given (ν\_u,ν\_t) --- the hard step. (3)
-  Recover ∫√ν dW\^{}ν=(1/γ)(ν\_t−ν\_u−κν̄(t−u)+κ∫ν ds) from the CIR
+  Recover ∫√ν dW\^{}ν=(1/γ)(ν\_t−ν\_u−κ(t−u)+κ∫ν ds) from the CIR
   integral. (4) Sample ∫√ν dW\^{}S\textbar∫ν ds \textasciitilde{} N(0,∫ν
   ds), then assemble S\_t. Step 2 is solved via the known closed-form cf
   of the integrated variance (a ratio of modified Bessel functions);
@@ -1134,12 +1231,12 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   (infinitesimal generator, time change, Girsanov) and say what
   discrepancy each one fixes relative to the squared Bessel process.
   \textbf{A.} (i) Infinitesimal generator --- the CIR generator
-  κ(ν̄−x)f'+½γ²xf'\,' is matched against the squared-Bessel generator
+  κ(−x)f'+½γ²xf'\,' is matched against the squared-Bessel generator
   nf'+2xf'\,', whose Laplace transform of the time-integral is known
   (Pitman--Yor). (ii) Time change s=γ²t/4 rescales the
   \emph{second-order} coefficient ½γ²x onto the squared-Bessel value 2x.
   (iii) Girsanov change of measure absorbs the remaining \emph{drift}
-  discrepancy (κ(ν̄−x) vs n), expressing the CIR integrated-variance
+  discrepancy (κ(−x) vs n), expressing the CIR integrated-variance
   transform as a ratio of squared-Bessel transforms --- giving the
   Bessel-ratio formula for the cf.
 \item
@@ -1147,14 +1244,14 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   parameter: gamma, rho, kappa, nu0, nu-bar. \textbf{A.} γ (vol-of-vol):
   larger γ deepens smile \emph{curvature}. ρ: more negative ρ steepens
   the \emph{skew} (heavier left tail). κ: small effect on smile shape;
-  controls how fast ATM vol converges to √ν̄ in maturity. ν\_0: dominates
-  \emph{short}-maturity level. ν̄: dominates \emph{long}-maturity level
+  controls how fast ATM vol converges to √ in maturity. ν\_0: dominates
+  \emph{short}-maturity level. : dominates \emph{long}-maturity level
   (both mediated by κ). Overall Heston gives heavier log-return tails
   than BS and reproduces the smile.
 \end{enumerate}
 
 \hypertarget{lecture-08}{%
-\subsubsection{Lecture 08}\label{lecture-08}}
+\subsection{Lecture 08}\label{lecture-08}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -1198,20 +1295,20 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   reach exp(t\emph{lambda}(nu\_hat(u)-1)). \textbf{A.} Condition on the
   count: E{[}e\^{}\{iuQ\_t\}{]}=Σ\_n
   P(N\_t=n)E{[}e\^{}\{iuΣ\_\{k≤n\}Y\_k\}{]}=Σ\_n ((λt)\^{}n
-  e\textsuperscript{\{−λt\}/n!)ν̂(u)}n (Y\_k i.i.d.,
-  ν̂(u)=E{[}e\^{}\{iuY\}{]}). Pull out e\^{}\{−λt\} and recognise the
+  e\textsuperscript{\{−λt\}/n!)(u)}n (Y\_k i.i.d.,
+  (u)=E{[}e\^{}\{iuY\}{]}). Pull out e\^{}\{−λt\} and recognise the
   exponential series:
-  =e\textsuperscript{\{−λt\}e}\{λtν̂(u)\}=exp(tλ(ν̂(u)−1)).
+  =e\textsuperscript{\{−λt\}e}\{λt(u)\}=exp(tλ((u)−1)).
 \item
   Identify the characteristic exponent of the compound Poisson process
   and connect it to the Levy-Khintchine representation. Why does the
   ``-1'' appear, and what condition does nu\_hat(0)=1 enforce?
   \textbf{A.} The exponent is linear in t, so the characteristic
-  exponent is ψ(u)=λ(ν̂(u)−1)=λ∫(e\^{}\{iuy\}−1)dν(y) --- the
+  exponent is ψ(u)=λ((u)−1)=λ∫(e\^{}\{iuy\}−1)dν(y) --- the
   finite-activity special case of Lévy--Khintchine
   ψ(u)=∫(e\^{}\{iuy\}−1)Π(dy) with Lévy measure Π=λν. The ``−1'' is the
   compensation that makes ψ(0)=0, so φ\_\{Q\_t\}(0)=1 as any cf must
-  satisfy (ν̂(0)=1 just says ν is a probability measure).
+  satisfy ((0)=1 just says ν is a probability measure).
 \item
   Write the Merton jump-diffusion SDE for S\_t and derive the log-price
   SDE via Ito-for-jumps. Why is there no (1/2)g'`J\^{}2 term in the jump
@@ -1251,11 +1348,11 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   Write Merton's lognormal-jump cf of ln S\_T and Kou's
   double-exponential cf.~State Kou's nu\_hat(u) and explain the roles of
   p,q,eta\_1,eta\_2 and why eta\_1\textgreater1 is required. \textbf{A.}
-  Merton (ν̂(u)=e\^{}\{iuμ\_J−½σ\_J²u²\}, κ=e\^{}\{μ\_J+½σ\_J²\}−1):
+  Merton ((u)=e\^{}\{iuμ\_J−½σ\_J²u²\}, κ=e\^{}\{μ\_J+½σ\_J²\}−1):
   φ(u)=exp(iu(x+(r−½σ²−λκ)τ)−½σ²u²τ+λτ(e\^{}\{iuμ\_J−½σ\_J²u²\}−1)).
   Kou: up-jumps Exp(η\_1) w.p. p, down-jumps −Exp(η\_2) w.p. q=1−p, so
-  ν̂(u)=p η\_1/(η\_1−iu)+q η\_2/(η\_2+iu), and
-  φ(u)=exp(iu(x+(r−½σ²−λκ)τ)−½σ²u²τ+λτ(ν̂(u)−1)). η\_1 governs the
+  (u)=p η\_1/(η\_1−iu)+q η\_2/(η\_2+iu), and
+  φ(u)=exp(iu(x+(r−½σ²−λκ)τ)−½σ²u²τ+λτ((u)−1)). η\_1 governs the
   up-tail decay, η\_2 the down-tail, p/q the up/down probabilities;
   η\_1\textgreater1 is required so E{[}e\^{}X{]}=E{[}1+J{]} is finite
   (the jump multiplier has finite mean, κ finite).
@@ -1312,23 +1409,23 @@ jumps)}\label{cluster-4-models-heston-jumps}}
   (σσᵀ)\emph{\{ij\}=(H\_0)}\{ij\}+(H\_1)\_\{ij\}·x; jump intensity
   λ(x)=l\_0+l\_1·x (with jumps J\textasciitilde ν); short rate
   R(x)=ρ\_0+ρ\_1·x. The jump law enters only through the jump transform
-  θ(c)=∫e\^{}\{c·z\}dν(z) (the ν̂ with complex argument c=β).
+  θ(c)=∫e\^{}\{c·z\}dν(z) (the  with complex argument c=β).
 \item
   State the AJD result phi = exp(alpha + beta.x) and the Riccati ODEs
   for (alpha,beta) with boundary conditions. Which term is quadratic,
   and where does (theta(beta)-1) come from? \textbf{A.} φ=e\^{}\{α+β·x\}
-  with β̇=ρ\_1−K\_1ᵀβ−½βᵀH\_1β−l\_1(θ(β)−1),
-  α̇=ρ\_0−K\_0·β−½βᵀH\_0β−l\_0(θ(β)−1), boundary β(T,T)=u, α(T,T)=0. The
+  with =ρ\_1−K\_1ᵀβ−½βᵀH\_1β−l\_1(θ(β)−1),
+  =ρ\_0−K\_0·β−½βᵀH\_0β−l\_0(θ(β)−1), boundary β(T,T)=u, α(T,T)=0. The
   β equation is a Riccati ODE --- the \emph{quadratic} term is the
   ½βᵀH\_1β diffusion term. The (θ(β)−1) comes from the expected jump
   contribution: E{[}(φ(X+J)−φ(X))dN{]}=φ(θ(β)−1)λ(x)dt, the
-  compensator-type term, identical to the (ν̂−1) of the compound-Poisson
+  compensator-type term, identical to the (−1) of the compound-Poisson
   cf.
 \item
   Recover the Black-Scholes log-price cf by solving the AJD ODEs with no
   jumps (X=ln S). Show beta=iu and the alpha you obtain. \textbf{A.} No
-  jumps (l\_0=l\_1=0), X=ln S. The ODEs give β̇=0 with β(0)=iu, so β≡iu,
-  and α̇=(r−½σ²)β+½σ²β²−r. With β=iu: α(u,τ)=(r−½σ²)iuτ−½σ²u²τ−rτ. Hence
+  jumps (l\_0=l\_1=0), X=ln S. The ODEs give =0 with β(0)=iu, so β≡iu,
+  and =(r−½σ²)β+½σ²β²−r. With β=iu: α(u,τ)=(r−½σ²)iuτ−½σ²u²τ−rτ. Hence
   φ(u,τ)=exp((r−½σ²)iuτ−½σ²u²τ−rτ+iuX) --- the GBM log-price cf,
   recovered as the degenerate AJD. Adding l\_0(θ(iu)−1) reproduces the
   Merton cf.
@@ -1345,11 +1442,11 @@ jumps)}\label{cluster-4-models-heston-jumps}}
 \end{enumerate}
 
 \hypertarget{cluster-5-american-options}{%
-\subsection{Cluster 5 --- American
+\section{Cluster 5 --- American
 options}\label{cluster-5-american-options}}
 
 \hypertarget{lecture-09}{%
-\subsubsection{Lecture 09}\label{lecture-09}}
+\subsection{Lecture 09}\label{lecture-09}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -1583,10 +1680,10 @@ options}\label{cluster-5-american-options}}
 \end{enumerate}
 
 \hypertarget{cluster-6-exotics}{%
-\subsection{Cluster 6 --- Exotics}\label{cluster-6-exotics}}
+\section{Cluster 6 --- Exotics}\label{cluster-6-exotics}}
 
 \hypertarget{lecture-11}{%
-\subsubsection{Lecture 11}\label{lecture-11}}
+\subsection{Lecture 11}\label{lecture-11}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -1617,8 +1714,8 @@ options}\label{cluster-5-american-options}}
   \textbf{A.} ln G=(1/n)Σ{[}(r−q−½σ²)t\_i+σW\_\{t\_i\}{]} is an affine
   function of the jointly Gaussian (W\_\{t\_1\},\ldots,W\_\{t\_n\}),
   hence normal --- so G is lognormal and prices by a Black-style
-  formula. μ\_G=ln S\_0+(r−q−½σ²)t̄, σ\_G²=(σ²/n²)Σ\_iΣ\_j
-  min(t\_i,t\_j). For equally spaced t\_i=iΔt: t̄=(n+1)T/2n,
+  formula. μ\_G=ln S\_0+(r−q−½σ²), σ\_G²=(σ²/n²)Σ\_iΣ\_j
+  min(t\_i,t\_j). For equally spaced t\_i=iΔt: =(n+1)T/2n,
   σ\_G²=σ²Δt(n+1)(2n+1)/6n² → σ²T/3 as n→∞. The σ²T/3 (vs σ²T) is
   exactly why the Asian is cheaper, and the geometric Asian is the
   standard MC control variate for the arithmetic one (Kemna--Vorst).

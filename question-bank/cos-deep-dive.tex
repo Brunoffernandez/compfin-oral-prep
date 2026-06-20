@@ -4,7 +4,7 @@
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
-  10pt,
+  11pt,
 ]{article}
 \usepackage{amsmath,amssymb}
 \usepackage{iftex}
@@ -20,9 +20,6 @@
 \usepackage{lmodern}
 \ifPDFTeX\else
   % xetex/luatex font selection
-  \setmainfont[]{DejaVu Serif}
-  \setsansfont[]{DejaVu Sans}
-  \setmonofont[]{DejaVu Sans Mono}
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -41,7 +38,7 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
-\usepackage[margin=2cm]{geometry}
+\usepackage[margin=2.2cm]{geometry}
 \usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
@@ -55,7 +52,101 @@
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\setcounter{secnumdepth}{5}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{newunicodechar}
+\newunicodechar{}{\ensuremath{\bar\nu}}
+\newunicodechar{}{\ensuremath{\hat\nu}}
+\newunicodechar{}{\ensuremath{\tilde\sigma}}
+\newunicodechar{}{\ensuremath{\bar v}}
+\newunicodechar{}{\ensuremath{\hat\sigma}}
+\newunicodechar{}{\ensuremath{\bar X}}
+\newunicodechar{}{\ensuremath{\hat X}}
+\newunicodechar{}{\ensuremath{\tilde W}}
+\newunicodechar{}{\ensuremath{\dot\alpha}}
+\newunicodechar{}{\ensuremath{\dot\beta}}
+\newunicodechar{}{\ensuremath{\hat f}}
+\newunicodechar{}{\ensuremath{\bar t}}
+\newunicodechar{}{\ensuremath{\hat V}}
+\newunicodechar{Ĉ}{\ensuremath{\hat C}}
+\newunicodechar{ĉ}{\ensuremath{\hat c}}
+\newunicodechar{ġ}{\ensuremath{\dot g}}
+\newunicodechar{ᵀ}{\ensuremath{{}^{\mathsf{T}}}}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{²}{\ensuremath{{}^{2}}}
+\newunicodechar{³}{\ensuremath{{}^{3}}}
+\newunicodechar{¹}{\ensuremath{{}^{1}}}
+\newunicodechar{⁴}{\ensuremath{{}^{4}}}
+\newunicodechar{⁸}{\ensuremath{{}^{8}}}
+\newunicodechar{⁺}{\ensuremath{{}^{+}}}
+\newunicodechar{⁻}{\ensuremath{{}^{-}}}
+\newunicodechar{₂}{\ensuremath{{}_{2}}}
+\newunicodechar{½}{\ensuremath{\tfrac12}}
+\newunicodechar{¼}{\ensuremath{\tfrac14}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{÷}{\ensuremath{\div}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ν}{\ensuremath{\nu}}
+\newunicodechar{τ}{\ensuremath{\tau}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{ω}{\ensuremath{\omega}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{θ}{\ensuremath{\theta}}
+\newunicodechar{η}{\ensuremath{\eta}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{ξ}{\ensuremath{\xi}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{Λ}{\ensuremath{\Lambda}}
+\newunicodechar{Π}{\ensuremath{\Pi}}
+\newunicodechar{Ξ}{\ensuremath{\Xi}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}
+\newunicodechar{Θ}{\ensuremath{\Theta}}
+\newunicodechar{Ψ}{\ensuremath{\Psi}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{√}{\ensuremath{\surd}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\ge}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{≠}{\ensuremath{\ne}}
+\newunicodechar{≡}{\ensuremath{\equiv}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{⇒}{\ensuremath{\Rightarrow}}
+\newunicodechar{⇔}{\ensuremath{\Leftrightarrow}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{∝}{\ensuremath{\propto}}
+\newunicodechar{∏}{\ensuremath{\prod}}
+\newunicodechar{⊥}{\ensuremath{\perp}}
+\newunicodechar{‖}{\ensuremath{\|}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}
+\newunicodechar{…}{\ensuremath{\ldots}}
+\newunicodechar{̄}{}
+\newunicodechar{̂}{}
+\newunicodechar{̃}{}
+\newunicodechar{̇}{}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -63,28 +154,33 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
+  pdftitle={COS Deep-Dive --- Priority Question Set},
+  pdfauthor={Computational Finance (WI4151), TU Delft --- Prof.~Fang Fang},
   colorlinks=true,
-  linkcolor={Maroon},
+  linkcolor={blue},
   filecolor={Maroon},
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
 
-\author{}
+\title{COS Deep-Dive --- Priority Question Set}
+\author{Computational Finance (WI4151), TU Delft --- Prof.~Fang Fang}
 \date{}
 
 \begin{document}
+\maketitle
 
-\hypertarget{cos-deep-dive-the-priority-file}{%
-\section{COS deep-dive --- the priority
-file}\label{cos-deep-dive-the-priority-file}}
-
+{
+\hypersetup{linkcolor=blue}
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
 Fang invented COS. If she asks one hard question, it is probably here.
 Goal: I can do everything on the checklist \textbf{closed-book, on
 paper, out loud}.
 
 \hypertarget{mastery-checklist-tick-when-you-can-do-it-cold}{%
-\subsection{Mastery checklist (tick when you can do it
+\section{Mastery checklist (tick when you can do it
 cold)}\label{mastery-checklist-tick-when-you-can-do-it-cold}}
 
 \begin{itemize}
@@ -122,7 +218,7 @@ cold)}\label{mastery-checklist-tick-when-you-can-do-it-cold}}
 \end{itemize}
 
 \hypertarget{high-probability-questions-have-claude-code-grill-me-on-these}{%
-\subsection{High-probability questions (have Claude Code grill me on
+\section{High-probability questions (have Claude Code grill me on
 these)}\label{high-probability-questions-have-claude-code-grill-me-on-these}}
 
 \begin{enumerate}
@@ -131,31 +227,31 @@ these)}\label{high-probability-questions-have-claude-code-grill-me-on-these}}
   Derive the COS European call price. Where does the cf enter?
 
   \textbf{A.} Start from the discounted-expectation price in the
-  log-state \texttt{y} (e.g.~\texttt{y\ =\ ln(S\_T/K)}):
+  log-state \(y\) (e.g.~\texttt{y\ =\ ln(S\_T/K)}):
 
 \begin{verbatim}
 P(x0,T) = e^{-rT} ∫_R V(y,T) f(y|x0) dy.
 \end{verbatim}
 
-  I do not know \texttt{f}, but I know its characteristic function
+  I do not know \(f\), but I know its characteristic function
   \texttt{φ\_\{X\_T\}(t;x0)\ =\ E{[}e\^{}\{i\ t\ X\_T\}\textbar{}x0{]}\ =\ ∫\ e\^{}\{ity\}\ f(y)\ dy},
-  i.e.~\texttt{φ} is the Fourier transform of \texttt{f}.
+  i.e.~\(φ\) is the Fourier transform of \(f\).
 
-  \textbf{Step 1 --- truncate.} Pick \texttt{{[}a,b{]}} (cumulant rule,
-  Q2) containing essentially all the mass and restrict the integral to
-  \texttt{{[}a,b{]}}.
+  \textbf{Step 1 --- truncate.} Pick \([a,b]\) (cumulant rule, Q2)
+  containing essentially all the mass and restrict the integral to
+  \([a,b]\).
 
-  \textbf{Step 2 --- cosine-expand the density.} On \texttt{{[}a,b{]}}
-  write the half-range cosine series (prime halves \texttt{k=0}):
+  \textbf{Step 2 --- cosine-expand the density.} On \([a,b]\) write the
+  half-range cosine series (prime halves \(k=0\)):
 
 \begin{verbatim}
 f(y) ≈ Σ'_{k≥0} A_k cos(kπ (y-a)/(b-a)),   A_k = (2/(b-a)) ∫_a^b f(y) cos(kπ(y-a)/(b-a)) dy.
 \end{verbatim}
 
-  \textbf{Step 3 --- A\_k from φ (the engine).} Write
-  \texttt{cos\ =\ Re\{exp\}}, pull out the phase
-  \texttt{e\^{}\{-ikπa/(b-a)\}}, and extend the integral to \texttt{R}
-  (the \emph{only} approximation --- range truncation):
+  \textbf{Step 3 --- A\_k from φ (the engine).} Write \(cos = Re{exp}\),
+  pull out the phase \texttt{e\^{}\{-ikπa/(b-a)\}}, and extend the
+  integral to \(R\) (the \emph{only} approximation --- range
+  truncation):
 
 \begin{verbatim}
 A_k ≈ F_k = (2/(b-a)) Re{ φ(kπ/(b-a); x0) · exp(-ikπ a/(b-a)) }.
@@ -167,15 +263,15 @@ A_k ≈ F_k = (2/(b-a)) Re{ φ(kπ/(b-a); x0) · exp(-ikπ a/(b-a)) }.
 
   \textbf{Step 4 --- payoff coefficients.} Define
   \texttt{V\_k\ =\ (2/(b-a))\ ∫\_a\^{}b\ V(y,T)\ cos(kπ(y-a)/(b-a))\ dy}.
-  For the call \texttt{V\ =\ K(e\^{}y-1)\^{}+} lives on \texttt{y≥0}, so
+  For the call \texttt{V\ =\ K(e\^{}y-1)\^{}+} lives on \(y≥0\), so
 
 \begin{verbatim}
 V_k^call = (2/(b-a)) K [ χ_k(0,b) − ψ_k(0,b) ].
 \end{verbatim}
 
-  \textbf{Step 5 --- assemble.} Insert the expansion, swap
-  \texttt{Σ}/\texttt{∫} (uniform convergence of the cosine series for
-  smooth \texttt{f}), and use \texttt{V\_k}:
+  \textbf{Step 5 --- assemble.} Insert the expansion, swap \(Σ\)/\(∫\)
+  (uniform convergence of the cosine series for smooth \(f\)), and use
+  \(V_k\):
 
 \begin{verbatim}
 P ≈ e^{-rT} (b-a)/2 Σ'_{k=0}^{N-1} A_k V_k.
@@ -192,11 +288,9 @@ P ≈ e^{-rT} Σ'_{k=0}^{N-1} Re{ φ(kπ/(b-a); x0) exp(-ikπ a/(b-a)) } V_k.
   \textbf{Where the cf enters:} in exactly one place --- as the cosine
   coefficients of the density,
   \texttt{Re\{φ\ ·\ e\^{}\{-ikπa/(b-a)\}\}}. The spot dependence sits
-  inside \texttt{φ(·;x0)}; for BS/Lévy
-  \texttt{φ(u;x0)=φ\_lvl(u)\ e\^{}\{iux0\}}, so one set of
-  \texttt{\{V\_k\}} prices the whole spot/strike grid (only the cheap
-  \texttt{e\^{}\{iux0\}} changes). Cost \texttt{O(N)}, no integration,
-  no FFT.
+  inside \(φ(·;x0)\); for BS/Lévy \(φ(u;x0)=φ_lvl(u) e^{iux0}\), so one
+  set of \({V_k}\) prices the whole spot/strike grid (only the cheap
+  \(e^{iux0}\) changes). Cost \(O(N)\), no integration, no FFT.
 \item
   How do you pick {[}a, b{]}? What breaks at short maturity, and how did
   you fix it in your assignment?
@@ -207,12 +301,11 @@ P ≈ e^{-rT} Σ'_{k=0}^{N-1} Re{ φ(kπ/(b-a); x0) exp(-ikπ a/(b-a)) } V_k.
 [a,b] = [ c1 − L√(c2+√c4),  c1 + L√(c2+√c4) ],   L ∈ [8,12] (typ. 10),
 \end{verbatim}
 
-  where \texttt{c1} = mean (centres the box), \texttt{c2} = variance
-  (\texttt{√c2} is the natural width scale, so \texttt{L√c2} is an
-  ``L-sigma'' box), \texttt{√c4} (fourth cumulant) fattens the box for
-  heavy tails / kurtosis (zero for Gaussian), and \texttt{L} is the
-  safety multiplier --- larger \texttt{L} lowers the truncation floor
-  but needs more terms.
+  where \(c1\) = mean (centres the box), \(c2\) = variance (\(√c2\) is
+  the natural width scale, so \(L√c2\) is an ``L-sigma'' box), \(√c4\)
+  (fourth cumulant) fattens the box for heavy tails / kurtosis (zero for
+  Gaussian), and \(L\) is the safety multiplier --- larger \(L\) lowers
+  the truncation floor but needs more terms.
 
   \textbf{BS cumulants} of \texttt{ln(S\_T/K)}:
 
@@ -220,29 +313,27 @@ P ≈ e^{-rT} Σ'_{k=0}^{N-1} Re{ φ(kπ/(b-a); x0) exp(-ikπ a/(b-a)) } V_k.
 c1 = ln(S0/K) + (r − ½σ²)T,   c2 = σ²T,   c3 = c4 = 0   ⇒   [a,b] = c1 ± Lσ√T.
 \end{verbatim}
 
-  \textbf{What breaks as T→0:} \texttt{c2\ =\ σ²T\ →\ 0}, so the
-  half-width \texttt{L√(c2+√c4)\ →\ 0} and the box collapses toward the
-  single point \texttt{c1}. With \texttt{c4=0} (Gaussian) there is no
-  \texttt{√c4} floor to keep it open. Two failure modes: (i) the box
-  gets too narrow to cover where \texttt{V·f} has mass; (ii) when
-  pricing a whole grid of spots/strikes, a range centred by \texttt{c1}
-  for one \texttt{(S0,K)} is centred away from other grid points, so the
-  cosine reconstruction is evaluated where it is meaningless --- large,
-  erratic errors at short maturity.
+  \textbf{What breaks as T→0:} \(c2 = σ²T → 0\), so the half-width
+  \(L√(c2+√c4) → 0\) and the box collapses toward the single point
+  \(c1\). With \(c4=0\) (Gaussian) there is no \(√c4\) floor to keep it
+  open. Two failure modes: (i) the box gets too narrow to cover where
+  \(V·f\) has mass; (ii) when pricing a whole grid of spots/strikes, a
+  range centred by \(c1\) for one \((S0,K)\) is centred away from other
+  grid points, so the cosine reconstruction is evaluated where it is
+  meaningless --- large, erratic errors at short maturity.
 
   \textbf{Diagnostic signature} (this is the tell): the error
-  \emph{grows} as \texttt{T→0} and does \emph{not} improve when
-  \texttt{N} increases. That distinguishes a \emph{range} error (a fixed
-  accuracy floor) from a \emph{series} error (curable by more terms).
+  \emph{grows} as \(T→0\) and does \emph{not} improve when \(N\)
+  increases. That distinguishes a \emph{range} error (a fixed accuracy
+  floor) from a \emph{series} error (curable by more terms).
 
   \textbf{Assignment-2 fix:} the truncation range was too narrow at
-  short maturities because \texttt{c2} was tiny. I (i) raised \texttt{L}
-  at short \texttt{T}, (ii) imposed a minimum half-width floor so
-  \texttt{b−a} cannot collapse (equivalently kept a \texttt{√c4}-type
-  term), and (iii) made sure the range was computed to cover the entire
-  spot/strike grid actually being priced, not a single point. After that
-  the error stopped growing as \texttt{T→0} and reverted to exponential
-  decay in \texttt{N}.
+  short maturities because \(c2\) was tiny. I (i) raised \(L\) at short
+  \(T\), (ii) imposed a minimum half-width floor so \(b−a\) cannot
+  collapse (equivalently kept a \(√c4\)-type term), and (iii) made sure
+  the range was computed to cover the entire spot/strike grid actually
+  being priced, not a single point. After that the error stopped growing
+  as \(T→0\) and reverted to exponential decay in \(N\).
 \item
   Why cosine series instead of a complex Fourier series?
 
@@ -252,75 +343,72 @@ c1 = ln(S0/K) + (r − ½σ²)T,   c2 = σ²T,   c3 = c4 = 0   ⇒   [a,b] = c1 
   \tightlist
   \item
     \textbf{(i) Real coefficients / real arithmetic.} The even extension
-    of \texttt{f} on \texttt{{[}a,b{]}} kills every sine term, so the
-    surviving \texttt{A\_k} are real (\texttt{F\_k} is literally a
-    \texttt{Re\{·\}}). A full complex series carries twice the
-    coefficients and complex bookkeeping for no gain.
+    of \(f\) on \([a,b]\) kills every sine term, so the surviving
+    \(A_k\) are real (\(F_k\) is literally a \(Re{·}\)). A full complex
+    series carries twice the coefficients and complex bookkeeping for no
+    gain.
   \item
     \textbf{(ii) Direct sampling from φ.} The cosine coefficient
-    \emph{is} the real part of \texttt{φ} evaluated at the grid
-    frequency \texttt{kπ/(b-a)}:
+    \emph{is} the real part of \(φ\) evaluated at the grid frequency
+    \texttt{kπ/(b-a)}:
     \texttt{A\_k\ =\ (2/(b-a))\ Re\{φ(kπ/(b-a))\ e\^{}\{-ikπa/(b-a)\}\}}.
     The cosine basis is exactly the one whose coefficients are read off
     the cf in one line --- no inversion integral.
   \item
-    \textbf{(iii) Payoff side closes in elementary functions.}
-    \texttt{V\_k} are integrals of (polynomial/exponential)×cos, which
-    integrate to the closed forms \texttt{χ\_k,\ ψ\_k}. With a
-    complex-exponential basis the call coefficients are not as clean.
-    The whole method pairs the cosine coefficients of \texttt{f} (from
-    \texttt{φ}) against those of \texttt{V} (closed form).
+    \textbf{(iii) Payoff side closes in elementary functions.} \(V_k\)
+    are integrals of (polynomial/exponential)×cos, which integrate to
+    the closed forms \texttt{χ\_k,\ ψ\_k}. With a complex-exponential
+    basis the call coefficients are not as clean. The whole method pairs
+    the cosine coefficients of \(f\) (from \(φ\)) against those of \(V\)
+    (closed form).
   \end{itemize}
 \item
   What sets the convergence rate? Give a case where it is only
   algebraic.
 
   \textbf{A.} Three error sources: (1) \textbf{range truncation}
-  \texttt{{[}a,b{]}} --- \emph{fixed} once chosen, it sets the accuracy
+  \([a,b]\) --- \emph{fixed} once chosen, it sets the accuracy
   \emph{floor} at which convergence saturates (exponentially small in
   the half-width for exponentially-decaying tails); (2) \textbf{series
-  truncation} at \texttt{N} --- governed by the decay of the cosine
-  coefficients \texttt{A\_k}; (3) \textbf{cf/model error} --- feeds
-  straight through.
+  truncation} at \(N\) --- governed by the decay of the cosine
+  coefficients \(A_k\); (3) \textbf{cf/model error} --- feeds straight
+  through.
 
-  The rate in \texttt{N} is set by the \textbf{smoothness of
-  \texttt{f}}:
+  The rate in \(N\) is set by the \textbf{smoothness of \(f\)}:
 
   \begin{itemize}
   \tightlist
   \item
-    \texttt{f} analytic in a strip / \texttt{f∈C\^{}∞} with integrable
-    derivatives ⇒ \texttt{A\_k} decay \textbf{exponentially} ⇒
-    \textbf{exponential} convergence in \texttt{N} (machine precision in
-    dozens--low hundreds of terms).
+    \(f\) analytic in a strip / \(f∈C^∞\) with integrable derivatives ⇒
+    \(A_k\) decay \textbf{exponentially} ⇒ \textbf{exponential}
+    convergence in \(N\) (machine precision in dozens--low hundreds of
+    terms).
   \item
-    \texttt{f} with only \texttt{β} integrable derivatives ⇒
-    \texttt{A\_k\ =\ O(k\^{}\{-(β+1)\})} ⇒ only \textbf{algebraic}
-    convergence. \emph{Lack of smoothness is what kills the exponential
-    rate.}
+    \(f\) with only \(β\) integrable derivatives ⇒
+    \(A_k = O(k^{-(β+1)})\) ⇒ only \textbf{algebraic} convergence.
+    \emph{Lack of smoothness is what kills the exponential rate.}
   \end{itemize}
 
   \textbf{Algebraic case:} a low-regularity density ---
-  e.g.~Variance-Gamma with small \texttt{ν} (the density develops a
+  e.g.~Variance-Gamma with small \(ν\) (the density develops a
   non-smooth peak / cusp), or a short-dated density approaching a Dirac,
-  or near a jump/kink. There \texttt{A\_k} decay only polynomially and
-  you need many more terms.
+  or near a jump/kink. There \(A_k\) decay only polynomially and you
+  need many more terms.
 \item
   Write the Heston characteristic function you used as ground truth.
   State the Feller condition.
 
-  \textbf{A.} Heston: \texttt{dS\ =\ rS\ dt\ +\ √v\ S\ dW1},
-  \texttt{dv\ =\ κ(v̄\ −\ v)dt\ +\ η√v\ dW2},
-  \texttt{d⟨W1,W2⟩\ =\ ρ\ dt}, with \texttt{κ} mean-reversion speed,
-  \texttt{v̄} long-run variance, \texttt{η} vol-of-vol, \texttt{ρ}
-  correlation, \texttt{v0} initial variance. The characteristic function
-  of the log-price \texttt{x\_T\ =\ ln(S\_T/S0)} (or \texttt{ln\ S\_T})
-  is affine-exponential:
+  \textbf{A.} Heston: \(dS = rS dt + √v S dW1\),
+  \(dv = κ( − v)dt + η√v dW2\), \(d⟨W1,W2⟩ = ρ dt\), with \(κ\)
+  mean-reversion speed, \(\) long-run variance, \(η\) vol-of-vol, \(ρ\)
+  correlation, \(v0\) initial variance. The characteristic function of
+  the log-price \texttt{x\_T\ =\ ln(S\_T/S0)} (or \(ln S_T\)) is
+  affine-exponential:
 
 \begin{verbatim}
 φ(u;T) = exp( i u (ln S0 + rT)
             + (v0/η²) · ( (1 − e^{-DT})/(1 − G e^{-DT}) ) · (κ − iρηu − D)
-            + (κ v̄/η²) · ( (κ − iρηu − D)T − 2 ln( (1 − G e^{-DT})/(1 − G) ) ) ),
+            + (κ /η²) · ( (κ − iρηu − D)T − 2 ln( (1 − G e^{-DT})/(1 − G) ) ) ),
 \end{verbatim}
 
   with
@@ -330,18 +418,17 @@ D = √( (κ − iρηu)² + (u² + iu) η² ),
 G = (κ − iρηu − D) / (κ − iρηu + D).
 \end{verbatim}
 
-  \texttt{D} and \texttt{G} come from solving the Riccati ODE for the
-  variance factor of the affine system. (Equivalent ``little-trap'' form
-  uses \texttt{G} rather than \texttt{g=1/G} to keep the complex log on
-  the principal branch and avoid branch-cut discontinuities --- the cf
-  must be evaluated continuously or COS picks up \texttt{φ}-error that
-  feeds straight through.)
+  \(D\) and \(G\) come from solving the Riccati ODE for the variance
+  factor of the affine system. (Equivalent ``little-trap'' form uses
+  \(G\) rather than \texttt{g=1/G} to keep the complex log on the
+  principal branch and avoid branch-cut discontinuities --- the cf must
+  be evaluated continuously or COS picks up \(φ\)-error that feeds
+  straight through.)
 
-  \textbf{Feller condition:} \texttt{2κv̄\ ≥\ η²}. It guarantees the CIR
+  \textbf{Feller condition:} \(2κ ≥ η²\). It guarantees the CIR
   variance process stays strictly positive (never hits 0), which keeps
-  the density well-behaved and \texttt{φ} clean; if violated, \texttt{v}
-  can touch zero and the simulation/quadrature near \texttt{v=0} needs
-  care.
+  the density well-behaved and \(φ\) clean; if violated, \(v\) can touch
+  zero and the simulation/quadrature near \(v=0\) needs care.
 \item
   How does COS extend to Barrier options? To American options?
 
@@ -349,9 +436,9 @@ G = (κ − iρηu − D) / (κ − iρηu + D).
   \texttt{t\_1\textless{}…\textless{}t\_M=T}.} Knock-out survival is a
   product of indicators \texttt{∏\_m\ 1\_\{x\_m\textless{}h\}}
   (\texttt{h\ =\ ln(H/K)}). By the \textbf{Markov property} the joint
-  density factorises into one-step transitions, so the
-  \texttt{M}-dimensional integral nests into a \textbf{backward
-  recursion}. Define continuation and option value at each date:
+  density factorises into one-step transitions, so the \(M\)-dimensional
+  integral nests into a \textbf{backward recursion}. Define continuation
+  and option value at each date:
 
 \begin{verbatim}
 c(x,t_{m-1}) = e^{-rΔt} ∫ v(y,t_m) f(y|x) dy,
@@ -364,58 +451,55 @@ v(x,t_{m-1}) = R (knocked out) for x ≥ h,   = c(x,t_{m-1}) (alive) for x < h.
 ĉ(x,t_{m-1}) = e^{-rΔt} Σ'_k F_k(x) V_k(t_m),   F_k(x)=Re{φ(kπ/(b-a);x) e^{-ikπa/(b-a)}}.
 \end{verbatim}
 
-  The new ingredient: the ``payoff'' \texttt{v(y,t\_m)} is produced by
-  the previous step, so its coefficients \texttt{V\_k} are
-  \textbf{propagated by backward induction}. Because \texttt{v} is
-  piecewise at \texttt{h}, \texttt{V\_k} splits at the barrier:
+  The new ingredient: the ``payoff'' \(v(y,t_m)\) is produced by the
+  previous step, so its coefficients \(V_k\) are \textbf{propagated by
+  backward induction}. Because \(v\) is piecewise at \(h\), \(V_k\)
+  splits at the barrier:
 
 \begin{verbatim}
-V̂_k(t_m) = Ĉ_k(a,h,t_m) + e^{-r(T-t_{m-1})} (2R/(b-a)) Ψ_k(h,b),
+_k(t_m) = Ĉ_k(a,h,t_m) + e^{-r(T-t_{m-1})} (2R/(b-a)) Ψ_k(h,b),
 \end{verbatim}
 
-  and \texttt{Ĉ\_k} (inserting the COS continuation) becomes
+  and \(Ĉ_k\) (inserting the COS continuation) becomes
   \texttt{Σ\_j\ φ\_lvl(jπ/(b-a))\ V\_j\ M\_\{k,j\}} with an analytic
-  coupling \texttt{M\_\{k,j\}}. \texttt{M\_\{k,j\}} splits into a
-  \textbf{Hankel} part (\texttt{j+k}) and a \textbf{Toeplitz} part
-  (\texttt{j−k}); Toeplitz/Hankel×vector = convolution = 3 FFTs by
-  circulant embedding ⇒ \texttt{O(N\ log\ N)} per step, total
-  \texttt{O((M−1)N\ log₂N)}. So --- unlike European COS --- the barrier
-  method \emph{does} use the FFT, because it must move the whole
-  coefficient vector at every step. ``In'' barriers come from in--out
-  parity. Continuous monitoring is the \texttt{M→∞} limit, recovered by
-  Richardson extrapolation in \texttt{Δt} using the known
-  \texttt{O(√Δt)} discrete-vs-continuous bias. Heston ⇒ 2-D state
+  coupling \(M_{k,j}\). \(M_{k,j}\) splits into a \textbf{Hankel} part
+  (\(j+k\)) and a \textbf{Toeplitz} part (\(j−k\));
+  Toeplitz/Hankel×vector = convolution = 3 FFTs by circulant embedding ⇒
+  \(O(N log N)\) per step, total \(O((M−1)N log₂N)\). So --- unlike
+  European COS --- the barrier method \emph{does} use the FFT, because
+  it must move the whole coefficient vector at every step. ``In''
+  barriers come from in--out parity. Continuous monitoring is the
+  \(M→∞\) limit, recovered by Richardson extrapolation in \(Δt\) using
+  the known \(O(√Δt)\) discrete-vs-continuous bias. Heston ⇒ 2-D state
   (log-stock, variance): 1-D COS in log-stock + numerical integration
-  over variance, or full 2-D COS; Feller \texttt{2κv̄≥η²}.
+  over variance, or full 2-D COS; Feller \(2κ≥η²\).
 
   \textbf{B. American (Lecture 9).} Same backward-recursion idea but the
   decision is \emph{early exercise} rather than a barrier knock-out. On
   a time grid, at each step the option value is
   \texttt{v(x,t\_m)\ =\ max(\ g(x),\ c(x,t\_m)\ )} --- the larger of
-  immediate exercise payoff \texttt{g} and the COS continuation value
+  immediate exercise payoff \(g\) and the COS continuation value
   \texttt{c(x,t\_m)=e\^{}\{-rΔt\}Σ\textquotesingle{}\_k\ F\_k(x)V\_k(t\_\{m+1\})}.
-  The early-exercise boundary \texttt{x*\_m} is the point where
-  \texttt{g\ =\ c}; below/above it (call vs put) the option is
-  exercised. So each step (i) finds \texttt{x*\_m} (a 1-D root-find on
-  \texttt{g\ −\ c\ =\ 0}), (ii) splits the cosine coefficients of
-  \texttt{v} at \texttt{x*\_m} into a continuation region (cosine coeffs
-  of \texttt{c}, computed from the previous \texttt{V\_k} via the same
-  analytic coupling integrals) and an exercise region (cosine coeffs of
-  \texttt{g}, closed-form \texttt{χ\_k/ψ\_k}). This is the COS Bermudan
-  pricer; the American price is obtained by Richardson extrapolation in
-  the number of exercise dates. Structurally identical to the barrier
-  recursion, with the moving boundary \texttt{x*\_m} playing the role
-  the fixed barrier \texttt{h} plays there.
+  The early-exercise boundary \(x*_m\) is the point where \(g = c\);
+  below/above it (call vs put) the option is exercised. So each step (i)
+  finds \(x*_m\) (a 1-D root-find on \(g − c = 0\)), (ii) splits the
+  cosine coefficients of \(v\) at \(x*_m\) into a continuation region
+  (cosine coeffs of \(c\), computed from the previous \(V_k\) via the
+  same analytic coupling integrals) and an exercise region (cosine
+  coeffs of \(g\), closed-form \texttt{χ\_k/ψ\_k}). This is the COS
+  Bermudan pricer; the American price is obtained by Richardson
+  extrapolation in the number of exercise dates. Structurally identical
+  to the barrier recursion, with the moving boundary \(x*_m\) playing
+  the role the fixed barrier \(h\) plays there.
 \item
   Compare COS with Carr--Madan. Advantages and limitations.
 
   \textbf{A.} Both need only the characteristic function. Carr--Madan
-  damps the call (\texttt{c\_T(k)=e\^{}\{αk\}C\_T(k)},
-  \texttt{α\textgreater{}0}, to make it \texttt{L¹∩L²}),
-  Fourier-transforms it in closed form in terms of \texttt{φ}, and
-  recovers the price by an \textbf{inverse FFT} --- i.e.~a
+  damps the call (\texttt{c\_T(k)=e\^{}\{αk\}C\_T(k)}, \(α>0\), to make
+  it \(L¹∩L²\)), Fourier-transforms it in closed form in terms of \(φ\),
+  and recovers the price by an \textbf{inverse FFT} --- i.e.~a
   trapezoidal-type quadrature of an oscillatory integrand,
-  \texttt{O(N\ log\ N)}.
+  \(O(N log N)\).
 
   \begin{longtable}[]{@{}
     >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
@@ -432,35 +516,34 @@ V̂_k(t_m) = Ĉ_k(a,h,t_m) + e^{-r(T-t_{m-1})} (2R/(b-a)) Ψ_k(h,b),
   \endhead
   \bottomrule\noalign{}
   \endlastfoot
-  Core op & one \texttt{O(N)} cosine sum, no integration & FFT
-  quadrature, \texttt{O(N\ log\ N)} \\
-  Free params & none (range from cumulants) & damping \texttt{α} must be
+  Core op & one \(O(N)\) cosine sum, no integration & FFT quadrature,
+  \(O(N log N)\) \\
+  Free params & none (range from cumulants) & damping \(α\) must be
   tuned \\
-  Convergence (smooth \texttt{f}) & exponential in \texttt{N} &
-  algebraic (quadrature-limited) \\
+  Convergence (smooth \(f\)) & exponential in \(N\) & algebraic
+  (quadrature-limited) \\
   Terms for \textasciitilde machine prec. & dozens--hundreds & thousands
   of nodes \\
   Greeks & analytic, same sum & extra transforms / finite differences \\
   \end{longtable}
 
   \textbf{COS wins} for smooth/piecewise-smooth densities with known
-  \texttt{φ} and exponentially-decaying tails --- essentially all
-  European pricing under BS, Heston, and standard Lévy/AJD models ---
-  because it converges exponentially, needs no free parameter, and gives
-  Greeks for free.
+  \(φ\) and exponentially-decaying tails --- essentially all European
+  pricing under BS, Heston, and standard Lévy/AJD models --- because it
+  converges exponentially, needs no free parameter, and gives Greeks for
+  free.
 
   \textbf{Limitations / be careful:} genuinely low-regularity densities
-  (slow algebraic \texttt{A\_k} decay), very short maturities, or fat
-  tails, where \texttt{{[}a,b{]}} must be chosen carefully (Q2) and
-  \texttt{N} raised; and any error in \texttt{φ} (e.g.~a mis-evaluated
-  Heston cf across the branch cut) feeds straight through. Carr--Madan's
-  FFT also naturally returns a \emph{whole strip of strikes} in one
-  transform, which COS matches only because its \texttt{\{V\_k\}} are
-  strike-independent in log-moneyness.
+  (slow algebraic \(A_k\) decay), very short maturities, or fat tails,
+  where \([a,b]\) must be chosen carefully (Q2) and \(N\) raised; and
+  any error in \(φ\) (e.g.~a mis-evaluated Heston cf across the branch
+  cut) feeds straight through. Carr--Madan's FFT also naturally returns
+  a \emph{whole strip of strikes} in one transform, which COS matches
+  only because its \({V_k}\) are strike-independent in log-moneyness.
 \end{enumerate}
 
 \hypertarget{my-answers-concise-board-versions-re-derive-these-out-loud-dont-read}{%
-\subsection{My answers (concise board versions --- re-derive these out
+\section{My answers (concise board versions --- re-derive these out
 loud, don't
 read)}\label{my-answers-concise-board-versions-re-derive-these-out-loud-dont-read}}
 
@@ -470,86 +553,76 @@ demand.
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \item
-  \textbf{COS call price.} \texttt{P\ =\ e\^{}\{-rT\}∫V\ f\ dy}; I don't
-  know \texttt{f} but know its cf \texttt{φ}. Truncate to
-  \texttt{{[}a,b{]}}, cosine-expand \texttt{f}, and the coefficients
-  come straight off \texttt{φ}:
+  \textbf{COS call price.} \(P = e^{-rT}∫V f dy\); I don't know \(f\)
+  but know its cf \(φ\). Truncate to \([a,b]\), cosine-expand \(f\), and
+  the coefficients come straight off \(φ\):
   \texttt{A\_k\ ≈\ (2/(b-a))Re\{φ(kπ/(b-a))e\^{}\{-ikπa/(b-a)\}\}}
-  (extend the coefficient integral to \texttt{R} --- the only
-  approximation). Pair against payoff coeffs
+  (extend the coefficient integral to \(R\) --- the only approximation).
+  Pair against payoff coeffs
   \texttt{V\_k=(2/(b-a))∫\_a\^{}b\ V\ cos(...)dy}; the integral of the
   product is \texttt{(b-a)/2\ Σ\textquotesingle{}A\_kV\_k}, giving
   \texttt{P\ ≈\ e\^{}\{-rT\}\ Σ\textquotesingle{}\_\{k=0\}\^{}\{N-1\}\ Re\{φ(kπ/(b-a);x0)e\^{}\{-ikπa/(b-a)\}\}\ V\_k}.
-  The cf enters only as the cosine coefficients of the density;
-  \texttt{x0} lives inside \texttt{φ}, so one \texttt{\{V\_k\}} prices
-  the whole grid.
+  The cf enters only as the cosine coefficients of the density; \(x0\)
+  lives inside \(φ\), so one \({V_k}\) prices the whole grid.
 \item
-  \textbf{\texttt{{[}a,b{]}}.} \texttt{c1\ ±\ L√(c2+√c4)},
-  \texttt{L≈10}: \texttt{c1} centres, \texttt{√c2} is the width scale,
-  \texttt{√c4} fattens for fat tails, \texttt{L} is the safety margin.
-  BS: \texttt{c1=ln(S0/K)+(r-½σ²)T}, \texttt{c2=σ²T}, \texttt{c4=0}, so
-  \texttt{{[}a,b{]}=c1±Lσ√T}. As \texttt{T→0}, \texttt{c2→0} so the box
-  collapses (no \texttt{√c4} floor in the Gaussian case) → error
-  \emph{grows} as \texttt{T→0} and is \emph{not} cured by more
-  \texttt{N} (that signature = range, not series, error). Assignment-2
-  fix: raise \texttt{L} at short \texttt{T}, impose a minimum half-width
-  floor, and size the range to the whole spot/strike grid, not one
-  point.
+  \textbf{\([a,b]\).} \(c1 ± L√(c2+√c4)\), \(L≈10\): \(c1\) centres,
+  \(√c2\) is the width scale, \(√c4\) fattens for fat tails, \(L\) is
+  the safety margin. BS: \texttt{c1=ln(S0/K)+(r-½σ²)T}, \(c2=σ²T\),
+  \(c4=0\), so \([a,b]=c1±Lσ√T\). As \(T→0\), \(c2→0\) so the box
+  collapses (no \(√c4\) floor in the Gaussian case) → error \emph{grows}
+  as \(T→0\) and is \emph{not} cured by more \(N\) (that signature =
+  range, not series, error). Assignment-2 fix: raise \(L\) at short
+  \(T\), impose a minimum half-width floor, and size the range to the
+  whole spot/strike grid, not one point.
 \item
-  \textbf{Why cosine.} Even extension ⇒ real \texttt{A\_k}, real
-  arithmetic, half the storage; \texttt{A\_k} is literally
-  \texttt{Re\{φ\}} at the grid frequency (direct cf sampling); payoff
-  coeffs reduce to elementary \texttt{χ\_k,\ ψ\_k}. A complex series
-  gives none of these cleanly.
+  \textbf{Why cosine.} Even extension ⇒ real \(A_k\), real arithmetic,
+  half the storage; \(A_k\) is literally \(Re{φ}\) at the grid frequency
+  (direct cf sampling); payoff coeffs reduce to elementary
+  \texttt{χ\_k,\ ψ\_k}. A complex series gives none of these cleanly.
 \item
   \textbf{Convergence.} Three errors: range (fixed floor), series (decay
-  of \texttt{A\_k}), cf/model (passes through). Rate set by smoothness
-  of \texttt{f}: analytic ⇒ exponential \texttt{A\_k} decay ⇒
-  exponential in \texttt{N}; only \texttt{β} integrable derivatives ⇒
-  \texttt{A\_k=O(k\^{}\{-(β+1)\})} ⇒ algebraic. Algebraic case: VG with
-  small \texttt{ν}, or short-dated density near a Dirac/kink.
+  of \(A_k\)), cf/model (passes through). Rate set by smoothness of
+  \(f\): analytic ⇒ exponential \(A_k\) decay ⇒ exponential in \(N\);
+  only \(β\) integrable derivatives ⇒ \(A_k=O(k^{-(β+1)})\) ⇒ algebraic.
+  Algebraic case: VG with small \(ν\), or short-dated density near a
+  Dirac/kink.
 \item
-  \textbf{Heston cf + Feller.} Affine-exponential cf in \texttt{u} with
-  \texttt{D=√((κ-iρηu)²+(u²+iu)η²)}, \texttt{G=(κ-iρηu-D)/(κ-iρηu+D)},
+  \textbf{Heston cf + Feller.} Affine-exponential cf in \(u\) with
+  \(D=√((κ-iρηu)²+(u²+iu)η²)\), \texttt{G=(κ-iρηu-D)/(κ-iρηu+D)},
   variance term
   \texttt{(v0/η²)((1-e\^{}\{-DT\})/(1-Ge\^{}\{-DT\}))(κ-iρηu-D)} plus
-  the \texttt{(κv̄/η²)} drift term; use the ``little-trap'' form for a
-  continuous branch. Feller: \texttt{2κv̄\ ≥\ η²} keeps
-  \texttt{v\textgreater{}0} and \texttt{φ} clean.
+  the \texttt{(κ/η²)} drift term; use the ``little-trap'' form for a
+  continuous branch. Feller: \(2κ ≥ η²\) keeps \(v>0\) and \(φ\) clean.
 \item
   \textbf{Barrier / American.} Both = backward recursion via Markov
   factorisation; each step is European COS
   \texttt{ĉ=e\^{}\{-rΔt\}Σ\textquotesingle{}F\_k(x)V\_k(t\_m)} with
-  \texttt{V\_k} propagated. Barrier: knock out by overwriting
-  \texttt{v=R} above \texttt{h}, \texttt{V\_k} splits at \texttt{h}, the
-  coupling \texttt{M\_\{k,j\}} is Hankel+Toeplitz ⇒ FFT,
-  \texttt{O((M-1)N\ log₂N)}. American: \texttt{v=max(g,c)}, split
-  \texttt{V\_k} at the early-exercise boundary \texttt{x*\_m} (root of
-  \texttt{g-c}); Bermudan + Richardson in \#exercise dates. The moving
-  boundary \texttt{x*} plays the role of the fixed barrier \texttt{h}.
+  \(V_k\) propagated. Barrier: knock out by overwriting \(v=R\) above
+  \(h\), \(V_k\) splits at \(h\), the coupling \(M_{k,j}\) is
+  Hankel+Toeplitz ⇒ FFT, \(O((M-1)N log₂N)\). American: \(v=max(g,c)\),
+  split \(V_k\) at the early-exercise boundary \(x*_m\) (root of
+  \(g-c\)); Bermudan + Richardson in \#exercise dates. The moving
+  boundary \(x*\) plays the role of the fixed barrier \(h\).
 \item
-  \textbf{COS vs Carr--Madan.} Both need only \texttt{φ}. CM damps the
-  call (param \texttt{α}) and inverts by FFT quadrature --- algebraic,
-  \texttt{O(N\ log\ N)}, tunable \texttt{α}. COS is a single
-  \texttt{O(N)} cosine sum, no integration, no free parameter,
-  exponential convergence, free Greeks. COS wins for smooth densities
-  with decaying tails; be careful for low-regularity / very short
-  \texttt{T} / fat tails (set \texttt{{[}a,b{]}}, raise \texttt{N}), and
-  any \texttt{φ} error feeds straight through.
+  \textbf{COS vs Carr--Madan.} Both need only \(φ\). CM damps the call
+  (param \(α\)) and inverts by FFT quadrature --- algebraic,
+  \(O(N log N)\), tunable \(α\). COS is a single \(O(N)\) cosine sum, no
+  integration, no free parameter, exponential convergence, free Greeks.
+  COS wins for smooth densities with decaying tails; be careful for
+  low-regularity / very short \(T\) / fat tails (set \([a,b]\), raise
+  \(N\)), and any \(φ\) error feeds straight through.
 \end{enumerate}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\hypertarget{lecture-6-drill-set-european-cos}{%
-\section{Lecture 6 drill set (European
-COS)}\label{lecture-6-drill-set-european-cos}}
+Lecture 6 drill set (European COS)
 
 Companion to \texttt{notes/Lecture06-notes.pdf}. Each question has a
 terse answer key in the collapsible note --- cover it and answer out
 loud first. ``Derive'' means on paper, no notes.
 
 \hypertarget{a.-density-recovery}{%
-\subsection{A. Density recovery}\label{a.-density-recovery}}
+\section{A. Density recovery}\label{a.-density-recovery}}
 
 \textbf{A1.} Write the half-range cosine expansion of a density f on
 {[}a,b{]}, with the prime convention. What does the prime mean and why
@@ -576,7 +649,7 @@ e\^{}\{-½(kπ/(b-a))²\} makes F\_k decay super-exponentially in k, which
 is the canonical exponential-convergence picture.
 
 \hypertarget{b.-why-cosine}{%
-\subsection{B. Why cosine}\label{b.-why-cosine}}
+\section{B. Why cosine}\label{b.-why-cosine}}
 
 \textbf{B1.} Three reasons COS uses a cosine series, not a complex
 Fourier series. Be specific about each. \textgreater{} Key: (i) even
@@ -586,7 +659,7 @@ ch.f.; (iii) payoff coefficients V\_k reduce to elementary χ\_k, ψ\_k
 (exp/poly × cos integrate in closed form).
 
 \hypertarget{c.-pricing-formula}{%
-\subsection{C. Pricing formula}\label{c.-pricing-formula}}
+\section{C. Pricing formula}\label{c.-pricing-formula}}
 
 \textbf{C1.} \emph{(Core derivation.)} From P = e\^{}\{-rT\}∫ V f dy,
 derive P ≈ e\^{}\{-rT\} Σ'\_\{k=0\}\^{}\{N-1\} Re\{φ(kπ/(b-a);x0)
@@ -617,8 +690,7 @@ COS (which does need the FFT because it propagates the full coefficient
 vector at every step).
 
 \hypertarget{d.-payoff-coefficients-v_k}{%
-\subsection{D. Payoff coefficients
-V\_k}\label{d.-payoff-coefficients-v_k}}
+\section{D. Payoff coefficients V\_k}\label{d.-payoff-coefficients-v_k}}
 
 \textbf{D1.} \emph{(Derive.)} Define χ\_k(c,d)=∫\_c\^{}d e\^{}y
 cos(ω\_k(y-a))dy, ω\_k=kπ/(b-a). Derive the closed form. \textgreater{}
@@ -644,7 +716,7 @@ V\_k=(2/(b-a))K{[}ψ\_k(a,0)-χ\_k(a,0){]} --- payoff
 K(1-e\textsuperscript{y)}+ lives on y≤0.
 
 \hypertarget{e.-truncation-range-the-bug}{%
-\subsection{E. Truncation range (THE
+\section{E. Truncation range (THE
 bug)}\label{e.-truncation-range-the-bug}}
 
 \textbf{E1.} State {[}a,b{]}={[}c1 - L√(c2+√c4), c1 + L√(c2+√c4){]}.
@@ -667,7 +739,7 @@ the range covers the whole spot/strike grid actually priced, not one
 point.
 
 \hypertarget{f.-convergence}{%
-\subsection{F. Convergence}\label{f.-convergence}}
+\section{F. Convergence}\label{f.-convergence}}
 
 \textbf{F1.} List the three error sources in the COS price and say which
 one sets the accuracy floor. \textgreater{} Key: (1) range truncation
@@ -693,7 +765,7 @@ time. So COS reaches machine precision with N in the dozens to low
 hundreds --- the gap is the whole selling point of the method.
 
 \hypertarget{g.-greeks}{%
-\subsection{G. Greeks}\label{g.-greeks}}
+\section{G. Greeks}\label{g.-greeks}}
 
 \textbf{G1.} Why are Delta and Vega ``free'' in COS? Write the Delta
 sum. \textgreater{} Key: S0 (via x=ln(S0/K)) and the model parameters
@@ -707,15 +779,13 @@ quadrature/FFT pricers that need finite differences.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\hypertarget{lecture-10-drill-set-cos-for-barrier-options}{%
-\section{Lecture 10 drill set (COS for barrier
-options)}\label{lecture-10-drill-set-cos-for-barrier-options}}
+Lecture 10 drill set (COS for barrier options)
 
 Companion to \texttt{notes/Lecture10-notes.pdf}. Same cover-and-answer
 format.
 
 \hypertarget{h.-the-pricing-problem}{%
-\subsection{H. The pricing problem}\label{h.-the-pricing-problem}}
+\section{H. The pricing problem}\label{h.-the-pricing-problem}}
 
 \textbf{H1.} Define up-and-out vs up-and-in call. Why are there exactly
 8 barrier types? \textgreater{} Key: up-and-out call pays max(S\_T-K,0)
@@ -741,7 +811,7 @@ V=e\^{}\{-r(T-t)\}E\_x{[}(α(e\textsuperscript{\{X\_T\}-K))}+
 Barrier enters via the homogeneous Dirichlet BC, not the equation.
 
 \hypertarget{i.-reflection-principle-derive}{%
-\subsection{I. Reflection principle
+\section{I. Reflection principle
 (derive)}\label{i.-reflection-principle-derive}}
 
 \textbf{I1.} \emph{(Core.)} Derive P(τ\_a ≤ T) = 2P(W\_T ≥ a) and hence
@@ -767,7 +837,7 @@ This is exactly what turns the driftless joint density of (Ξ,W\_T) into
 the drifted one used in the closed-form barrier prices.
 
 \hypertarget{j.-pde-routes}{%
-\subsection{J. PDE routes}\label{j.-pde-routes}}
+\section{J. PDE routes}\label{j.-pde-routes}}
 
 \textbf{J1.} State the method-of-images identity and the down-and-out
 call it produces. What is α? \textgreater{} Key: for the BS operator
@@ -788,7 +858,7 @@ V=e\^{}\{αx+βτ\}U with α=-½(κ-1), β=-α²-κ, z=x-a ⇒ U\_τ=U\_zz on
 Propagate modes by e\^{}\{-(nπ/(b-a))²τ\}.
 
 \hypertarget{k.-cos-for-discrete-barriers-the-main-event}{%
-\subsection{K. COS for discrete barriers (the main
+\section{K. COS for discrete barriers (the main
 event)}\label{k.-cos-for-discrete-barriers-the-main-event}}
 
 \textbf{K1.} \emph{(High priority.)} Why does a discretely-monitored
@@ -808,7 +878,7 @@ v(y,t\_m). It IS Euro COS with v(·,t\_m) playing the role of the payoff
 
 \textbf{K3.} \emph{(Core.)} Why must V\_k be propagated by backward
 induction, and how does the knock-out split V\_k at h? \textgreater{}
-Key: v is piecewise (R above h, ĉ below) ⇒ V̂\emph{k(t\_m)=Ĉ\_k(a,h,t\_m)
+Key: v is piecewise (R above h, ĉ below) ⇒ \emph{k(t\_m)=Ĉ\_k(a,h,t\_m)
 + e\^{}\{-r(T-t}\{m-1\})\}(2R/(b-a))Ψ\_k(h,b). Ĉ\_k inserts the COS
 continuation value ⇒ Ĉ\_k=e\^{}\{-rΔt\}Re{[}Σ'\emph{j
 φ\_Levy(jπ/(b-a))V\_j(t}\{m+1\})M\_\{k,j\}{]}, with M\_\{k,j\} an
@@ -834,7 +904,7 @@ is meaningless; and range is fixed once but reused for all M steps.
 one-step continuation integral is two-dimensional: either 1-D COS in the
 log-stock with numerical integration over the variance, or a full 2-D
 COS recovering the joint density. The characteristic function is
-Heston's (Lecture 7) and the Feller condition 2κv̄≥η² keeps it
+Heston's (Lecture 7) and the Feller condition 2κ≥η² keeps it
 well-behaved. Continuous monitoring is the M→∞ (Δt→0) limit; in practice
 the discrete price converges to it and a Richardson-type extrapolation
 in Δt --- using the known O(√Δt) discrete-vs-continuous barrier bias ---

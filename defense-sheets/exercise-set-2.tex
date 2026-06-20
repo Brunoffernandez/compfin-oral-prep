@@ -4,7 +4,7 @@
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
-  10pt,
+  11pt,
 ]{article}
 \usepackage{amsmath,amssymb}
 \usepackage{iftex}
@@ -20,9 +20,6 @@
 \usepackage{lmodern}
 \ifPDFTeX\else
   % xetex/luatex font selection
-  \setmainfont[]{DejaVu Serif}
-  \setsansfont[]{DejaVu Sans}
-  \setmonofont[]{DejaVu Sans Mono}
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -41,11 +38,105 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
-\usepackage[margin=2cm]{geometry}
+\usepackage[margin=2.2cm]{geometry}
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\setcounter{secnumdepth}{5}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{newunicodechar}
+\newunicodechar{}{\ensuremath{\bar\nu}}
+\newunicodechar{}{\ensuremath{\hat\nu}}
+\newunicodechar{}{\ensuremath{\tilde\sigma}}
+\newunicodechar{}{\ensuremath{\bar v}}
+\newunicodechar{}{\ensuremath{\hat\sigma}}
+\newunicodechar{}{\ensuremath{\bar X}}
+\newunicodechar{}{\ensuremath{\hat X}}
+\newunicodechar{}{\ensuremath{\tilde W}}
+\newunicodechar{}{\ensuremath{\dot\alpha}}
+\newunicodechar{}{\ensuremath{\dot\beta}}
+\newunicodechar{}{\ensuremath{\hat f}}
+\newunicodechar{}{\ensuremath{\bar t}}
+\newunicodechar{}{\ensuremath{\hat V}}
+\newunicodechar{Ĉ}{\ensuremath{\hat C}}
+\newunicodechar{ĉ}{\ensuremath{\hat c}}
+\newunicodechar{ġ}{\ensuremath{\dot g}}
+\newunicodechar{ᵀ}{\ensuremath{{}^{\mathsf{T}}}}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{²}{\ensuremath{{}^{2}}}
+\newunicodechar{³}{\ensuremath{{}^{3}}}
+\newunicodechar{¹}{\ensuremath{{}^{1}}}
+\newunicodechar{⁴}{\ensuremath{{}^{4}}}
+\newunicodechar{⁸}{\ensuremath{{}^{8}}}
+\newunicodechar{⁺}{\ensuremath{{}^{+}}}
+\newunicodechar{⁻}{\ensuremath{{}^{-}}}
+\newunicodechar{₂}{\ensuremath{{}_{2}}}
+\newunicodechar{½}{\ensuremath{\tfrac12}}
+\newunicodechar{¼}{\ensuremath{\tfrac14}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{÷}{\ensuremath{\div}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ν}{\ensuremath{\nu}}
+\newunicodechar{τ}{\ensuremath{\tau}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{ω}{\ensuremath{\omega}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{θ}{\ensuremath{\theta}}
+\newunicodechar{η}{\ensuremath{\eta}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{ξ}{\ensuremath{\xi}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{Λ}{\ensuremath{\Lambda}}
+\newunicodechar{Π}{\ensuremath{\Pi}}
+\newunicodechar{Ξ}{\ensuremath{\Xi}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}
+\newunicodechar{Θ}{\ensuremath{\Theta}}
+\newunicodechar{Ψ}{\ensuremath{\Psi}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{√}{\ensuremath{\surd}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\ge}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{≠}{\ensuremath{\ne}}
+\newunicodechar{≡}{\ensuremath{\equiv}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{⇒}{\ensuremath{\Rightarrow}}
+\newunicodechar{⇔}{\ensuremath{\Leftrightarrow}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{∝}{\ensuremath{\propto}}
+\newunicodechar{∏}{\ensuremath{\prod}}
+\newunicodechar{⊥}{\ensuremath{\perp}}
+\newunicodechar{‖}{\ensuremath{\|}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}
+\newunicodechar{…}{\ensuremath{\ldots}}
+\newunicodechar{̄}{}
+\newunicodechar{̂}{}
+\newunicodechar{̃}{}
+\newunicodechar{̇}{}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -53,22 +144,27 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
+  pdftitle={Exercise Set 2 --- Defense Sheet},
+  pdfauthor={Computational Finance (WI4151), TU Delft --- Prof.~Fang Fang},
   colorlinks=true,
-  linkcolor={Maroon},
+  linkcolor={blue},
   filecolor={Maroon},
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
 
-\author{}
+\title{Exercise Set 2 --- Defense Sheet}
+\author{Computational Finance (WI4151), TU Delft --- Prof.~Fang Fang}
 \date{}
 
 \begin{document}
+\maketitle
 
-\hypertarget{defense-sheet-exercise-set-2}{%
-\section{Defense sheet --- Exercise set
-2}\label{defense-sheet-exercise-set-2}}
-
+{
+\hypersetup{linkcolor=blue}
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
 This set has two problems, each in its own file: - \textbf{Exercise 1
 --- Least-Squares Monte Carlo (LSM / Longstaff--Schwartz):}
 \texttt{exercise1\_def\ (2).py} - \textbf{Exercise 2 --- Finite
@@ -76,42 +172,40 @@ Difference (FTCS) for European and American puts:}
 \texttt{exercise2\_def\ (2).py}
 
 Line numbers below refer to those two files. Where a ``why'' requires my
-own reasoning, it is left as a \texttt{TODO\ (Bruno)} for me to answer
-out loud.
+own reasoning, it is left as a \(TODO (Bruno)\) for me to answer out
+loud.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{the-task-in-my-own-words}{%
-\subsection{The task (in my own words)}\label{the-task-in-my-own-words}}
+\section{The task (in my own words)}\label{the-task-in-my-own-words}}
 
 \textbf{Exercise 1 --- LSM (Longstaff--Schwartz, 2001).} - Part (i):
 reproduce the textbook 8-path numerical example from the paper. Strike
-\texttt{K\ =\ 1.10}, \texttt{r\ =\ 6\%}, three yearly exercise dates
-(\texttt{dt\ =\ 1}, \texttt{T\ =\ 3}). Print the cash-flow matrix at
-each time, the in-the-money regression tables, the fitted
-\texttt{E{[}Y\textbar{}X{]}\ =\ a0\ +\ a1\ X\ +\ a2\ X\^{}2}, the
-optimal early-exercise decisions, the stopping rule, the option
-cash-flow matrix, and finally the American and European put prices to 5
-decimals. - Part (ii): replace the 8 hard-coded paths with
-\texttt{N\ =\ 100,000} simulated GBM paths (50k + 50k antithetic),
-\texttt{K\ =\ 40}, \texttt{M\ =\ 50} exercise dates per year, and
+\(K = 1.10\), \(r = 6%
+\), three yearly exercise dates (\(dt = 1\), \(T = 3\)). Print the
+cash-flow matrix at each time, the in-the-money regression tables, the
+fitted \(E[Y|X] = a0 + a1 X + a2 X^2\), the optimal early-exercise
+decisions, the stopping rule, the option cash-flow matrix, and finally
+the American and European put prices to 5 decimals. - Part (ii): replace
+the 8 hard-coded paths with \(N = 100,000\) simulated GBM paths (50k +
+50k antithetic), \(K = 40\), \(M = 50\) exercise dates per year, and
 replicate the ``red box'' columns of Table 1 of the paper (Simulated
 American, s.e., closed-form European, early-exercise value) for the 20
-\texttt{(S0,\ sigma,\ T)} combinations. Here the basis is the first
-three weighted Laguerre polynomials evaluated at \texttt{x\ =\ S/K}.
+\((S0, sigma, T)\) combinations. Here the basis is the first three
+weighted Laguerre polynomials evaluated at \texttt{x\ =\ S/K}.
 
 \textbf{Exercise 2 --- Finite Difference (FTCS).} - Part (i): adapt a
 provided \texttt{ftcs\_bs\_put.py} to price European puts via an
 explicit (forward-time, central-space) scheme in log-price space
-\texttt{m\ =\ log\ S}, for the same 20 parameter combinations, and
-compare against closed-form Black--Scholes. - Part (ii): turn the
-European FTCS solver into an American one by adding the early-exercise
-(free-boundary) projection \texttt{U\ =\ max(U,\ intrinsic)} after each
-time step. Compare FD-American against the LSM-American of Exercise 1 as
-a correctness check. - Part (iii): assemble the full ``outside the red
-box'' columns of Table 1 (FD American, closed-form European, FD
-early-exercise value, and the FD-minus-LSM difference in early-exercise
-value).
+\(m = log S\), for the same 20 parameter combinations, and compare
+against closed-form Black--Scholes. - Part (ii): turn the European FTCS
+solver into an American one by adding the early-exercise (free-boundary)
+projection \(U = max(U, intrinsic)\) after each time step. Compare
+FD-American against the LSM-American of Exercise 1 as a correctness
+check. - Part (iii): assemble the full ``outside the red box'' columns
+of Table 1 (FD American, closed-form European, FD early-exercise value,
+and the FD-minus-LSM difference in early-exercise value).
 
 \textbf{TODO (Bruno):} In one sentence, why does the American put price
 exceed the European put price here, and why is that \emph{not} true for
@@ -120,16 +214,15 @@ an American call on a non-dividend stock?
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{my-approach-and-why}{%
-\subsection{My approach and why}\label{my-approach-and-why}}
+\section{My approach and why}\label{my-approach-and-why}}
 
 \textbf{Exercise 1 --- LSM.} - Backward induction over exercise dates.
-At each date, regress discounted realized future cash flows \texttt{Y}
-on a basis in the current spot \texttt{X}, but \textbf{only over
-in-the-money paths}, then compare immediate exercise against the fitted
-continuation value. - Part (i) uses a degree-2 monomial basis
-\texttt{\{1,\ X,\ X\^{}2\}} via an sklearn pipeline
-(\texttt{exercise1\_def\ (2).py:107}). - Part (ii) uses the first three
-weighted Laguerre polynomials in \texttt{x\ =\ S/K}
+At each date, regress discounted realized future cash flows \(Y\) on a
+basis in the current spot \(X\), but \textbf{only over in-the-money
+paths}, then compare immediate exercise against the fitted continuation
+value. - Part (i) uses a degree-2 monomial basis \({1, X, X^2}\) via an
+sklearn pipeline (\texttt{exercise1\_def\ (2).py:107}). - Part (ii) uses
+the first three weighted Laguerre polynomials in \texttt{x\ =\ S/K}
 (\texttt{exercise1\_def\ (2).py:185-191}). - Variance reduction by
 antithetic paths (\texttt{exercise1\_def\ (2).py:177-178}).
 
@@ -138,142 +231,133 @@ than all paths? (Out-of-the-money continuation values are irrelevant to
 the exercise decision --- but say \emph{why} in your own words and tie
 it to the paper.)
 
-\textbf{TODO (Bruno):} Why monomials \texttt{\{1,\ X,\ X\^{}2\}} in Part
-(i) but weighted Laguerre in Part (ii)? Was this just ``match the
-paper,'' or numerical conditioning? Be ready to defend both.
+\textbf{TODO (Bruno):} Why monomials \({1, X, X^2}\) in Part (i) but
+weighted Laguerre in Part (ii)? Was this just ``match the paper,'' or
+numerical conditioning? Be ready to defend both.
 
-\textbf{TODO (Bruno):} Antithetic variates: why does pairing \texttt{Z}
-with \texttt{-Z} reduce variance for this payoff, and what property of
-the estimator makes the variance reduction work? State the covariance
+\textbf{TODO (Bruno):} Antithetic variates: why does pairing \(Z\) with
+\(-Z\) reduce variance for this payoff, and what property of the
+estimator makes the variance reduction work? State the covariance
 argument.
 
-\textbf{Exercise 2 --- FTCS.} - Work in log-price \texttt{m\ =\ log\ S}
-so the Black--Scholes PDE has constant coefficients, build the explicit
-evolution matrix \texttt{F} once per parameter set, and march forward in
+\textbf{Exercise 2 --- FTCS.} - Work in log-price \(m = log S\) so the
+Black--Scholes PDE has constant coefficients, build the explicit
+evolution matrix \(F\) once per parameter set, and march forward in
 transformed time (time-to-maturity). - American: project onto the payoff
 after each step (\texttt{exercise2\_def\ (2).py:105}).
 
-\textbf{TODO (Bruno):} Why transform to log-price \texttt{m\ =\ log\ S}
-before discretizing instead of working directly in \texttt{S}? (Constant
+\textbf{TODO (Bruno):} Why transform to log-price \(m = log S\) before
+discretizing instead of working directly in \(S\)? (Constant
 coefficients / uniform grid --- but explain the consequence for the
-matrices \texttt{T1}, \texttt{T2}.)
+matrices \(T1\), \(T2\).)
 
 \textbf{TODO (Bruno):} FTCS is \emph{explicit}. Why is that an
 acceptable choice here, and what stability condition are you implicitly
-relying on with \texttt{Nt\ =\ 40000*T}? (See ``hardest question'' below
---- this is the danger zone.)
+relying on with \(Nt = 40000*T\)? (See ``hardest question'' below ---
+this is the danger zone.)
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{key-code-sections-file-what-it-does-why-i-wrote-it-that-way}{%
-\subsection{Key code sections (file + what it does + why I wrote it that
+\section{Key code sections (file + what it does + why I wrote it that
 way)}\label{key-code-sections-file-what-it-does-why-i-wrote-it-that-way}}
 
 \hypertarget{exercise-1-exercise1_def-2.py}{%
-\subsubsection{\texorpdfstring{Exercise 1 ---
+\subsection{\texorpdfstring{Exercise 1 ---
 \texttt{exercise1\_def\ (2).py}}{Exercise 1 --- exercise1\_def (2).py}}\label{exercise-1-exercise1_def-2.py}}
 
 \begin{itemize}
 \tightlist
 \item
   \textbf{\texttt{:11-24}} --- Part (i) parameters and the 8 hard-coded
-  paths from the paper. \texttt{C} (cash-flow matrix) initialized to
-  zeros at \texttt{:27}, shape \texttt{(8,\ 3)}.
+  paths from the paper. \(C\) (cash-flow matrix) initialized to zeros at
+  \texttt{:27}, shape \((8, 3)\).
 \item
   \textbf{\texttt{:32-86}} --- three printing helpers
   (\texttt{print\_formatted\_table}, \texttt{print\_regression\_table},
-  \texttt{optimal\_table}) that produce the per-time tables shown in the
+  \(optimal_table\)) that produce the per-time tables shown in the
   report. Pure presentation, no pricing logic.
 \item
-  \textbf{\texttt{:89} \texttt{LSQM(S,C,dt,T,K,r)}} --- the Part (i) LSM
+  \textbf{\texttt{:89} \(LSQM(S,C,dt,T,K,r)\)} --- the Part (i) LSM
   engine.
 
   \begin{itemize}
   \tightlist
   \item
-    \texttt{:91} terminal payoff
-    \texttt{C{[}:,T-1{]}\ =\ max(K\ -\ S{[}:,T{]},\ 0)}.
+    \texttt{:91} terminal payoff \(C[:,T-1] = max(K - S[:,T], 0)\).
   \item
-    \texttt{:93} \texttt{C\_european} keeps a copy of the terminal
-    payoff for the European price later.
+    \texttt{:93} \(C_european\) keeps a copy of the terminal payoff for
+    the European price later.
   \item
-    \texttt{:96} backward loop \texttt{i\ =\ T-2\ ...\ 0}.
+    \texttt{:96} backward loop \(i = T-2 ... 0\).
   \item
-    \texttt{:98} regressor \texttt{X\ =\ S{[}:,i+1{]}} masked by
-    \texttt{\textless{}K} (so OTM entries are zeroed before the ITM
-    filter), reshaped to 2D.
+    \texttt{:98} regressor \(X = S[:,i+1]\) masked by \(<K\) (so OTM
+    entries are zeroed before the ITM filter), reshaped to 2D.
   \item
-    \texttt{:99-101} builds \texttt{Y} = sum of \emph{all} future cash
-    flows discounted back to time \texttt{i+1} using
-    \texttt{discount\_factors\ =\ exp(-r*dt*(u-i))} with
-    \texttt{u\ =\ arange(i+1,\ ncols)}.
+    \texttt{:99-101} builds \(Y\) = sum of \emph{all} future cash flows
+    discounted back to time \(i+1\) using
+    \(discount_factors = exp(-r*dt*(u-i))\) with
+    \(u = arange(i+1, ncols)\).
   \item
-    \texttt{:102-104} ITM mask \texttt{S{[}:,i+1{]}\ \textless{}\ K};
-    restrict \texttt{X}, \texttt{Y} to ITM.
+    \texttt{:102-104} ITM mask \(S[:,i+1] < K\); restrict \(X\), \(Y\)
+    to ITM.
   \item
     \texttt{:107-108} degree-2 polynomial + linear regression pipeline,
     fit on ITM data.
   \item
-    \texttt{:111-112} extracts intercept \texttt{a0} and coefficients
-    \texttt{a1,\ a2}.
+    \texttt{:111-112} extracts intercept \(a0\) and coefficients
+    \(a1, a2\).
   \item
     \texttt{:117-120} continuation = model prediction on ITM paths;
-    exercise = \texttt{K\ -\ S} on ITM paths.
+    exercise = \(K - S\) on ITM paths.
   \item
-    \texttt{:122-127} exercise rule: if
-    \texttt{exercise\ \textgreater{}\ continuation}, set
-    \texttt{C{[}j,i{]}} to exercise value and \textbf{zero out all later
-    cash flows} \texttt{C{[}j,i+1:{]}\ =\ 0}; else
-    \texttt{C{[}j,i{]}\ =\ 0}.
+    \texttt{:122-127} exercise rule: if \(exercise > continuation\), set
+    \(C[j,i]\) to exercise value and \textbf{zero out all later cash
+    flows} \(C[j,i+1:] = 0\); else \(C[j,i] = 0\).
   \item
-    \texttt{:131} stopping matrix from \texttt{C\ !=\ 0}.
+    \texttt{:131} stopping matrix from \(C != 0\).
   \item
     \texttt{:147-152} American price: discount each path's cash flows by
-    \texttt{exp(-r*dt*t)} for \texttt{t=1..T}, sum per path, average.
+    \(exp(-r*dt*t)\) for \(t=1..T\), sum per path, average.
   \item
-    \texttt{:156} European price:
-    \texttt{mean(C\_european\ *\ exp(-r*dt*T))}.
+    \texttt{:156} European price: \(mean(C_european * exp(-r*dt*T))\).
   \end{itemize}
 \item
-  \textbf{\texttt{:167-173}} --- Part (ii) parameters (\texttt{K=40},
-  \texttt{M=50}, \texttt{N=100000}).
+  \textbf{\texttt{:167-173}} --- Part (ii) parameters (\(K=40\),
+  \(M=50\), \(N=100000\)).
 \item
-  \textbf{\texttt{:175-183} \texttt{simulate\_paths}} --- GBM exact-step
+  \textbf{\texttt{:175-183} \(simulate_paths\)} --- GBM exact-step
   simulation; \texttt{:177} draws \texttt{N//2} normals, \texttt{:178}
-  stacks \texttt{-Z} for antithetics; \texttt{:181-182} exact log-Euler
+  stacks \(-Z\) for antithetics; \texttt{:181-182} exact log-Euler
   update
-  \texttt{S{[}:,i+1{]}\ =\ S{[}:,i{]}*exp((r-0.5\ sigma\^{}2)dt\ +\ sigma\ sqrt(dt)\ Z)}.
+  \(S[:,i+1] = S[:,i]*exp((r-0.5 sigma^2)dt + sigma sqrt(dt) Z)\).
 \item
-  \textbf{\texttt{:185-191} \texttt{laguerre\_basis}} ---
-  \texttt{x=S/K}; \texttt{L0=exp(-x/2)}, \texttt{L1=exp(-x/2)(1-x)},
+  \textbf{\texttt{:185-191} \(laguerre_basis\)} --- \texttt{x=S/K};
+  \texttt{L0=exp(-x/2)}, \texttt{L1=exp(-x/2)(1-x)},
   \texttt{L2=exp(-x/2)(1-2x+x\^{}2/2)}; stacked column-wise.
 \item
   \textbf{\texttt{:193-196} \texttt{black\_scholes\_put}} ---
   closed-form European put.
 \item
-  \textbf{\texttt{:198-235} \texttt{LSM\_pricing}} --- Part (ii) LSM
-  engine; same backward structure as \texttt{LSQM} but basis is
-  \texttt{laguerre\_basis} (\texttt{:212}) and
-  \texttt{LinearRegression()} with default intercept (\texttt{:215}).
-  Returns per-path discounted cash flows.
+  \textbf{\texttt{:198-235} \(LSM_pricing\)} --- Part (ii) LSM engine;
+  same backward structure as \(LSQM\) but basis is \(laguerre_basis\)
+  (\texttt{:212}) and \(LinearRegression()\) with default intercept
+  (\texttt{:215}). Returns per-path discounted cash flows.
 \item
-  \textbf{\texttt{:237-267}} --- loop over the 20
-  \texttt{(S0,\ sigma,\ T)} combos: \texttt{M\_total\ =\ M*T},
-  \texttt{dt\ =\ 1/M}, simulate, price, compute
-  \texttt{american\ =\ mean(cashflow)},
+  \textbf{\texttt{:237-267}} --- loop over the 20 \((S0, sigma, T)\)
+  combos: \(M_total = M*T\), \texttt{dt\ =\ 1/M}, simulate, price,
+  compute \(american = mean(cashflow)\),
   \texttt{european\ =\ black\_scholes\_put(...)},
-  \texttt{ee\ =\ \textbar{}american\ -\ european\textbar{}}
-  (\texttt{:257}), \texttt{se\ =\ std(cashflow)/sqrt(N)}
-  (\texttt{:258}).
+  \(ee = |american - european|\) (\texttt{:257}),
+  \texttt{se\ =\ std(cashflow)/sqrt(N)} (\texttt{:258}).
 \end{itemize}
 
-\textbf{TODO (Bruno):} \texttt{:91} and \texttt{:203} index
-\texttt{S{[}:,\ T{]}} / \texttt{S{[}:,\ M\_total{]}} for the terminal
-payoff while the cash-flow matrix \texttt{C} has only \texttt{T} (resp.
-\texttt{M\_total}) columns indexed \texttt{0..T-1}. Explain the
-off-by-one convention: \texttt{S} has one more column (the \texttt{t=0}
-spot) than \texttt{C}. Be ready to point at exactly which column of
-\texttt{S} is ``today'' and which is maturity.
+\textbf{TODO (Bruno):} \texttt{:91} and \texttt{:203} index \(S[:, T]\)
+/ \(S[:, M_total]\) for the terminal payoff while the cash-flow matrix
+\(C\) has only \(T\) (resp. \(M_total\)) columns indexed \(0..T-1\).
+Explain the off-by-one convention: \(S\) has one more column (the
+\(t=0\) spot) than \(C\). Be ready to point at exactly which column of
+\(S\) is ``today'' and which is maturity.
 
 \textbf{TODO (Bruno):} \texttt{:257} uses
 \texttt{ee\ =\ np.abs(american\ -\ european)} (absolute value) in the
@@ -285,19 +369,19 @@ ever wrong (can LSM-American dip below European by noise)?
 
 \textbf{TODO (Bruno):} Standard error
 \texttt{se\ =\ std(cashflow)/sqrt(N)} at \texttt{:258}. With antithetic
-sampling the \texttt{N} draws are \textbf{not independent} (each path is
-paired with its antithetic). Is dividing by \texttt{sqrt(N)} the correct
+sampling the \(N\) draws are \textbf{not independent} (each path is
+paired with its antithetic). Is dividing by \(sqrt(N)\) the correct
 s.e., or does it understate/overstate it? Defend your formula.
 
 \hypertarget{exercise-2-exercise2_def-2.py}{%
-\subsubsection{\texorpdfstring{Exercise 2 ---
+\subsection{\texorpdfstring{Exercise 2 ---
 \texttt{exercise2\_def\ (2).py}}{Exercise 2 --- exercise2\_def (2).py}}\label{exercise-2-exercise2_def-2.py}}
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{\texttt{:5-14}} --- parameters \texttt{K=40}, \texttt{r=0.06},
-  and the 20 \texttt{(S0,\ sigma,\ T)} combos.
+  \textbf{\texttt{:5-14}} --- parameters \(K=40\), \(r=0.06\), and the
+  20 \((S0, sigma, T)\) combos.
 \item
   \textbf{\texttt{:18-64}} --- \textbf{Part (i) European FTCS} loop:
 
@@ -306,75 +390,70 @@ s.e., or does it understate/overstate it? Defend your formula.
   \item
     \texttt{:24-26} closed-form BS put for reference.
   \item
-    \texttt{:29} domain length \texttt{L\ =\ 2*log(K)\ +\ 2};
-    \texttt{:30} \texttt{Nx\ =\ 1000}; \texttt{:31}
-    \texttt{Nt\ =\ 40000*T}; \texttt{:32-33} steps \texttt{h\ =\ L/Nx},
-    \texttt{k\ =\ T/Nt}.
+    \texttt{:29} domain length \(L = 2*log(K) + 2\); \texttt{:30}
+    \(Nx = 1000\); \texttt{:31} \(Nt = 40000*T\); \texttt{:32-33} steps
+    \texttt{h\ =\ L/Nx}, \texttt{k\ =\ T/Nt}.
   \item
-    \texttt{:35-36} central-difference matrices: \texttt{T1} (first
-    derivative, \texttt{+1/-1} off-diagonals), \texttt{T2} (second
-    derivative, \texttt{-2} on diagonal, \texttt{1} off-diagonals), size
-    \texttt{(Nx-1)}.
+    \texttt{:35-36} central-difference matrices: \(T1\) (first
+    derivative, \texttt{+1/-1} off-diagonals), \(T2\) (second
+    derivative, \(-2\) on diagonal, \(1\) off-diagonals), size
+    \((Nx-1)\).
   \item
     \texttt{:38-40} explicit evolution matrix
     \texttt{F\ =\ (1\ -\ r\ k)\ I\ +\ 0.5\ k\ sigma\^{}2\ /\ h\^{}2\ *\ T2\ +\ k\ (r\ -\ 0.5\ sigma\^{}2)/(2h)\ *\ T1}.
   \item
-    \texttt{:42-43} grid \texttt{mvec}, centered and shifted by
-    \texttt{+log(K)}.
+    \texttt{:42-43} grid \(mvec\), centered and shifted by \(+log(K)\).
   \item
-    \texttt{:45-46} initial condition
-    \texttt{U{[}:,0{]}\ =\ max(K\ -\ exp(mvec),\ 0)} (payoff as the
-    time-0 condition in time-to-maturity).
+    \texttt{:45-46} initial condition \(U[:,0] = max(K - exp(mvec), 0)\)
+    (payoff as the time-0 condition in time-to-maturity).
   \item
     \texttt{:48-52} forward march; \texttt{:51} boundary correction term
-    \texttt{p{[}0{]}} injected at the low-\texttt{m} (deep ITM) boundary
-    node, scaled by \texttt{K*exp(-r*time2mat)}.
+    \(p[0]\) injected at the low-\(m\) (deep ITM) boundary node, scaled
+    by \(K*exp(-r*time2mat)\).
   \item
     \texttt{:54} \texttt{np.interp} to read off the price at
-    \texttt{log(S0)}.
+    \(log(S0)\).
   \end{itemize}
 \item
   \textbf{\texttt{:66-118}} --- \textbf{Part (ii) American FTCS} loop:
-  identical to Part (i) except
-  \texttt{intrinsic\ =\ max(K\ -\ exp(mvec),\ 0)} (\texttt{:95}) and the
-  single added projection line \texttt{:105}
+  identical to Part (i) except \(intrinsic = max(K - exp(mvec), 0)\)
+  (\texttt{:95}) and the single added projection line \texttt{:105}
   \texttt{U{[}:,i+1{]}\ =\ np.maximum(U{[}:,i+1{]},\ intrinsic)}.
   \texttt{ee\ =\ ftcs\_american\ -\ bs\_put} (\texttt{:108}).
 \item
   \textbf{\texttt{:120-204}} --- re-imports and re-runs the
   \textbf{Exercise 1 Part (ii) LSM} code (paths, Laguerre basis, BS put,
-  \texttt{LSM\_pricing}) to regenerate \texttt{results\_lsmc} for the
-  cross-check.
+  \(LSM_pricing\)) to regenerate \(results_lsmc\) for the cross-check.
 \item
   \textbf{\texttt{:235-248}} --- correctness test table:
-  \texttt{\textbar{}FD\ American\ -\ LSM\ American\textbar{}} per row.
+  \(|FD American - LSM American|\) per row.
 \item
   \textbf{\texttt{:250-261}} --- full ``outside the red box'' table
-  including the signed \texttt{FD\ EE\ -\ LSM\ EE} difference.
+  including the signed \(FD EE - LSM EE\) difference.
 \end{itemize}
 
-\textbf{TODO (Bruno):} \texttt{:29} \texttt{L\ =\ 2*log(K)\ +\ 2}. Why
-this width, and why center the grid at \texttt{log(K)} (\texttt{:43})?
-What goes wrong at short maturity / high vol if the domain is too narrow
---- and what is the analogy with the COS truncation-range
-\texttt{{[}a,b{]}} issue I hit in Assignment 2?
+\textbf{TODO (Bruno):} \texttt{:29} \(L = 2*log(K) + 2\). Why this
+width, and why center the grid at \(log(K)\) (\texttt{:43})? What goes
+wrong at short maturity / high vol if the domain is too narrow --- and
+what is the analogy with the COS truncation-range \([a,b]\) issue I hit
+in Assignment 2?
 
-\textbf{TODO (Bruno):} \texttt{:51} the boundary term \texttt{p{[}0{]}}.
-Explain in words what Dirichlet boundary condition this enforces at the
+\textbf{TODO (Bruno):} \texttt{:51} the boundary term \(p[0]\). Explain
+in words what Dirichlet boundary condition this enforces at the
 deep-in-the-money edge, why it carries the factor
-\texttt{K*exp(-r*time2mat)}, and what happens at the \emph{other}
-(high-\texttt{S}) boundary where no correction is added.
+\(K*exp(-r*time2mat)\), and what happens at the \emph{other}
+(high-\(S\)) boundary where no correction is added.
 
 \textbf{TODO (Bruno):} \texttt{:105} is described in the report as ``the
 single line that changes.'' Explain why projecting
-\texttt{U\ =\ max(U,\ intrinsic)} after each explicit step is a valid
+\(U = max(U, intrinsic)\) after each explicit step is a valid
 (operator-splitting / explicit-penalty) treatment of the American free
 boundary, and what its accuracy cost is versus a proper LCP/PSOR solve.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{design-decisions-i-must-justify}{%
-\subsection{Design decisions I must
+\section{Design decisions I must
 justify}\label{design-decisions-i-must-justify}}
 
 \begin{enumerate}
@@ -382,16 +461,15 @@ justify}\label{design-decisions-i-must-justify}}
 \tightlist
 \item
   \textbf{ITM-only regression} (\texttt{:103-104}, \texttt{:211-213}).
-  Factual: the mask is \texttt{S{[}:,i+1{]}\ \textless{}\ K}.
-  \textbf{TODO (Bruno):} justify why this is the Longstaff--Schwartz
-  prescription and not a shortcut.
+  Factual: the mask is \(S[:,i+1] < K\). \textbf{TODO (Bruno):} justify
+  why this is the Longstaff--Schwartz prescription and not a shortcut.
 \item
   \textbf{Basis choice:} monomials degree 2 in Part (i) (\texttt{:107})
   vs weighted Laguerre in Part (ii) (\texttt{:185-191}). Factual: the
   report says normalization \texttt{x=S/K} avoids underflow in
   \texttt{exp(-x/2)} for \texttt{S\ in\ {[}36,44{]}}. \textbf{TODO
   (Bruno):} confirm you can derive the underflow argument and say why
-  monomials were fine for the small \texttt{K=1.10} example.
+  monomials were fine for the small \(K=1.10\) example.
 \item
   \textbf{Antithetic variates} (\texttt{:177-178}). \textbf{TODO
   (Bruno):} justify and quantify expected variance reduction.
@@ -401,61 +479,58 @@ justify}\label{design-decisions-i-must-justify}}
   discretization bias still enter the American price through the
   discrete exercise dates regardless?
 \item
-  \textbf{\texttt{M\ =\ 50} exercise dates/year as a proxy for
-  continuous American exercise} (\texttt{:172}, \texttt{:251}).
-  \textbf{TODO (Bruno):} why is a Bermudan with 50/100 dates a good
-  stand-in for the true American, and which direction is the bias?
+  \textbf{\(M = 50\) exercise dates/year as a proxy for continuous
+  American exercise} (\texttt{:172}, \texttt{:251}). \textbf{TODO
+  (Bruno):} why is a Bermudan with 50/100 dates a good stand-in for the
+  true American, and which direction is the bias?
 \item
-  \textbf{Explicit FTCS with \texttt{Nt\ =\ 40000*T}}
+  \textbf{Explicit FTCS with \(Nt = 40000*T\)}
   (\texttt{exercise2\_def\ (2).py:31}). \textbf{TODO (Bruno):} show that
   this choice keeps the scheme inside the explicit stability region
   (compute the CFL-type bound; see hardest question).
 \item
-  \textbf{\texttt{np.interp} to extract the price at \texttt{log(S0)}}
+  \textbf{\texttt{np.interp} to extract the price at \(log(S0)\)}
   (\texttt{:54}, \texttt{:107}). Factual: linear interpolation between
   grid nodes. \textbf{TODO (Bruno):} is linear interpolation accurate
-  enough given \texttt{h}, or should it be higher order?
+  enough given \(h\), or should it be higher order?
 \end{enumerate}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{results-and-what-they-mean}{%
-\subsection{Results and what they
-mean}\label{results-and-what-they-mean}}
+\section{Results and what they mean}\label{results-and-what-they-mean}}
 
 \textbf{Exercise 1, Part (i)} (from the report): American put price
 \textbf{0.11443}, European put price \textbf{0.05638} on the same 8
-paths. The fitted regressions match the paper: at \texttt{t=2},
-\texttt{E{[}Y\textbar{}X{]}\ =\ -1.06999\ +\ 2.98341\ X\ -\ 1.81358\ X\^{}2};
-at \texttt{t=1},
-\texttt{E{[}Y\textbar{}X{]}\ =\ 2.03751\ -\ 3.33544\ X\ +\ 1.35646\ X\^{}2}.
-Stopping rule and option cash-flow matrix reproduce the paper's table.
+paths. The fitted regressions match the paper: at \(t=2\),
+\(E[Y|X] = -1.06999 + 2.98341 X - 1.81358 X^2\); at \(t=1\),
+\(E[Y|X] = 2.03751 - 3.33544 X + 1.35646 X^2\). Stopping rule and option
+cash-flow matrix reproduce the paper's table.
 
 \textbf{Exercise 1, Part (ii)} (report Fig. 13): the 20-row replication
-of the red-box columns; e.g.~\texttt{S=36,\ sigma=0.2,\ T=1} gives
-Simulated American \textbf{4.4714 (s.e. 0.0094)}, closed-form European
+of the red-box columns; e.g.~\(S=36, sigma=0.2, T=1\) gives Simulated
+American \textbf{4.4714 (s.e. 0.0094)}, closed-form European
 \textbf{3.8443}, early-exercise value \textbf{0.6271}. s.e. all in the
 0.006--0.023 range.
 
 \textbf{Exercise 2, Part (i)} (report Fig. 14): FD-European vs
 BS-European agree to \textasciitilde1e-4 across all 20 rows (largest
-\texttt{\textbar{}Difference\textbar{}\ =\ 0.0008} at
-\texttt{S=40,\ sigma=0.2,\ T=1}).
+\(|Difference| = 0.0008\) at \(S=40, sigma=0.2, T=1\)).
 
 \textbf{Exercise 2, Part (ii)} (report Fig. 16): FD-American prices, all
 above the corresponding European, with early-exercise values matching
 the LSM ones in sign and magnitude.
 
 \textbf{Exercise 2 cross-check} (report Fig. 17):
-\texttt{\textbar{}FD\ American\ -\ LSM\ American\textbar{}} is below
-0.05 for all 20 rows (max \textasciitilde0.016), and the Part (iii)
-\texttt{FD\ EE\ -\ LSM\ EE} differences are small and alternate in sign.
+\(|FD American - LSM American|\) is below 0.05 for all 20 rows (max
+\textasciitilde0.016), and the Part (iii) \(FD EE - LSM EE\) differences
+are small and alternate in sign.
 
 \textbf{TODO (Bruno):} The FD-European prices are \emph{systematically
-slightly below} BS (every \texttt{Difference} is negative,
-\textasciitilde{} -1e-4 to -8e-4). Is that a bias of the explicit
-scheme, the truncated domain, or the interpolation? Pick one and defend
-it --- Fang will ask why the sign is consistent.
+slightly below} BS (every \(Difference\) is negative, \textasciitilde{}
+-1e-4 to -8e-4). Is that a bias of the explicit scheme, the truncated
+domain, or the interpolation? Pick one and defend it --- Fang will ask
+why the sign is consistent.
 
 \textbf{TODO (Bruno):} The FD-American vs LSM-American differences are
 \textasciitilde0.005--0.016, an order of magnitude larger than the
@@ -466,18 +541,17 @@ regression noise vs a near-exact PDE.)
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{the-hardest-question-fang-could-ask-here-and-my-answer}{%
-\subsection{The hardest question Fang could ask here --- and my
+\section{The hardest question Fang could ask here --- and my
 answer}\label{the-hardest-question-fang-could-ask-here-and-my-answer}}
 
 \textbf{Likely hardest: ``Your FTCS scheme is explicit. Is it stable for
-\texttt{Nx\ =\ 1000}, \texttt{Nt\ =\ 40000*T}? Derive the condition and
-check it for your worst-case \texttt{sigma\ =\ 0.4}.''}
+\(Nx = 1000\), \(Nt = 40000*T\)? Derive the condition and check it for
+your worst-case \(sigma = 0.4\).''}
 
 Factual setup from the code: in log-space the diffusion coefficient is
-\texttt{0.5*sigma\^{}2}, \texttt{h\ =\ L/Nx} with
-\texttt{L\ =\ 2\ log\ K\ +\ 2\ =\ 2\ log\ 40\ +\ 2\ ≈\ 9.376}, so
-\texttt{h\ ≈\ 0.00938}; \texttt{k\ =\ T/Nt\ =\ 1/40000\ =\ 2.5e-5} per
-unit time.
+\(0.5*sigma^2\), \texttt{h\ =\ L/Nx} with
+\(L = 2 log K + 2 = 2 log 40 + 2 ≈ 9.376\), so \(h ≈ 0.00938\);
+\texttt{k\ =\ T/Nt\ =\ 1/40000\ =\ 2.5e-5} per unit time.
 
 The explicit-scheme stability constraint for the diffusion part is
 roughly \texttt{0.5*sigma\^{}2\ *\ k\ /\ h\^{}2\ \textless{}=\ 1/2},
@@ -485,12 +559,11 @@ i.e.~\texttt{k\ \textless{}=\ h\^{}2\ /\ sigma\^{}2}.
 
 \textbf{TODO (Bruno):} Plug in the numbers:
 \texttt{h\^{}2\ /\ sigma\^{}2\ =\ (0.00938)\^{}2\ /\ 0.16\ ≈\ 5.5e-4},
-and \texttt{k\ =\ 2.5e-5\ \textless{}\textless{}\ 5.5e-4}, so the
-diffusion number \texttt{≈\ 0.045\ \textless{}\textless{}\ 0.5}. State
-this out loud, confirm the scheme is comfortably stable, and explain
-\emph{why the author picked Nt so large} (was it stability, or matching
-the paper's accuracy?). Also be ready to say what the
-\texttt{(1\ -\ r\ k)} reaction term and the \texttt{T1} advection term
+and \(k = 2.5e-5 << 5.5e-4\), so the diffusion number
+\(≈ 0.045 << 0.5\). State this out loud, confirm the scheme is
+comfortably stable, and explain \emph{why the author picked Nt so large}
+(was it stability, or matching the paper's accuracy?). Also be ready to
+say what the \((1 - r k)\) reaction term and the \(T1\) advection term
 contribute to the stability bound --- and whether the advection
 (first-derivative) term can cause spurious oscillations even when the
 diffusion bound is met.
@@ -506,7 +579,7 @@ two-pass scheme would fix it.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{show-me-in-your-code-where-you-do-x-anticipated-spots}{%
-\subsection{``Show me in your code where you do X'' --- anticipated
+\section{``Show me in your code where you do X'' --- anticipated
 spots}\label{show-me-in-your-code-where-you-do-x-anticipated-spots}}
 
 \begin{itemize}
@@ -514,8 +587,7 @@ spots}\label{show-me-in-your-code-where-you-do-x-anticipated-spots}}
 \item
   \textbf{``\ldots filter to in-the-money paths before regressing.''}
   \texttt{exercise1\_def\ (2).py:102-104}
-  (\texttt{itm\_indexes\ =\ S{[}:,i+1{]}\ \textless{}\ K}), and
-  \texttt{:211-213} for Part (ii).
+  (\(itm_indexes = S[:,i+1] < K\)), and \texttt{:211-213} for Part (ii).
 \item
   \textbf{``\ldots build the discounted continuation target Y.''}
   \texttt{:99-101} (Part i) and \texttt{:207-209} / \texttt{:182-184}
@@ -557,7 +629,7 @@ spots}\label{show-me-in-your-code-where-you-do-x-anticipated-spots}}
   (\texttt{np.interp(np.log(S0),\ mvec,\ U{[}:,\ Nt{]})}).
 \item
   \textbf{``\ldots cross-check FD against LSM.''} \texttt{:235-248}
-  (\texttt{\textbar{}FD\ American\ -\ LSM\ American\textbar{}}).
+  (\(|FD American - LSM American|\)).
 \end{itemize}
 
 \end{document}

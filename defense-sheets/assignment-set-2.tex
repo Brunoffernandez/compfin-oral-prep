@@ -4,7 +4,7 @@
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
-  10pt,
+  11pt,
 ]{article}
 \usepackage{amsmath,amssymb}
 \usepackage{iftex}
@@ -20,9 +20,6 @@
 \usepackage{lmodern}
 \ifPDFTeX\else
   % xetex/luatex font selection
-  \setmainfont[]{DejaVu Serif}
-  \setsansfont[]{DejaVu Sans}
-  \setmonofont[]{DejaVu Sans Mono}
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -41,11 +38,105 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
-\usepackage[margin=2cm]{geometry}
+\usepackage[margin=2.2cm]{geometry}
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\setcounter{secnumdepth}{5}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{newunicodechar}
+\newunicodechar{}{\ensuremath{\bar\nu}}
+\newunicodechar{}{\ensuremath{\hat\nu}}
+\newunicodechar{}{\ensuremath{\tilde\sigma}}
+\newunicodechar{}{\ensuremath{\bar v}}
+\newunicodechar{}{\ensuremath{\hat\sigma}}
+\newunicodechar{}{\ensuremath{\bar X}}
+\newunicodechar{}{\ensuremath{\hat X}}
+\newunicodechar{}{\ensuremath{\tilde W}}
+\newunicodechar{}{\ensuremath{\dot\alpha}}
+\newunicodechar{}{\ensuremath{\dot\beta}}
+\newunicodechar{}{\ensuremath{\hat f}}
+\newunicodechar{}{\ensuremath{\bar t}}
+\newunicodechar{}{\ensuremath{\hat V}}
+\newunicodechar{Ĉ}{\ensuremath{\hat C}}
+\newunicodechar{ĉ}{\ensuremath{\hat c}}
+\newunicodechar{ġ}{\ensuremath{\dot g}}
+\newunicodechar{ᵀ}{\ensuremath{{}^{\mathsf{T}}}}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{²}{\ensuremath{{}^{2}}}
+\newunicodechar{³}{\ensuremath{{}^{3}}}
+\newunicodechar{¹}{\ensuremath{{}^{1}}}
+\newunicodechar{⁴}{\ensuremath{{}^{4}}}
+\newunicodechar{⁸}{\ensuremath{{}^{8}}}
+\newunicodechar{⁺}{\ensuremath{{}^{+}}}
+\newunicodechar{⁻}{\ensuremath{{}^{-}}}
+\newunicodechar{₂}{\ensuremath{{}_{2}}}
+\newunicodechar{½}{\ensuremath{\tfrac12}}
+\newunicodechar{¼}{\ensuremath{\tfrac14}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{÷}{\ensuremath{\div}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ν}{\ensuremath{\nu}}
+\newunicodechar{τ}{\ensuremath{\tau}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{ω}{\ensuremath{\omega}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{θ}{\ensuremath{\theta}}
+\newunicodechar{η}{\ensuremath{\eta}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{ξ}{\ensuremath{\xi}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{Λ}{\ensuremath{\Lambda}}
+\newunicodechar{Π}{\ensuremath{\Pi}}
+\newunicodechar{Ξ}{\ensuremath{\Xi}}
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}
+\newunicodechar{Θ}{\ensuremath{\Theta}}
+\newunicodechar{Ψ}{\ensuremath{\Psi}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{√}{\ensuremath{\surd}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\ge}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{≠}{\ensuremath{\ne}}
+\newunicodechar{≡}{\ensuremath{\equiv}}
+\newunicodechar{→}{\ensuremath{\to}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{⇒}{\ensuremath{\Rightarrow}}
+\newunicodechar{⇔}{\ensuremath{\Leftrightarrow}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{∝}{\ensuremath{\propto}}
+\newunicodechar{∏}{\ensuremath{\prod}}
+\newunicodechar{⊥}{\ensuremath{\perp}}
+\newunicodechar{‖}{\ensuremath{\|}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}
+\newunicodechar{…}{\ensuremath{\ldots}}
+\newunicodechar{̄}{}
+\newunicodechar{̂}{}
+\newunicodechar{̃}{}
+\newunicodechar{̇}{}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -53,39 +144,41 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
+  pdftitle={Assignment Set 2 --- Defense Sheet},
+  pdfauthor={Computational Finance (WI4151), TU Delft --- Prof.~Fang Fang},
   colorlinks=true,
-  linkcolor={Maroon},
+  linkcolor={blue},
   filecolor={Maroon},
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
 
-\author{}
+\title{Assignment Set 2 --- Defense Sheet}
+\author{Computational Finance (WI4151), TU Delft --- Prof.~Fang Fang}
 \date{}
 
 \begin{document}
+\maketitle
 
-\hypertarget{defense-sheet-assignment-set-2}{%
-\section{Defense sheet --- Assignment set
-2}\label{defense-sheet-assignment-set-2}}
-
+{
+\hypersetup{linkcolor=blue}
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
 \begin{quote}
 Scope: pricing a European basket call
 \texttt{V(0)\ =\ e\^{}\{-rT\}\ E\^{}Q{[}max(w1\ S1(T)\ +\ w2\ S2(T)\ -\ K,\ 0){]}}
-with \texttt{w1\ =\ w2\ =\ 0.5}, \texttt{T\ =\ 1}, \texttt{r\ =\ 0.02},
-\texttt{K\ =\ 100}, by three methods: Q1 Monte Carlo, Q2 moment
-matching, Q3 the 2D COS method. Two market setups recur in every
-question: \textbf{(a)} both underlyings log-normal (GBM),
-\texttt{S10=S20=100}, \texttt{sigma1=0.20}, \texttt{sigma2=0.30},
-\texttt{rho=0.30}; \textbf{(b)} \texttt{S1} log-normal, \texttt{S2} a
-CIR / square-root process
-\texttt{dS2\ =\ r\ S2\ dt\ +\ sigma2\ sqrt(S2)\ dW2},
-\texttt{sigma1=0.25}, \texttt{sigma2=1.5}, \texttt{rho=0.10} in Q1 /
-\texttt{rho=0} in Q2 and Q3.
+with \(w1 = w2 = 0.5\), \(T = 1\), \(r = 0.02\), \(K = 100\), by three
+methods: Q1 Monte Carlo, Q2 moment matching, Q3 the 2D COS method. Two
+market setups recur in every question: \textbf{(a)} both underlyings
+log-normal (GBM), \(S10=S20=100\), \(sigma1=0.20\), \(sigma2=0.30\),
+\(rho=0.30\); \textbf{(b)} \(S1\) log-normal, \(S2\) a CIR / square-root
+process \(dS2 = r S2 dt + sigma2 sqrt(S2) dW2\), \(sigma1=0.25\),
+\(sigma2=1.5\), \(rho=0.10\) in Q1 / \(rho=0\) in Q2 and Q3.
 
 NOTE: the assignment PDF could not be rendered in this environment (no
-\texttt{poppler}/\texttt{pypdf}), so the ``task in my own words'' below
-is reconstructed from the in-code comments and parameters. \textbf{TODO
+\(poppler\)/\(pypdf\)), so the ``task in my own words'' below is
+reconstructed from the in-code comments and parameters. \textbf{TODO
 (Bruno):} open
 \texttt{Computational\_Finance\_Assignment\_2\ (2)\ (1).pdf} and confirm
 the exact wording of each sub-question (especially what convergence
@@ -93,12 +186,11 @@ behaviour Q1 and Q3 ask you to demonstrate).
 \end{quote}
 
 \hypertarget{the-task-in-my-own-words}{%
-\subsection{The task (in my own words)}\label{the-task-in-my-own-words}}
+\section{The task (in my own words)}\label{the-task-in-my-own-words}}
 
 Price a two-asset European \textbf{basket call} under the risk-neutral
-measure Q. The basket is \texttt{B\_T\ =\ w1\ S1(T)\ +\ w2\ S2(T)}; the
-payoff is \texttt{max(B\_T\ -\ K,\ 0)}, discounted at
-\texttt{e\^{}\{-rT\}}.
+measure Q. The basket is \(B_T = w1 S1(T) + w2 S2(T)\); the payoff is
+\(max(B_T - K, 0)\), discounted at \(e^{-rT}\).
 
 \begin{itemize}
 \tightlist
@@ -110,24 +202,24 @@ payoff is \texttt{max(B\_T\ -\ K,\ 0)}, discounted at
   \def\labelenumi{(\alph{enumi})}
   \tightlist
   \item
-    both assets GBM, correlated, exact terminal simulation. (b)
-    \texttt{S1} GBM, \texttt{S2} a CIR square-root process under the
-    Q-drift \texttt{r\ S2}; demonstrate (i) the weak /
-    time-discretization convergence of the Euler scheme and (ii) the
-    statistical \texttt{O(1/sqrt(M))} convergence.
+    both assets GBM, correlated, exact terminal simulation. (b) \(S1\)
+    GBM, \(S2\) a CIR square-root process under the Q-drift \(r S2\);
+    demonstrate (i) the weak / time-discretization convergence of the
+    Euler scheme and (ii) the statistical \texttt{O(1/sqrt(M))}
+    convergence.
   \end{enumerate}
 \item
-  \textbf{Q2 --- Moment matching.} Compute the raw moments of
-  \texttt{B\_T} in closed form, then approximate the basket distribution
-  by matching 2, 3, 4 moments (log-normal, shifted log-normal, Johnson
-  SU) and price the call from each. Benchmark against a high-precision
-  Monte Carlo price.
+  \textbf{Q2 --- Moment matching.} Compute the raw moments of \(B_T\) in
+  closed form, then approximate the basket distribution by matching 2,
+  3, 4 moments (log-normal, shifted log-normal, Johnson SU) and price
+  the call from each. Benchmark against a high-precision Monte Carlo
+  price.
 \item
   \textbf{Q3 --- 2D COS.} Price the basket with the two-dimensional COS
   method (Ruijter \& Oosterlee 2012), expanding the joint density of the
-  two state variables on \texttt{{[}a1,b1{]}\ x\ {[}a2,b2{]}},
-  exploiting \texttt{rho=0} so the 2D density coefficients factorise
-  into a product of 1D coefficients. Show convergence in \texttt{N}.
+  two state variables on \([a1,b1] x [a2,b2]\), exploiting \(rho=0\) so
+  the 2D density coefficients factorise into a product of 1D
+  coefficients. Show convergence in \(N\).
 \end{itemize}
 
 \textbf{TODO (Bruno):} confirm whether the PDF asks for these specific
@@ -135,25 +227,23 @@ deliverables or also for, e.g., a comparison table across the three
 methods.
 
 \hypertarget{my-approach-and-why}{%
-\subsection{My approach and why}\label{my-approach-and-why}}
+\section{My approach and why}\label{my-approach-and-why}}
 
 \begin{itemize}
 \tightlist
 \item
   \textbf{Q1:} exact GBM simulation at maturity where possible (no time
   grid needed); Euler--Maruyama with full truncation for the CIR leg
-  because exact joint simulation is unavailable when
-  \texttt{rho\ !=\ 0}.
+  because exact joint simulation is unavailable when \(rho != 0\).
 \item
-  \textbf{Q2:} derive \texttt{E{[}B\_T\^{}k{]}} analytically from the
-  binomial expansion of \texttt{(w1\ S1\ +\ w2\ S2)\^{}k} and the cross
-  moments of correlated log-normals (and the non-central chi-square
-  moments for the CIR leg), then fit successively richer distributions
-  to more moments.
+  \textbf{Q2:} derive \(E[B_T^k]\) analytically from the binomial
+  expansion of \((w1 S1 + w2 S2)^k\) and the cross moments of correlated
+  log-normals (and the non-central chi-square moments for the CIR leg),
+  then fit successively richer distributions to more moments.
 \item
   \textbf{Q3:} 1D characteristic functions per marginal, cumulant-rule
   truncation range per marginal, payoff coefficients by 2D trapezoidal
-  quadrature, assembled as \texttt{chi1\^{}T\ V\ chi2}.
+  quadrature, assembled as \(chi1^T V chi2\).
 \end{itemize}
 
 \textbf{TODO (Bruno):} for each method, state in one sentence \emph{why}
@@ -162,101 +252,97 @@ moment matching = cheap closed-form approximation, COS = spectral
 accuracy). Do not let the examiner hear a generic answer.
 
 \hypertarget{key-code-sections-file-what-it-does-why-i-wrote-it-that-way}{%
-\subsection{Key code sections (file + what it does + why I wrote it that
+\section{Key code sections (file + what it does + why I wrote it that
 way)}\label{key-code-sections-file-what-it-does-why-i-wrote-it-that-way}}
 
 \hypertarget{q1-basket-monte-carlo-q1_basket_mc-1.py}{%
-\subsubsection{\texorpdfstring{Q1 --- basket Monte Carlo
+\subsection{\texorpdfstring{Q1 --- basket Monte Carlo
 (\texttt{Q1\_basket\_MC\ (1).py})}{Q1 --- basket Monte Carlo (Q1\_basket\_MC (1).py)}}\label{q1-basket-monte-carlo-q1_basket_mc-1.py}}
 
 \begin{itemize}
 \tightlist
 \item
   \textbf{\texttt{simulate\_basket\_lognormal(M)} --- lines 17--42.}
-  Q1(a). Draws two standard normals (\texttt{Z1}, \texttt{Zc}, lines
-  27--28) and correlates them by Cholesky:
-  \texttt{Z2\ =\ rho*Z1\ +\ sqrt(1-rho\^{}2)*Zc} (line 29). Simulates
-  terminal prices with the \textbf{exact GBM solution} at \texttt{T}
-  (lines 32--33), forms the basket and discounted payoff (lines 36--37),
-  and returns the MC mean and standard error
+  Q1(a). Draws two standard normals (\(Z1\), \(Zc\), lines 27--28) and
+  correlates them by Cholesky: \(Z2 = rho*Z1 + sqrt(1-rho^2)*Zc\) (line
+  29). Simulates terminal prices with the \textbf{exact GBM solution} at
+  \(T\) (lines 32--33), forms the basket and discounted payoff (lines
+  36--37), and returns the MC mean and standard error
   \texttt{std(ddof=1)/sqrt(M)} (lines 40--41).
 \item
   \textbf{Convergence loop --- lines 48--63.} Prices over
-  \texttt{M\ =\ 2000\ …\ 1e6} (line 48), then estimates the convergence
-  rate as the OLS slope of \texttt{log(SE)} vs \texttt{log(M)} (line
-  62), expected \texttt{-0.5}.
+  \(M = 2000 … 1e6\) (line 48), then estimates the convergence rate as
+  the OLS slope of \(log(SE)\) vs \(log(M)\) (line 62), expected
+  \(-0.5\).
 \item
   \textbf{\texttt{simulate\_basket\_cir(M,\ n\_steps)} --- lines
   93--125.} Q1(b). Time-steps with \texttt{h\ =\ T/n\_steps} (line 107).
-  \texttt{S1} exact GBM step (line 118); \texttt{S2}
-  \textbf{Euler--Maruyama} step with \textbf{full truncation}
-  \texttt{S2p\ =\ max(S2,0)} inside drift and diffusion (lines
-  120--121), so the square root is always defined.
+  \(S1\) exact GBM step (line 118); \(S2\) \textbf{Euler--Maruyama} step
+  with \textbf{full truncation} \(S2p = max(S2,0)\) inside drift and
+  diffusion (lines 120--121), so the square root is always defined.
 \item
   \textbf{Weak-error test --- lines 134--185.} Reuses the \textbf{same
   fine Brownian increments} across all coarse grids
   (\texttt{basket\_on\_grid}, lines 144--159; increments summed into
   blocks at lines 151--152) to isolate the discretization bias from MC
-  noise. Fits the weak order as the slope of
-  \texttt{log\textbar{}bias\textbar{}} vs \texttt{log\ h} on the coarse
-  grids (line 184), expected \texttt{1.0}.
+  noise. Fits the weak order as the slope of \(log|bias|\) vs \(log h\)
+  on the coarse grids (line 184), expected \(1.0\).
 \item
   \textbf{Statistical-error test --- lines 198--210.} Fixes the grid,
-  varies \texttt{M}, fits the SE slope (line 209).
+  varies \(M\), fits the SE slope (line 209).
 \end{itemize}
 
 \textbf{TODO (Bruno):} justify (i) full truncation vs reflection / other
 CIR fixes; (ii) why you reuse the same increments across grids for the
 weak-error test; (iii) the Q-drift argument at lines 86--91 (physical
-CIR drift \texttt{kappa(theta\ -\ S2)} replaced by \texttt{r\ S2}
-because the discounted price is a Q-martingale).
+CIR drift \(kappa(theta - S2)\) replaced by \(r S2\) because the
+discounted price is a Q-martingale).
 
 \hypertarget{q2-moment-matching-q2_moment_matching-1.py}{%
-\subsubsection{\texorpdfstring{Q2 --- moment matching
+\subsection{\texorpdfstring{Q2 --- moment matching
 (\texttt{Q2\_moment\_matching\ (1).py})}{Q2 --- moment matching (Q2\_moment\_matching (1).py)}}\label{q2-moment-matching-q2_moment_matching-1.py}}
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{\texttt{lognormal\_cross(j,\ m,\ ...)} --- lines 20--29.}
-  Cross raw moment \texttt{E{[}S1\^{}j\ S2\^{}m{]}} for two correlated
-  log-normals, from \texttt{E{[}exp(N){]}\ =\ exp(mean\ +\ 0.5\ var)}
-  with the combined log-return mean/variance/cov at lines 26--29.
+  \textbf{\(lognormal_cross(j, m, ...)\) --- lines 20--29.} Cross raw
+  moment \texttt{E{[}S1\^{}j\ S2\^{}m{]}} for two correlated
+  log-normals, from \(E[exp(N)] = exp(mean + 0.5 var)\) with the
+  combined log-return mean/variance/cov at lines 26--29.
 \item
   \textbf{\texttt{basket\_moments\_LN(...)} --- lines 31--37.} Raw
-  basket moments \texttt{E{[}B\_T\^{}k{]}} via the binomial expansion
+  basket moments \(E[B_T^k]\) via the binomial expansion
   \texttt{sum\_j\ C(k,j)\ w1\^{}j\ w2\^{}(k-j)\ E{[}S1\^{}j\ S2\^{}(k-j){]}}.
 \item
   \textbf{\texttt{cir\_S2\_rawmoments(...)} --- lines 39--53.} Raw
-  moments of \texttt{S2(T)\ =\ c·Z},
-  \texttt{Z\ \textasciitilde{}\ chi\textquotesingle{}\^{}2\_0(lambda)}
-  (zero-dof non-central chi-square), using cumulants
+  moments of \(S2(T) = c·Z\), \(Z ~ chi'^2_0(lambda)\) (zero-dof
+  non-central chi-square), using cumulants
   \texttt{kappa\_n\ =\ 2\^{}(n-1)\ n!\ lambda} (line 49) and the
-  raw-from-cumulant recursion (lines 50--52). \texttt{c} and
-  \texttt{lambda} from the technical hint at lines 46--48.
+  raw-from-cumulant recursion (lines 50--52). \(c\) and \texttt{lambda}
+  from the technical hint at lines 46--48.
 \item
   \textbf{\texttt{basket\_moments\_CIR(...)} --- lines 55--64.} Combines
-  the LN-\texttt{S1} and CIR-\texttt{S2} marginal moments under
-  independence (\texttt{rho=0}), so joint moments factorise (line 63).
+  the LN-\(S1\) and CIR-\(S2\) marginal moments under independence
+  (\(rho=0\)), so joint moments factorise (line 63).
 \item
   \textbf{\texttt{central\_from\_raw(mom)} --- lines 66--75.} Converts
   raw moments to mean, variance, skewness, kurtosis.
 \item
-  \textbf{\texttt{price\_2moments} --- lines 78--89.} Fits a log-normal
-  matching \texttt{m1}, \texttt{m2}; Black's formula with
-  \texttt{F\ =\ m1}, total variance \texttt{s\^{}2\ =\ log(m2/m1\^{}2)}.
+  \textbf{\(price_2moments\) --- lines 78--89.} Fits a log-normal
+  matching \(m1\), \(m2\); Black's formula with \(F = m1\), total
+  variance \texttt{s\^{}2\ =\ log(m2/m1\^{}2)}.
 \item
-  \textbf{\texttt{price\_3moments} --- lines 91--107.} Shifted
-  log-normal \texttt{B\ =\ gamma\ +\ L}; inverts the log-normal skewness
-  \texttt{(w+2)sqrt(w-1)\ =\ g1} for \texttt{w} by \texttt{brentq} (line
-  99), recovers shift and shifted strike.
+  \textbf{\(price_3moments\) --- lines 91--107.} Shifted log-normal
+  \(B = gamma + L\); inverts the log-normal skewness
+  \((w+2)sqrt(w-1) = g1\) for \(w\) by \(brentq\) (line 99), recovers
+  shift and shifted strike.
 \item
-  \textbf{\texttt{price\_4moments} --- lines 109--139.} Johnson SU;
-  solves the 2×2 system for \texttt{(delta,\ gamma)} from skewness and
-  kurtosis by \texttt{least\_squares} with Gauss--Hermite moments of
-  \texttt{sinh} (\texttt{U\_moments}, lines 120--125; residual lines
-  127--132; solve line 134), then prices by Gauss--Hermite quadrature
-  (line 139). GH nodes/weights set at lines 16--17.
+  \textbf{\(price_4moments\) --- lines 109--139.} Johnson SU; solves the
+  2×2 system for \((delta, gamma)\) from skewness and kurtosis by
+  \(least_squares\) with Gauss--Hermite moments of \(sinh\)
+  (\(U_moments\), lines 120--125; residual lines 127--132; solve line
+  134), then prices by Gauss--Hermite quadrature (line 139). GH
+  nodes/weights set at lines 16--17.
 \item
   \textbf{MC benchmarks --- \texttt{mc\_benchmark\_LN} lines 144--159,
   \texttt{mc\_benchmark\_CIR} lines 161--180.} Exact simulation with
@@ -271,35 +357,33 @@ at line 29 by hand; (ii) derive the non-central chi-square cumulants
 more matched moments need not monotonically reduce the pricing error.
 
 \hypertarget{q3-basket-cos-q3_basket_cos-1.py}{%
-\subsubsection{\texorpdfstring{Q3 --- basket COS
+\subsection{\texorpdfstring{Q3 --- basket COS
 (\texttt{Q3\_basket\_COS\ (1).py})}{Q3 --- basket COS (Q3\_basket\_COS (1).py)}}\label{q3-basket-cos-q3_basket_cos-1.py}}
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{\texttt{chi\_coeffs(phi,\ a,\ b,\ N)} --- lines 22--32.} 1D
-  density cosine coefficients
+  \textbf{\(chi_coeffs(phi, a, b, N)\) --- lines 22--32.} 1D density
+  cosine coefficients
   \texttt{chi\_k\ =\ Re\{\ phi(omega\_k)\ exp(-i\ omega\_k\ a)\ \}},
-  \texttt{omega\_k\ =\ k\ pi/(b-a)} (lines 29--30), with the
-  \texttt{k=0} term halved (line 31) to realise the primed summation.
+  \texttt{omega\_k\ =\ k\ pi/(b-a)} (lines 29--30), with the \(k=0\)
+  term halved (line 31) to realise the primed summation.
 \item
   \textbf{\texttt{payoff\_coeffs\_2d(...)} --- lines 34--54.} Payoff
-  cosine coefficients \texttt{V\_\{k1,k2\}}: builds the payoff matrix
-  \texttt{P\ =\ max(w1\ g1(y1)\ +\ w2\ g2(y2)\ -\ K,\ 0)} on a dense
-  grid (line 49) and contracts it with cosine/trapezoidal-weight
-  matrices \texttt{C1,\ C2} (lines 52--53) as \texttt{C1\^{}T\ P\ C2}
-  (line 54). Trapezoidal weights at lines 45--46; normalisation
-  \texttt{(2/(b1-a1))(2/(b2-a2))} at line 54.
+  cosine coefficients \(V_{k1,k2}\): builds the payoff matrix
+  \(P = max(w1 g1(y1) + w2 g2(y2) - K, 0)\) on a dense grid (line 49)
+  and contracts it with cosine/trapezoidal-weight matrices \(C1, C2\)
+  (lines 52--53) as \(C1^T P C2\) (line 54). Trapezoidal weights at
+  lines 45--46; normalisation \texttt{(2/(b1-a1))(2/(b2-a2))} at line
+  54.
 \item
-  \textbf{\texttt{price\_2dCOS(...)} --- lines 56--63.} Assembles
+  \textbf{\(price_2dCOS(...)\) --- lines 56--63.} Assembles
   \texttt{e\^{}\{-rT\}\ chi1\^{}T\ V\ chi2} (line 63).
 \item
-  \textbf{\texttt{cumulant\_range(k1,\ k2,\ k4,\ L=12)} --- lines
-  65--71.} \textbf{The truncation range.} Returns
-  \texttt{{[}k1\ -\ width,\ k1\ +\ width{]}} with
-  \texttt{width\ =\ L*sqrt(\textbar{}k2\textbar{}\ +\ sqrt(\textbar{}k4\textbar{}))}
-  --- \textbf{lines 70--71}. This is the COS-paper cumulant rule;
-  \texttt{L=12} is the default.
+  \textbf{\(cumulant_range(k1, k2, k4, L=12)\) --- lines 65--71.}
+  \textbf{The truncation range.} Returns \([k1 - width, k1 + width]\)
+  with \(width = L*sqrt(|k2| + sqrt(|k4|))\) --- \textbf{lines 70--71}.
+  This is the COS-paper cumulant rule; \(L=12\) is the default.
 \item
   \textbf{Q3(a) characteristic functions --- lines 79--80.} Normal
   log-price CFs
@@ -307,51 +391,44 @@ more matched moments need not monotonically reduce the pricing error.
   for each marginal; means at lines 76--77.
 \item
   \textbf{Q3(a) ranges --- lines 82--83.}
-  \texttt{cumulant\_range(mu,\ sigma\^{}2\ T,\ 0)} per marginal (a
-  normal has \texttt{k1\ =\ mean}, \texttt{k2\ =\ variance},
-  \texttt{k4\ =\ 0}).
+  \(cumulant_range(mu, sigma^2 T, 0)\) per marginal (a normal has
+  \(k1 = mean\), \(k2 = variance\), \(k4 = 0\)).
 \item
-  \textbf{Q3(b) \texttt{S2} characteristic function ---
-  \texttt{phi2\_b}, lines 117--119.} CF of \texttt{S2(T)\ =\ c·Z},
-  \texttt{Z\ \textasciitilde{}\ chi\textquotesingle{}\^{}2\_0(lambda)}:
-  \texttt{exp(lambda\ i\ z\ /\ (1\ -\ 2i\ z))} with \texttt{z\ =\ om·c}
-  (lines 118--119); \texttt{c\_b}, \texttt{lam\_b} at lines 114--116.
+  \textbf{Q3(b) \(S2\) characteristic function --- \(phi2_b\), lines
+  117--119.} CF of \(S2(T) = c·Z\), \(Z ~ chi'^2_0(lambda)\):
+  \texttt{exp(lambda\ i\ z\ /\ (1\ -\ 2i\ z))} with \(z = om·c\) (lines
+  118--119); \(c_b\), \(lam_b\) at lines 114--116.
 \item
-  \textbf{Q3(b) cumulants of \texttt{S2} --- lines 122--124.}
+  \textbf{Q3(b) cumulants of \(S2\) --- lines 122--124.}
   \texttt{k1\ =\ c·lambda}, \texttt{k2\ =\ c\^{}2·4·lambda},
   \texttt{k4\ =\ c\^{}4·192·lambda} (from
-  \texttt{kappa\_n\ =\ 2\^{}(n-1)\ n!\ lambda} scaled by
-  \texttt{c\^{}n}).
+  \texttt{kappa\_n\ =\ 2\^{}(n-1)\ n!\ lambda} scaled by \(c^n\)).
 \item
-  \textbf{Q3(b) ranges --- lines 125--127.} \texttt{S1} range
+  \textbf{Q3(b) ranges --- lines 125--127.} \(S1\) range
   \texttt{cumulant\_range(mu1\_b,\ sigma1\^{}2\ T,\ 0)} (line 125);
-  \texttt{S2} range
-  \texttt{cumulant\_range(k1\_S2,\ k2\_S2,\ k4\_S2,\ L=12)} (line 126),
-  then \textbf{clamped to be non-negative}
-  \texttt{a2\_b\ =\ max(a2\_b,\ 0.0)} (line 127) because
-  \texttt{S2\ \textgreater{}=\ 0}.
+  \(S2\) range \texttt{cumulant\_range(k1\_S2,\ k2\_S2,\ k4\_S2,\ L=12)}
+  (line 126), then \textbf{clamped to be non-negative}
+  \texttt{a2\_b\ =\ max(a2\_b,\ 0.0)} (line 127) because \(S2 >= 0\).
 \item
-  \textbf{Payoff maps --- lines 84--85, 128--129.} \texttt{g\ =\ exp}
-  for log-price state variables; \texttt{g2\_b\ =\ identity} in Q3(b)
-  because the \texttt{S2} state variable is the \emph{level}, not the
-  log.
+  \textbf{Payoff maps --- lines 84--85, 128--129.} \(g = exp\) for
+  log-price state variables; \(g2_b = identity\) in Q3(b) because the
+  \(S2\) state variable is the \emph{level}, not the log.
 \item
   \textbf{Convergence loops --- lines 88--104 (a), 131--145 (b).}
-  Compare COS prices over \texttt{N\ =\ 8\ …\ 64} against a converged
-  \texttt{N\ =\ 256} reference.
+  Compare COS prices over \(N = 8 … 64\) against a converged \(N = 256\)
+  reference.
 \end{itemize}
 
 \hypertarget{design-decisions-i-must-justify}{%
-\subsection{Design decisions I must
+\section{Design decisions I must
 justify}\label{design-decisions-i-must-justify}}
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Cholesky correlation}
-  (\texttt{Z2\ =\ rho\ Z1\ +\ sqrt(1-rho\^{}2)\ Zc}) --- Q1 lines 29,
-  116; Q2 line 152. \textbf{TODO (Bruno):} why this is exactly the 2×2
-  Cholesky factor.
+  \textbf{Cholesky correlation} (\(Z2 = rho Z1 + sqrt(1-rho^2) Zc\)) ---
+  Q1 lines 29, 116; Q2 line 152. \textbf{TODO (Bruno):} why this is
+  exactly the 2×2 Cholesky factor.
 \item
   \textbf{Full truncation} of the CIR scheme --- Q1 lines 120--121.
   \textbf{TODO (Bruno):} why truncation (not reflection) and what bias
@@ -369,126 +446,113 @@ justify}\label{design-decisions-i-must-justify}}
   SU) --- Q2 lines 78--139. \textbf{TODO (Bruno):} why each family is
   the natural one for 2 / 3 / 4 matched moments.
 \item
-  \textbf{\texttt{rho\ =\ 0} factorisation} of the 2D density
-  coefficients --- Q3 lines 13--20, 60--63. \textbf{TODO (Bruno):} show
-  why independence makes
-  \texttt{c\_\{k1,k2\}\ =\ chi\_\{k1\}\ chi\_\{k2\}} and what changes if
-  \texttt{rho\ !=\ 0}.
+  \textbf{\(rho = 0\) factorisation} of the 2D density coefficients ---
+  Q3 lines 13--20, 60--63. \textbf{TODO (Bruno):} show why independence
+  makes \texttt{c\_\{k1,k2\}\ =\ chi\_\{k1\}\ chi\_\{k2\}} and what
+  changes if \(rho != 0\).
 \item
-  \textbf{\texttt{L\ =\ 12} in the cumulant rule} --- Q3 line 65, used
-  at lines 82--83, 125--126. \textbf{TODO (Bruno):} justify
-  \texttt{L\ =\ 12} (the paper often uses 8--10); relate to the bug
-  below.
+  \textbf{\(L = 12\) in the cumulant rule} --- Q3 line 65, used at lines
+  82--83, 125--126. \textbf{TODO (Bruno):} justify \(L = 12\) (the paper
+  often uses 8--10); relate to the bug below.
 \item
-  \textbf{Trapezoidal quadrature for \texttt{V\_\{k1,k2\}}} instead of a
-  closed form --- Q3 lines 34--54. \textbf{TODO (Bruno):} why no
-  analytic \texttt{V\_k} here (basket payoff couples the two state
-  variables), and how \texttt{Ngrid} was chosen.
+  \textbf{Trapezoidal quadrature for \(V_{k1,k2}\)} instead of a closed
+  form --- Q3 lines 34--54. \textbf{TODO (Bruno):} why no analytic
+  \(V_k\) here (basket payoff couples the two state variables), and how
+  \(Ngrid\) was chosen.
 \end{itemize}
 
 \hypertarget{results-and-what-they-mean}{%
-\subsection{Results and what they
-mean}\label{results-and-what-they-mean}}
+\section{Results and what they mean}\label{results-and-what-they-mean}}
 
 \textbf{TODO (Bruno):} run the three scripts and fill in the actual
 numbers: - Q1(a) price + 95\% CI, and the fitted SE slope (should be ≈
-\texttt{-0.5}, line 63). - Q1(b) price + CI, the fitted weak order (≈
-\texttt{1.0}, line 184), the fitted SE slope (line 209). - Q2(a) and
-Q2(b): basket mean/std/skew/kurtosis, MC benchmark, and the 2/3/4-moment
-prices with absolute errors (printed at lines 196--198, 214--216) ---
-explain why error generally falls with more moments and any exception. -
+\(-0.5\), line 63). - Q1(b) price + CI, the fitted weak order (≈
+\(1.0\), line 184), the fitted SE slope (line 209). - Q2(a) and Q2(b):
+basket mean/std/skew/kurtosis, MC benchmark, and the 2/3/4-moment prices
+with absolute errors (printed at lines 196--198, 214--216) --- explain
+why error generally falls with more moments and any exception. -
 Q3(a)/(b): converged COS price and the error/ratio table (lines 98--104,
 140--145) --- explain whether convergence looks spectral (exponential)
 and how the ratios behave.
 
 \hypertarget{the-hardest-question-fang-could-ask-here-and-my-answer}{%
-\subsection{The hardest question Fang could ask here --- and my
+\section{The hardest question Fang could ask here --- and my
 answer}\label{the-hardest-question-fang-could-ask-here-and-my-answer}}
 
 \textbf{Most likely deep-dive (highest probability): the COS truncation
-range \texttt{{[}a,b{]}}.} Fang co-invented COS; the cumulant truncation
-rule is her result, and this assignment had a real bug there. She will
-go straight to \textbf{\texttt{Q3\_basket\_COS\ (1).py:65-71}}
-(\texttt{cumulant\_range}) and its call sites \textbf{\texttt{:82-83}
-(Q3a)} and \textbf{\texttt{:125-127} (Q3b)}.
+range \([a,b]\).} Fang co-invented COS; the cumulant truncation rule is
+her result, and this assignment had a real bug there. She will go
+straight to \textbf{\texttt{Q3\_basket\_COS\ (1).py:65-71}}
+(\(cumulant_range\)) and its call sites \textbf{\texttt{:82-83} (Q3a)}
+and \textbf{\texttt{:125-127} (Q3b)}.
 
-What the code factually does: \texttt{cumulant\_range} returns
-\texttt{{[}k1\ -\ L*sqrt(\textbar{}k2\textbar{}\ +\ sqrt(\textbar{}k4\textbar{})),\ k1\ +\ L*sqrt(\textbar{}k2\textbar{}\ +\ sqrt(\textbar{}k4\textbar{})){]}}
-(\texttt{Q3\_basket\_COS\ (1).py:70-71}), with \texttt{L\ =\ 12}. For a
-normal marginal \texttt{k4\ =\ 0}, so the half-width is
-\texttt{L*sqrt(variance)} (\texttt{:82-83}). For the CIR leg, the
-half-width uses the non-central chi-square cumulants
-\texttt{k2\ =\ 4\ c\^{}2\ lambda}, \texttt{k4\ =\ 192\ c\^{}4\ lambda}
-(\texttt{:123-124}), and the lower end is clamped to \texttt{0}
-(\texttt{:127}).
+What the code factually does: \(cumulant_range\) returns
+\([k1 - L*sqrt(|k2| + sqrt(|k4|)), k1 + L*sqrt(|k2| + sqrt(|k4|))]\)
+(\texttt{Q3\_basket\_COS\ (1).py:70-71}), with \(L = 12\). For a normal
+marginal \(k4 = 0\), so the half-width is \(L*sqrt(variance)\)
+(\texttt{:82-83}). For the CIR leg, the half-width uses the non-central
+chi-square cumulants \texttt{k2\ =\ 4\ c\^{}2\ lambda},
+\texttt{k4\ =\ 192\ c\^{}4\ lambda} (\texttt{:123-124}), and the lower
+end is clamped to \(0\) (\texttt{:127}).
 
-\textbf{The bug (special focus): a too-small \texttt{c2} made
-\texttt{{[}a,b{]}} too narrow at short maturities.} The half-width
-scales like \texttt{sqrt(k2)}, and \texttt{k2} is the variance term ---
-for a normal marginal \texttt{k2\ =\ sigma\^{}2\ T} (\texttt{:82-83},
-\texttt{:125}), which \textbf{shrinks with \texttt{T}}. At short
-maturity \texttt{c2} is small, so
-\texttt{width\ =\ L*sqrt(c2\ +\ sqrt(c4))}
-(\texttt{Q3\_basket\_COS\ (1).py:70}) collapses and \texttt{{[}a,b{]}}
-becomes too narrow to contain the support of the density / payoff,
-truncating mass and corrupting the price. The fix lives at the range
-construction --- the \texttt{cumulant\_range} formula at
-\textbf{\texttt{:70}} and the \texttt{L} value at \textbf{\texttt{:65}}
-(and the non-negativity clamp at \texttt{:127}).
+\textbf{The bug (special focus): a too-small \(c2\) made \([a,b]\) too
+narrow at short maturities.} The half-width scales like \(sqrt(k2)\),
+and \(k2\) is the variance term --- for a normal marginal
+\(k2 = sigma^2 T\) (\texttt{:82-83}, \texttt{:125}), which
+\textbf{shrinks with \(T\)}. At short maturity \(c2\) is small, so
+\(width = L*sqrt(c2 + sqrt(c4))\) (\texttt{Q3\_basket\_COS\ (1).py:70})
+collapses and \([a,b]\) becomes too narrow to contain the support of the
+density / payoff, truncating mass and corrupting the price. The fix
+lives at the range construction --- the \(cumulant_range\) formula at
+\textbf{\texttt{:70}} and the \(L\) value at \textbf{\texttt{:65}} (and
+the non-negativity clamp at \texttt{:127}).
 
 \begin{quote}
 \textbf{TODO (Bruno): the \emph{reasoning} of the fix --- fill this in
 yourself.} Specifically: 1. What symptom did you see (wrong/unstable
-price, or error not converging) and at which \texttt{T}? 2. What exactly
-did you change --- raise \texttt{L}, add the \texttt{sqrt(k4)} term,
-widen the floor, or change how \texttt{c2} is fed in for short
-\texttt{T}? Point to the precise line you edited (\texttt{:65}
-\texttt{L=12}, \texttt{:70} the width formula, or \texttt{:127} the
-clamp). 3. Why \texttt{L*sqrt(c2\ +\ sqrt(c4))} (and not just
-\texttt{L*sqrt(c2)}) is the right safeguard when \texttt{c2} is tiny but
-\texttt{c4\ \textgreater{}\ 0}, and why a fixed wide interval is
-\emph{not} a free lunch (more terms \texttt{N} needed for the same
-accuracy, since COS error depends on both truncation and series length).
+price, or error not converging) and at which \(T\)? 2. What exactly did
+you change --- raise \(L\), add the \(sqrt(k4)\) term, widen the floor,
+or change how \(c2\) is fed in for short \(T\)? Point to the precise
+line you edited (\texttt{:65} \(L=12\), \texttt{:70} the width formula,
+or \texttt{:127} the clamp). 3. Why \(L*sqrt(c2 + sqrt(c4))\) (and not
+just \(L*sqrt(c2)\)) is the right safeguard when \(c2\) is tiny but
+\(c4 > 0\), and why a fixed wide interval is \emph{not} a free lunch
+(more terms \(N\) needed for the same accuracy, since COS error depends
+on both truncation and series length).
 \end{quote}
 
 This is the single question most worth over-preparing.
 
 \hypertarget{show-me-in-your-code-where-you-do-x-anticipated-spots}{%
-\subsection{``Show me in your code where you do X'' --- anticipated
+\section{``Show me in your code where you do X'' --- anticipated
 spots}\label{show-me-in-your-code-where-you-do-x-anticipated-spots}}
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{``\ldots where you compute the truncation range
-  \texttt{{[}a,b{]}}.''} \texttt{Q3\_basket\_COS\ (1).py:65-71}
-  (\texttt{cumulant\_range}), called at \texttt{:82-83} (Q3a) and
-  \texttt{:125-127} (Q3b, with the \texttt{max(a2\_b,\ 0)} clamp at
-  \texttt{:127}).
+  \textbf{``\ldots where you compute the truncation range \([a,b]\).''}
+  \texttt{Q3\_basket\_COS\ (1).py:65-71} (\(cumulant_range\)), called at
+  \texttt{:82-83} (Q3a) and \texttt{:125-127} (Q3b, with the
+  \(max(a2_b, 0)\) clamp at \texttt{:127}).
 \item
-  \textbf{``\ldots where a small \texttt{c2} makes \texttt{{[}a,b{]}}
-  too narrow, and how you fixed it.''}
-  \texttt{Q3\_basket\_COS\ (1).py:70}
-  (\texttt{width\ =\ L*sqrt(abs(k2)\ +\ sqrt(abs(k4)))}) and
-  \texttt{:65} (\texttt{L=12}). \textbf{TODO (Bruno):} name the line you
-  edited.
+  \textbf{``\ldots where a small \(c2\) makes \([a,b]\) too narrow, and
+  how you fixed it.''} \texttt{Q3\_basket\_COS\ (1).py:70}
+  (\(width = L*sqrt(abs(k2) + sqrt(abs(k4)))\)) and \texttt{:65}
+  (\(L=12\)). \textbf{TODO (Bruno):} name the line you edited.
 \item
   \textbf{``\ldots where you define the characteristic function.''}
-  Q3(a) \texttt{:79-80}; Q3(b) CIR leg \texttt{phi2\_b}
-  \texttt{:117-119}.
+  Q3(a) \texttt{:79-80}; Q3(b) CIR leg \(phi2_b\) \texttt{:117-119}.
 \item
   \textbf{``\ldots where you build the cosine density coefficients
-  \texttt{chi\_k}.''} \texttt{chi\_coeffs}
-  \texttt{Q3\_basket\_COS\ (1).py:22-32} (note the
-  \texttt{chi{[}0{]}\ *=\ 0.5} primed-sum term at \texttt{:31}).
+  \(chi_k\).''} \(chi_coeffs\) \texttt{Q3\_basket\_COS\ (1).py:22-32}
+  (note the \(chi[0] *= 0.5\) primed-sum term at \texttt{:31}).
 \item
   \textbf{``\ldots where you build the payoff coefficients
-  \texttt{V\_\{k1,k2\}}.''} \texttt{payoff\_coeffs\_2d} \texttt{:34-54}
+  \(V_{k1,k2}\).''} \texttt{payoff\_coeffs\_2d} \texttt{:34-54}
   (assembly \texttt{:54}).
 \item
-  \textbf{``\ldots where the 2D price is assembled.''}
-  \texttt{price\_2dCOS} \texttt{:56-63} (\texttt{chi1\ @\ V\ @\ chi2} at
-  \texttt{:63}).
+  \textbf{``\ldots where the 2D price is assembled.''} \(price_2dCOS\)
+  \texttt{:56-63} (\(chi1 @ V @ chi2\) at \texttt{:63}).
 \item
   \textbf{``\ldots where the cumulants of the CIR leg come from.''}
   \texttt{Q3\_basket\_COS\ (1).py:122-124}; same moments in
@@ -497,7 +561,7 @@ spots}\label{show-me-in-your-code-where-you-do-x-anticipated-spots}}
   \textbf{``\ldots where you correlate the Brownian motions.''}
   \texttt{Q1\_basket\_MC\ (1).py:29} and \texttt{:116}.
 \item
-  \textbf{``\ldots where you do the Euler step for \texttt{S2}.''}
+  \textbf{``\ldots where you do the Euler step for \(S2\).''}
   \texttt{Q1\_basket\_MC\ (1).py:120-121} (full truncation).
 \item
   \textbf{``\ldots where you isolate the discretization bias.''}
