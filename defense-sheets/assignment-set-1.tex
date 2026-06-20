@@ -1,0 +1,673 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  10pt,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmainfont[]{DejaVu Serif}
+  \setsansfont[]{DejaVu Sans}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=2cm]{geometry}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  colorlinks=true,
+  linkcolor={Maroon},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\hypertarget{defense-sheet-assignment-set-1}{%
+\section{Defense sheet --- Assignment set
+1}\label{defense-sheet-assignment-set-1}}
+
+\begin{quote}
+Scope: this sheet covers the \textbf{coded} sub-questions only (2b, 2d,
+2e, 3a, 3b, 3c). The hand-derivation parts (1a, 1b, 1c, 2a, 2c) are in
+the PDF and are not repeated here, but Fang can jump from code to
+derivation, so the cross-references below matter.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{the-task-in-my-own-words}{%
+\subsection{The task (in my own words)}\label{the-task-in-my-own-words}}
+
+Assignment 1 has three blocks. The graded coded pieces sit in blocks 2
+and 3.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Block 2 --- the COS method, sine variant.} The paper builds
+  COS from a Fourier-\textbf{cosine} expansion; the assignment asks me
+  to redo it with a Fourier-\textbf{sine} expansion.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{2b:} program the sine version of eq. (11) and reproduce the
+    density-recovery errors of Table 1 of the COS paper for the standard
+    normal density.
+  \item
+    \textbf{2d:} implement the sine-COS European \textbf{put} pricing
+    formula (derived by hand in 2c) under Black--Scholes parameters
+    \texttt{S0=3,\ sigma=0.3,\ T=1,\ K=4,\ r=0.03}, and report the
+    absolute error vs the analytic BS put as a function of \texttt{N}.
+  \item
+    \textbf{2e:} extend the sine recovery one integration step further
+    to recover the \textbf{CDF}, then verify it against the analytic
+    log-normal CDF.
+  \end{itemize}
+\item
+  \textbf{Block 3 --- importance sampling for a tail quantile.}
+  Portfolio of \texttt{N=1000} digital options;
+  \texttt{L\_T\ =\ sum\_i\ 1\{S\_i(T)\ \textgreater{}\ K\_i\}} with a
+  common Brownian factor \texttt{W} and idiosyncratic factors
+  \texttt{B\_i}. Estimate the 95\% quantile of \texttt{L\_T}.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{3a:} plain Monte Carlo.
+  \item
+    \textbf{3b:} importance sampling, mean shift
+    \texttt{W\_T\ \textasciitilde{}\ N(1.5,\ T)}, reweight by
+    \texttt{p/q}.
+  \item
+    \textbf{3c:} importance sampling, mean + variance shift
+    \texttt{W\_T\ \textasciitilde{}\ N(1.5,\ 2T)}, reweight by
+    \texttt{p/q}.
+  \end{itemize}
+\end{itemize}
+
+\textbf{TODO (Bruno):} In one sentence each, state the \emph{point} of
+each sub-question --- e.g.~why 2b uses the standard normal density
+specifically, why 2e is ``one extra integration step'' beyond 2b/2c, and
+what the 3b-vs-3c comparison is meant to demonstrate about importance
+sampling.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{my-approach-and-why}{%
+\subsection{My approach and why}\label{my-approach-and-why}}
+
+What the code factually does (per block):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{2b / 2e} build the sine series coefficients
+  \texttt{F\_k\ =\ (2/(b-a))\ *\ Im\{\ phi(w\_k)\ exp(-i\ w\_k\ a)\ \}}
+  with \texttt{w\_k\ =\ k*pi/(b-a)}, then sum \texttt{F\_k} against
+  either \texttt{sin(k\ pi\ (x-a)/(b-a))} (density, 2b) or the
+  integrated sine \texttt{(1\ -\ cos(...))} form (CDF, 2e).
+\item
+  \textbf{2d} prices the put as
+  \texttt{e\^{}\{-rT\}\ *\ sum\_k\ Im\{\ phi(w\_k)\ exp(-i\ w\_k\ a)\ \}\ *\ V\_k},
+  where \texttt{V\_k} is the analytic sine coefficient of the put payoff
+  built from the \texttt{phi\_k}/\texttt{chi\_k} primitives.
+\item
+  \textbf{3a/3b/3c} simulate \texttt{S\_i(T)} from the exact log-normal
+  solution, count threshold crossings to form \texttt{L\_T}, and take a
+  (weighted, in 3b/3c) empirical 95\% quantile.
+\end{itemize}
+
+\textbf{TODO (Bruno):} Justify, in your own words, the \emph{modelling}
+choices that the code hard-codes: - 2b: why
+\texttt{{[}a,b{]}\ =\ {[}-10,\ 10{]}} is a safe truncation for the
+standard normal. - 2d: why you used the \textbf{cumulant-based} range
+\texttt{{[}a,b{]}\ =\ c1\ ±\ L*sqrt(c2\ +\ sqrt(c4))} with
+\texttt{L=10}, and why that is the ``correct'' way to set the range
+rather than a fixed window. - 2e: why you switched to a \textbf{fixed}
+window \texttt{{[}a,b{]}\ =\ {[}-2,\ 2{]}} for the CDF test instead of
+reusing the cumulant rule from 2d. - 3b/3c: why a mean shift of exactly
+\texttt{1.5}, and why doubling the variance is the natural ``second''
+scheme to test.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{key-code-sections-file-what-it-does-why-i-wrote-it-that-way}{%
+\subsection{Key code sections (file + what it does + why I wrote it that
+way)}\label{key-code-sections-file-what-it-does-why-i-wrote-it-that-way}}
+
+\hypertarget{b-2bcf-2.py-sine-density-recovery-standard-normal}{%
+\subsubsection{\texorpdfstring{2b --- \texttt{2bCF\ (2).py} (sine
+density recovery, standard
+normal)}{2b --- 2bCF (2).py (sine density recovery, standard normal)}}\label{b-2bcf-2.py-sine-density-recovery-standard-normal}}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{2bCF\ (2).py:4-5} set the truncation range
+  \texttt{a=-10,\ b=10}.
+\item
+  \texttt{2bCF\ (2).py:6-7} set the evaluation grid
+  \texttt{X\_test\ =\ arange(-5,6)} (i.e.~integers -5..5) and
+  \texttt{N\_vals\ =\ {[}4,8,16,32,64{]}}.
+\item
+  \texttt{2bCF\ (2).py:10-12} \texttt{normal\_density(x)} returns the
+  standard normal pdf \texttt{(1/sqrt(2pi))\ exp(-x\^{}2/2)}.
+\item
+  \texttt{2bCF\ (2).py:14-16} \texttt{char\_function(w)} returns
+  \texttt{exp(-0.5\ w\^{}2)}, the characteristic function of
+  \texttt{N(0,1)}.
+\item
+  \texttt{2bCF\ (2).py:18-33} \texttt{sin\_density(x\_vals,a,b,N)}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{:22} \texttt{k\ =\ arange(1,\ N+1)} --- sine series starts
+    at \texttt{k=1} (no \texttt{k=0} term).
+  \item
+    \texttt{:23} \texttt{wk\ =\ k*pi/(b-a)}.
+  \item
+    \texttt{:26}
+    \texttt{fk\ =\ (2/(b-a))\ *\ Im\{\ char(wk)\ *\ exp(-i\ wk\ a)\ \}}
+    --- the sine coefficients \texttt{F\_k}.
+  \item
+    \texttt{:30-31} for each \texttt{x}, forms
+    \texttt{sin(k\ pi\ (x-a)/(b-a))} and sums
+    \texttt{fk\ *\ sin\_terms}.
+  \end{itemize}
+\item
+  \texttt{2bCF\ (2).py:39-43} loops over \texttt{N}, computes
+  \texttt{max\textbar{}f\_approx\ -\ f\_true\textbar{}} and prints it.
+\end{itemize}
+
+\textbf{TODO (Bruno):} Explain \emph{why} line 26 takes the
+\textbf{imaginary} part (tie it to the sine series and to Euler's
+formula in your 2a derivation), and why the coefficient prefactor is
+\texttt{2/(b-a)} and not \texttt{1/(b-a)}.
+
+\hypertarget{d-2dcf-2.py-sine-cos-european-put-pricing}{%
+\subsubsection{\texorpdfstring{2d --- \texttt{2dCF\ (2).py} (sine-COS
+European put
+pricing)}{2d --- 2dCF (2).py (sine-COS European put pricing)}}\label{d-2dcf-2.py-sine-cos-european-put-pricing}}
+
+\begin{quote}
+\textbf{FACT / FORMATTING FLAG:} this file is stored as a \textbf{single
+physical line} (the newlines were stripped). So I cannot give honest
+per-line numbers here --- I reference it by \textbf{function name}. Fang
+may notice this; be ready to say it is a save/encoding artefact, not the
+logic.
+\end{quote}
+
+\begin{itemize}
+\tightlist
+\item
+  Parameters block: \texttt{S0=3,\ sigma=0.3,\ T=1,\ K=4,\ r=0.03};
+  \texttt{x0\ =\ log(S0/K)}; \texttt{mu\ =\ r\ -\ 0.5\ sigma\^{}2}.
+\item
+  Cumulant range: \texttt{c1\ =\ x0\ +\ mu*T},
+  \texttt{c2\ =\ T*sigma\^{}2}, \texttt{c4\ =\ 0}, \texttt{L\ =\ 10},
+  \texttt{a\ =\ c1\ -\ L*sqrt(c2\ +\ sqrt(c4))},
+  \texttt{b\ =\ c1\ +\ L*sqrt(c2\ +\ sqrt(c4))} (the comment cites ``eq
+  49'').
+\item
+  \texttt{phi\_BS(w,\ x,\ r,\ sigma,\ T)}: characteristic function of
+  \texttt{y\ =\ ln(S\_T/K)}, returns
+  \texttt{exp(i\ w\ mu\_y\ -\ 0.5\ var\_y\ w\^{}2)} with
+  \texttt{mu\_y\ =\ x\ +\ (r\ -\ 0.5\ sigma\^{}2)\ T},
+  \texttt{var\_y\ =\ sigma\^{}2\ T}.
+\item
+  \texttt{phi\_k(k,a,b,c,d)}: returns
+  \texttt{(1/wk)*(cos(wk(c-a))\ -\ cos(wk(d-a)))} --- the
+  \texttt{psi\_k} primitive from 2c.
+\item
+  \texttt{chi\_k(k,a,b,c,d)}: returns \texttt{term(d)-term(c)} with
+  \texttt{term(y)\ =\ e\^{}y\ (sin(wk(y-a))\ -\ wk\ cos(wk(y-a)))\ /\ (1\ +\ wk\^{}2)}
+  --- the \texttt{chi\_k} primitive from 2c.
+\item
+  \texttt{V\_k\_put(a,b,K,ks)}: returns
+  \texttt{(2K/(b-a))\ *\ (-chi\_k(ks,a,b,a,0)\ +\ phi\_k(ks,a,b,a,0))},
+  i.e.~the payoff coefficient
+  \texttt{V\_k\ =\ (2K/(b-a))(psi\_k(a,0)\ -\ chi\_k(a,0))}.
+\item
+  \texttt{sin\_put\_price(N,...)}: builds
+  \texttt{cf\_part\ =\ Im\{\ phi\_BS(wk,\ x0,\ ...)\ exp(-i\ wk\ a)\ \}},
+  multiplies by \texttt{Vk}, and returns
+  \texttt{exp(-rT)\ *\ dot(cf\_part,\ Vk)}.
+\item
+  \texttt{bs\_put(...)}: closed-form BS put for the reference price.
+\item
+  The driver loops \texttt{N\ in\ {[}4,8,16,32,64,128,256,512,1024{]}}
+  and prints \texttt{\textbar{}SIN\ -\ BS\textbar{}}.
+\end{itemize}
+
+\begin{quote}
+\textbf{NAMING FLAG (be ready for this):} in the report (2c)
+\texttt{psi\_k} is the integral of \texttt{sin} and \texttt{chi\_k} the
+integral of \texttt{e\^{}y\ sin}. In this file the \textbf{function
+named \texttt{phi\_k}} is the \texttt{sin} integral (the report's
+\texttt{psi\_k}) and the function named \texttt{chi\_k} is the
+\texttt{e\^{}y\ sin} integral. So \texttt{phi\_k} here = \texttt{psi\_k}
+in the report. The numbers still match because \texttt{V\_k\_put} pairs
+them correctly, but the name \texttt{phi\_k} collides with the
+characteristic function \texttt{phi}.
+\end{quote}
+
+\textbf{TODO (Bruno):} Justify the \emph{content} choices: why
+\texttt{c4\ =\ 0} is acceptable here (what is the 4th cumulant of a
+Gaussian log-price?), why \texttt{x0\ =\ log(S0/K)} is the right state
+variable, and why the discount factor is \texttt{e\^{}\{-rT\}} rather
+than \texttt{e\^{}\{-r*Delta\ t\}} with some other \texttt{Delta\ t}.
+
+\hypertarget{e-2ecf-2.py-sine-cos-cdf-recovery}{%
+\subsubsection{\texorpdfstring{2e --- \texttt{2eCF\ (2).py} (sine-COS
+CDF
+recovery)}{2e --- 2eCF (2).py (sine-COS CDF recovery)}}\label{e-2ecf-2.py-sine-cos-cdf-recovery}}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{2eCF\ (2).py:5-8} parameters
+  \texttt{r=0.03,\ S0=3,\ sigma=0.3,\ T=1}.
+\item
+  \texttt{2eCF\ (2).py:11-12}
+  \texttt{mu\ =\ (r\ -\ 0.5\ sigma\^{}2)\ T},
+  \texttt{sigma\_aux\ =\ sigma*sqrt(T)} --- moments of
+  \texttt{ln(S\_T/S\_0)}.
+\item
+  \texttt{2eCF\ (2).py:14-15} fixed range \texttt{a=-2,\ b=2}.
+\item
+  \texttt{2eCF\ (2).py:16-17}
+  \texttt{X\_test\ =\ linspace(-0.5,\ 0.5,\ 11)},
+  \texttt{N\_vals\ =\ {[}4,8,16,32,64,128{]}}.
+\item
+  \texttt{2eCF\ (2).py:19-23} \texttt{char\_function(w)} = CF of
+  \texttt{ln(S\_T/S\_0)}:
+  \texttt{exp(i\ w\ mu\ -\ 0.5\ sigma\_aux\^{}2\ w\^{}2)}.
+\item
+  \texttt{2eCF\ (2).py:25-29}
+  \texttt{F\_exact(z)\ =\ norm.cdf((z\ -\ mu)/sigma\_aux)} --- analytic
+  normal CDF.
+\item
+  \texttt{2eCF\ (2).py:31-46} \texttt{sin\_cdf(z\_vals,N,a,b)}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{:36-37} \texttt{ks\ =\ arange(1,N+1)},
+    \texttt{wk\ =\ ks\ pi/(b-a)}.
+  \item
+    \texttt{:40} \texttt{im\ =\ Im\{\ char(wk)\ exp(-i\ wk\ a)\ \}}.
+  \item
+    \texttt{:43}
+    \texttt{cosine\ =\ cos(\ outer((z-a)/(b-a),\ ks)\ *\ pi\ )} ---
+    matrix of \texttt{cos(k\ pi\ (z-a)/(b-a))}.
+  \item
+    \texttt{:46} returns
+    \texttt{(2/pi)\ *\ (im/ks)\ @\ (1\ -\ cosine).T}, i.e.
+    \texttt{F(z)\ \textasciitilde{}=\ (2/pi)\ sum\_k\ (1/k)\ Im\_k\ (1\ -\ cos(k\ pi\ (z-a)/(b-a)))}.
+  \end{itemize}
+\item
+  \texttt{2eCF\ (2).py:54-57} loop over \texttt{N}, print
+  \texttt{max\textbar{}F\_sin\ -\ F\_true\textbar{}}.
+\end{itemize}
+
+\textbf{TODO (Bruno):} Explain \emph{why} the CDF formula carries a
+\texttt{1/k} factor and a \texttt{2/pi} prefactor (where do they come
+from when you integrate the density term by term?), and why the
+\texttt{(1\ -\ cos(...))} shape is the integrated form of
+\texttt{sin(...)}.
+
+\hypertarget{a-3acf-2.py-plain-monte-carlo-quantile}{%
+\subsubsection{\texorpdfstring{3a --- \texttt{3aCF\ (2).py} (plain Monte
+Carlo
+quantile)}{3a --- 3aCF (2).py (plain Monte Carlo quantile)}}\label{a-3acf-2.py-plain-monte-carlo-quantile}}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{3aCF\ (2).py:5-12} parameters
+  \texttt{N\_stocks=1000,\ S\_0=1,\ r=0.01,\ sigma1=0.8,\ sigma2=0.6,\ T=1,\ K=2},
+  \texttt{alpha\ =\ 1-0.95}.
+\item
+  \texttt{3aCF\ (2).py:14}
+  \texttt{drift\ =\ r\ -\ 0.5*(sigma1\^{}2\ +\ sigma2\^{}2)}.
+\item
+  \texttt{3aCF\ (2).py:16-31} \texttt{simulate\_plainMC(paths)}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{:22} common factor
+    \texttt{Wt\ \textasciitilde{}\ N(0,\ sqrt(T))} (shape
+    \texttt{paths}).
+  \item
+    \texttt{:23} idiosyncratic
+    \texttt{Bi\ \textasciitilde{}\ N(0,\ sqrt(T))} (shape
+    \texttt{paths\ x\ N\_stocks}).
+  \item
+    \texttt{:26}
+    \texttt{S\_T\ =\ S\_0\ exp(drift*T\ +\ sigma1*Wt{[}:,None{]}\ +\ sigma2*Bi)}.
+  \item
+    \texttt{:29} \texttt{L\_T\ =\ sum(S\_T\ \textgreater{}\ K,\ axis=1)}
+    --- count of in-the-money names per path.
+  \end{itemize}
+\item
+  \texttt{3aCF\ (2).py:36} \texttt{np.random.seed(42)}.
+\item
+  \texttt{3aCF\ (2).py:40-44} loops \texttt{paths} over
+  \texttt{{[}1000..500000{]}},
+  \texttt{q\ =\ np.quantile(L\_T,\ 1-alpha)} = 0.95 quantile.
+\item
+  \texttt{3aCF\ (2).py:47-55} semilog convergence plot.
+\end{itemize}
+
+\textbf{TODO (Bruno):} Justify why
+\texttt{np.std}/\texttt{np.random.normal(0,\ sqrt(T))} (a
+\texttt{N(0,T)} draw) is the \emph{exact} terminal law of \texttt{W\_T}
+here, why no time-stepping is needed, and why the empirical quantile is
+taken at \texttt{1\ -\ alpha\ =\ 0.95} given the assignment's definition
+\texttt{P(L\_T\ \textgreater{}=\ q\_alpha)\ \textless{}=\ alpha}.
+
+\hypertarget{b-3bcf-2.py-importance-sampling-mean-shift}{%
+\subsubsection{\texorpdfstring{3b --- \texttt{3bCF\ (2).py} (importance
+sampling, mean
+shift)}{3b --- 3bCF (2).py (importance sampling, mean shift)}}\label{b-3bcf-2.py-importance-sampling-mean-shift}}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{3bCF\ (2).py:17-18} IS parameters \texttt{mu\_shift\ =\ 1.5},
+  \texttt{mu\_shiftsq\ =\ mu\_shift\^{}2\ /\ (2T)}.
+\item
+  \texttt{3bCF\ (2).py:20-34}
+  \texttt{weighted\_quantile(values,\ weights,\ q)}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{:25-27} sort \texttt{values}, reorder \texttt{weights} to
+    match.
+  \item
+    \texttt{:30} \texttt{cdf\ =\ cumsum(w\_sorted)/sum(w\_sorted)}.
+  \item
+    \texttt{:33-34} \texttt{idx\ =\ searchsorted(cdf,\ q)}, return
+    \texttt{v\_sorted{[}idx{]}}.
+  \end{itemize}
+\item
+  \texttt{3bCF\ (2).py:43}
+  \texttt{W\_q\ \textasciitilde{}\ N(mu\_shift,\ sqrt(T))} --- common
+  factor drawn under \texttt{q}.
+\item
+  \texttt{3bCF\ (2).py:44}
+  \texttt{Bi\ \textasciitilde{}\ N(0,\ sqrt(T))} --- idiosyncratic
+  factors unchanged.
+\item
+  \texttt{3bCF\ (2).py:47}
+  \texttt{S\_T\ =\ exp(drift*T\ +\ sigma1*W\_q{[}:,None{]}\ +\ sigma2*Bi)}
+  (note: no explicit \texttt{S\_0}, since \texttt{S\_0=1}).
+\item
+  \texttt{3bCF\ (2).py:50}
+  \texttt{L\_T\ =\ sum(S\_T\ \textgreater{}\ K,\ axis=1)}.
+\item
+  \texttt{3bCF\ (2).py:53}
+  \texttt{ratio\ =\ exp(-(mu\_shift/T)*W\_q\ +\ mu\_shiftsq)} ---
+  likelihood ratio \texttt{p/q}.
+\item
+  \texttt{3bCF\ (2).py:56}
+  \texttt{q\_95\ =\ weighted\_quantile(L\_T,\ ratio,\ 0.95)}.
+\end{itemize}
+
+\textbf{TODO (Bruno):} Derive the \texttt{ratio} on line 53 from
+\texttt{p/q} of two Gaussians and confirm it equals the report's
+\texttt{exp(-1.5\ w\ +\ 1.125)} at \texttt{T=1}. Also justify \emph{why
+only \texttt{W} is reweighted and not \texttt{B\_i}} (the report says
+the \texttt{B\_i} ratio is 1 --- state precisely why).
+
+\hypertarget{c-3ccf-2.py-importance-sampling-mean-variance-shift}{%
+\subsubsection{\texorpdfstring{3c --- \texttt{3cCF\ (2).py} (importance
+sampling, mean + variance
+shift)}{3c --- 3cCF (2).py (importance sampling, mean + variance shift)}}\label{c-3ccf-2.py-importance-sampling-mean-variance-shift}}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{3cCF\ (2).py:17-18} IS parameters \texttt{mu\_shift\ =\ 1.5},
+  \texttt{var\_q\ =\ 2*T}.
+\item
+  \texttt{3cCF\ (2).py:20-34} \texttt{weighted\_quantile} --- identical
+  structure to 3b.
+\item
+  \texttt{3cCF\ (2).py:43}
+  \texttt{W\_q\ \textasciitilde{}\ N(mu\_shift,\ sqrt(var\_q))} =
+  \texttt{N(1.5,\ 2T)}.
+\item
+  \texttt{3cCF\ (2).py:44,47,50} same \texttt{Bi}, \texttt{S\_T},
+  \texttt{L\_T} construction as 3b.
+\item
+  \texttt{3cCF\ (2).py:54}
+  \texttt{ratio\ =\ sqrt(2)*exp((-W\_q\^{}2\ -\ 3\ W\_q\ +\ 2.25)/(4T))}
+  --- the \texttt{p/q} for the mean+var shift.
+\item
+  \texttt{3cCF\ (2).py:56}
+  \texttt{q\_95\ =\ weighted\_quantile(L\_T,\ ratio,\ 0.95)}.
+\end{itemize}
+
+\textbf{TODO (Bruno):} Derive the line-54 ratio from
+\texttt{p\ \textasciitilde{}\ N(0,T)},
+\texttt{q\ \textasciitilde{}\ N(1.5,\ 2T)} and confirm the
+\texttt{sqrt(2)} prefactor comes from the variance mismatch in the
+normalising constants. Then explain why this scheme is \emph{worse} for
+the 95\% quantile than 3b (the report's argument about mass landing too
+far in the tail) --- restate it as your own.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{design-decisions-i-must-justify}{%
+\subsection{Design decisions I must
+justify}\label{design-decisions-i-must-justify}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Sine vs cosine expansion.} The code implements the sine series
+  throughout (coefficients via \texttt{Im\{...\}}). \textbf{TODO
+  (Bruno):} why does the assignment want sine, and what changes
+  structurally vs the cosine COS (the \texttt{k=0} half-weight term, the
+  \texttt{Im} vs \texttt{Re})?
+\item
+  \textbf{Truncation range, three different choices.} 2b uses
+  \texttt{{[}-10,10{]}}, 2d uses the cumulant rule with \texttt{L=10},
+  2e uses \texttt{{[}-2,2{]}}. \textbf{TODO (Bruno):} justify each range
+  and explain whether \texttt{{[}-2,2{]}} in 2e is wide enough for
+  \texttt{N(mu,\ sigma\_aux\^{}2)} with \texttt{mu\ =\ -0.015},
+  \texttt{sigma\_aux\ =\ 0.3} (it is \textasciitilde±6.7 sigma ---
+  confirm and say so). This is exactly the kind of ``is your range
+  safe?'' question Fang asks.
+\item
+  \textbf{\texttt{L\ =\ 10} cumulant multiplier.} \textbf{TODO (Bruno):}
+  the paper uses \texttt{L} around 8--10; justify your \texttt{L=10} and
+  what error you'd see if \texttt{L} were too small (link to your
+  Assignment 2 short-maturity / small-c2 bug).
+\item
+  \textbf{\texttt{np.quantile} interpolation vs the
+  \texttt{weighted\_quantile} searchsorted rule.} 3a uses NumPy's
+  \texttt{np.quantile} (linear interpolation); 3b/3c use a custom
+  step-function \texttt{searchsorted} quantile. \textbf{TODO (Bruno):}
+  why two different quantile estimators, and does the mismatch bias the
+  3a-vs-3b/3c comparison?
+\item
+  \textbf{\texttt{seed(42)}.} Used in 3a/3b/3c for reproducibility.
+  \textbf{TODO (Bruno):} confirm this is only for reproducibility and
+  does not, e.g., reuse the same \texttt{W} across schemes in a way that
+  matters.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{results-and-what-they-mean}{%
+\subsection{Results and what they
+mean}\label{results-and-what-they-mean}}
+
+Reported in the PDF (factual, from the tables):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{2b:} max density error falls
+  \texttt{2.1e-1\ (N=4)\ -\textgreater{}\ 1.0e-16\ (N=64)} --- matches
+  the paper's Table 1 order of magnitude; spectral convergence.
+\item
+  \textbf{2d:} \texttt{\textbar{}SIN\ -\ BS\textbar{}} falls to
+  \texttt{\textasciitilde{}3.3e-16} by \texttt{N=64} and stays there; BS
+  reference put \texttt{=\ 0.9918191782}.
+\item
+  \textbf{2e:} max CDF error falls
+  \texttt{1.37e-1\ (N=4)\ -\textgreater{}\ 3.67e-11\ (N=32)} and then
+  \textbf{plateaus} at \texttt{3.67e-11}.
+\item
+  \textbf{3a:} 95\% quantile estimate settles near \texttt{590} as
+  \texttt{paths} grows to \texttt{5e5}.
+\item
+  \textbf{3b:} estimate converges to \texttt{\textasciitilde{}587} and
+  visibly stabilises with far fewer paths than 3a.
+\item
+  \textbf{3c:} estimate ends near \texttt{589} but the path is noisier;
+  the report argues it is \emph{less} efficient than 3b for this
+  quantile.
+\end{itemize}
+
+\textbf{TODO (Bruno):} - 2d/2e: explain the \textbf{plateau} (why does
+the error stop improving --- round-off vs truncation-range error?). For
+2e specifically, why does it plateau at \texttt{3.67e-11} and not at
+machine \texttt{1e-16} like 2d? This is the single most likely ``your
+convergence stalled --- why?'' question. - 3a/3b/3c: are 590 / 587 / 589
+\emph{consistent} (do their confidence intervals overlap)? What is the
+``true'' quantile and how confident are you?
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{the-hardest-question-fang-could-ask-here-and-my-answer}{%
+\subsection{The hardest question Fang could ask here --- and my
+answer}\label{the-hardest-question-fang-could-ask-here-and-my-answer}}
+
+\textbf{Likely hardest:} \emph{``Your 2e CDF error stalls at 3.67e-11
+while your 2d price reaches 1e-16. Both use the sine-COS machinery. Why
+the difference, and is 3.67e-11 a bug or expected?''}
+
+This bites because it sits exactly on the truncation-range / convergence
+theme Fang co-authored, and the two tables disagree by five orders of
+magnitude.
+
+\textbf{TODO (Bruno):} Write the answer. Components you must cover: 1.
+The CDF formula integrates the density term by term, so its error
+inherits the \textbf{truncation-range} error \texttt{f(a),\ f(b)\ !=\ 0}
+at the endpoints --- i.e.~the residual comes from
+\texttt{{[}a,b{]}={[}-2,2{]}} not being infinitely wide, not from too
+few terms \texttt{N}. (Confirm by saying what happens if you widen
+\texttt{{[}a,b{]}}.) 2. Why 2d reaches machine precision instead: the
+put payoff coefficients \texttt{V\_k} decay and the BS density is
+extremely well captured by the cumulant range, so series-truncation
+error drops below round-off. 3. State plainly whether \texttt{3.67e-11}
+is acceptable or whether widening \texttt{{[}-2,2{]}} would push it
+lower.
+
+(Second candidate hardest: \emph{``Derive line 53 / line 54 likelihood
+ratios from scratch and tell me why the variance shift in 3c hurts.''}
+--- see the 3b/3c TODOs.)
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{show-me-in-your-code-where-you-do-x-anticipated-spots}{%
+\subsection{``Show me in your code where you do X'' --- anticipated
+spots}\label{show-me-in-your-code-where-you-do-x-anticipated-spots}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{``\ldots where you build the sine coefficients
+  \texttt{F\_k}.''} -\textgreater{} \texttt{2bCF\ (2).py:26}; same
+  construction at \texttt{2eCF\ (2).py:40} and inside
+  \texttt{sin\_put\_price} (\texttt{cf\_part}) in \texttt{2dCF\ (2).py}.
+\item
+  \textbf{``\ldots where you set the COS truncation range.''}
+  -\textgreater{} \texttt{2bCF\ (2).py:4-5} (fixed), cumulant block in
+  \texttt{2dCF\ (2).py} (\texttt{a\ =\ c1\ -\ L*sqrt(c2+sqrt(c4))}),
+  \texttt{2eCF\ (2).py:14-15} (fixed \texttt{{[}-2,2{]}}).
+\item
+  \textbf{``\ldots where the characteristic function enters pricing.''}
+  -\textgreater{} \texttt{phi\_BS} and \texttt{cf\_part} in
+  \texttt{2dCF\ (2).py}.
+\item
+  \textbf{``\ldots where you compute the payoff coefficients
+  \texttt{V\_k}.''} -\textgreater{} \texttt{V\_k\_put} (with
+  \texttt{phi\_k}/\texttt{chi\_k}) in \texttt{2dCF\ (2).py}.
+\item
+  \textbf{``\ldots where you integrate the sine to get the CDF.''}
+  -\textgreater{} \texttt{2eCF\ (2).py:43-46} (the
+  \texttt{(1\ -\ cosine)} term).
+\item
+  \textbf{``\ldots where you get the exact terminal stock price.''}
+  -\textgreater{} \texttt{3aCF\ (2).py:26}, \texttt{3bCF\ (2).py:47},
+  \texttt{3cCF\ (2).py:47}.
+\item
+  \textbf{``\ldots where you form \texttt{L\_T}.''} -\textgreater{}
+  \texttt{3aCF\ (2).py:29}, \texttt{3bCF\ (2).py:50},
+  \texttt{3cCF\ (2).py:50}.
+\item
+  \textbf{``\ldots where you apply the likelihood ratio.''}
+  -\textgreater{} \texttt{3bCF\ (2).py:53}, \texttt{3cCF\ (2).py:54}.
+\item
+  \textbf{``\ldots where you take the weighted quantile.''}
+  -\textgreater{} \texttt{weighted\_quantile} in
+  \texttt{3bCF\ (2).py:20-34} / \texttt{3cCF\ (2).py:20-34}, called at
+  \texttt{:56}.
+\item
+  \textbf{``\ldots where you take the plain quantile.''} -\textgreater{}
+  \texttt{3aCF\ (2).py:42} (\texttt{np.quantile(L\_T,\ 1-alpha)}).
+\end{itemize}
+
+\end{document}

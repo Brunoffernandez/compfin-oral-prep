@@ -1,0 +1,1775 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  10pt,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmainfont[]{DejaVu Serif}
+  \setsansfont[]{DejaVu Sans}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=2cm]{geometry}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  colorlinks=true,
+  linkcolor={Maroon},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\hypertarget{theory-question-bank}{%
+\section{Theory question bank}\label{theory-question-bank}}
+
+Filled in per cluster as I study. Format: question -\textgreater{} my
+short answer -\textgreater{} (gap?).
+
+\hypertarget{cluster-1-foundations-lattice-pde}{%
+\subsection{Cluster 1 --- Foundations / lattice /
+PDE}\label{cluster-1-foundations-lattice-pde}}
+
+\hypertarget{lecture-01}{%
+\subsubsection{Lecture 01}\label{lecture-01}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Why does a course built around the COS method open with equity
+  options, given that equities are a tiny fraction of total notional
+  outstanding? \textbf{A.} Because the European equity call/put is the
+  canonical optionality problem, and every later extension --- Heston,
+  jumps, barriers, American/Bermudan --- is built on exactly the same
+  scaffolding (risk-neutral discounted expectation of a payoff).
+  Notional is dominated by rates, but the \emph{pricing theory} of
+  optionality is cleanest and most transferable starting from a single
+  stock under GBM, which is also where COS is first derived.
+\item
+  Derive the continuously-compounded bank-account value M(t) from the
+  differential argument dM = rM dt, and state the discount factor for
+  one euro at time T. \textbf{A.} Interest credited is proportional to
+  balance, rate and time: dM = rM dt, so dM/M = r dt; integrating from 0
+  to t gives ln M(t) − ln M(0) = rt, hence M(t) = M(0)e\^{}\{rt\}. With
+  M(0)=1 the numéraire is e\^{}\{rt\}, and one euro at T is worth D(t,T)
+  = e\^{}\{-r(T-t)\} at time t.
+\item
+  State covered interest-rate parity (1+i\_s) = (F\_t/S\_t)(1+i\_c) and
+  prove it by a static no-arbitrage replication. What is the ``FX
+  basis'' and why is it needed in practice? \textbf{A.} One domestic
+  unit, two riskless routes over the same horizon: (A) invest
+  domestically → 1+i\_c; (B) convert at spot S\_t, invest abroad at
+  i\_s, lock reconversion at forward F\_t → (F\_t/S\_t)(1+i\_s).
+  No-arbitrage forces equality, giving (1+i\_s)=(F\_t/S\_t)(1+i\_c) ---
+  i.e.~the forward is pinned by spot and the two funding rates,
+  model-free. Empirically CIP fails slightly; the FX basis is the spread
+  added to one leg to restore equality, treated as calibrated market
+  data fed into OTC FX pricing.
+\item
+  Write the terminal payoffs of a European call and put. Where are they
+  non-smooth, and why does that kink cause numerical trouble for
+  Fourier/COS methods? \textbf{A.} V\_C = max(S\_T−K,0), V\_P =
+  max(K−S\_T,0): continuous, piecewise-linear, with a kink at S=K.
+  Expanding the \emph{payoff} itself in a Fourier/cosine series rings
+  (Gibbs) at the kink, so the cosine coefficients decay only
+  algebraically; COS sidesteps this by expanding the smooth
+  \emph{density} and integrating the payoff against cosines analytically
+  (the χ\_k, ψ\_k closed forms), so the kink never enters a series.
+\item
+  In the one-step binomial hedge of a short call, derive Delta =
+  20/(S\_up - S\_dn) and then the premium V\_\{c,0\}. Compute both for
+  \{120,80\} and \{120,75\}. Why is case B more expensive? \textbf{A.}
+  Hedged portfolio Π = V\_\{c,0\} − ΔS\_0; set Π\_up = Π\_dn so ΔS\_up −
+  20 = ΔS\_dn (with K=100, up-payoff 20), giving Δ = 20/(S\_up−S\_dn).
+  Imposing Π=0 gives V\_\{c,0\} = Δ(S\_0−S\_dn). Case A \{120,80\}: Δ=½,
+  V=½·20=10. Case B \{120,75\}: Δ=4/9, V=4/9·25=11.11. Case B is dearer
+  because the wider outcome spread (more volatility) is worth more to a
+  convex, floored payoff.
+\item
+  Show that the one-step replication price equals E\^{}Q{[}payoff{]}
+  under the risk-neutral measure, and that the real-world probabilities
+  p=0.7, p=0.4 never enter. Define q explicitly. \textbf{A.} Define q =
+  (S\_0−S\_dn)/(S\_up−S\_dn) so that
+  E\^{}Q{[}S\_T{]}=qS\_up+(1−q)S\_dn=S\_0 (martingale under Q, r=0).
+  Then V\_\{c,0\}=Δ(S\_0−S\_dn)=q(S\_up−K)+(1−q)·0 =
+  E\^{}Q{[}(S\_T−K)\^{}+{]}. The price is built purely from the
+  no-arbitrage hedge; the physical p (0.7, 0.4) never appears --- only q
+  does.
+\item
+  At the fair price, does a perfectly hedged writer make money? Explain
+  Pi\_up = Pi\_dn = 0 and where real-world profit actually comes from.
+  \textbf{A.} No.~At the replication price the perfectly hedged terminal
+  portfolio is zero in \emph{both} states (Π\_up=Π\_dn=0): no risk, no
+  profit --- the fair price is exactly the cost of replication. Profit
+  only arises from selling above replication value (the surplus invested
+  at r), and in reality from bid--ask spread, fees,
+  discrete-rehedging/transaction-cost edge, and bearing vol/jump risk
+  outside the model.
+\item
+  Derive put-call parity from two portfolios held to maturity. Which
+  assumptions about the dynamics of S did you use? \textbf{A.} Π\_A =
+  call + K cash, Π\_B = put + share. At T both equal max(S\_T,K) (using
+  max(S\_T−K,0)+K and max(K−S\_T,0)+S\_T). Equal payoffs in every state
+  ⇒ equal value today: C + Ke\^{}\{-r(T-t)\} = P + S\_t. No dynamics
+  assumed --- only no-arbitrage and a constant rate --- so parity is
+  model-free.
+\item
+  Prove the lower bound C(t) \textgreater= max(S(t) - K
+  e\^{}\{-r(T-t)\}, 0) and use it to argue an American call on a
+  non-dividend stock is never exercised early. Why does the argument
+  fail for puts? \textbf{A.} The portfolio (long call + bond worth
+  Ke\^{}\{-r(T-t)\}) pays max(S\_T,K)≥S\_T at T, so it costs ≥ S(t)
+  today: C(t) ≥ S(t)−Ke\^{}\{-r(T-t)\}, and ≥0, hence the bound. For
+  r\textgreater0 this exceeds intrinsic S(t)−K, so the live call beats
+  immediate exercise and American = European. For the put, parity gives
+  P\^{}eur = Ke\textsuperscript{\{-r(T-t)\}−S+C}eur and
+  Ke\^{}\{-r(T-t)\}\textless K, so the live put can be \emph{below}
+  intrinsic K−S --- banking K early to earn interest can win, so early
+  exercise is genuinely optimal.
+\item
+  Apply Ito's lemma to g = ln S under GBM and obtain d(ln S) = (mu -
+  sigma\^{}2/2) dt + sigma dW. Where does the -1/2 sigma\^{}2 come from,
+  and what goes wrong if you forget it? \textbf{A.} With g=ln S,
+  g\_S=1/S, g\_SS=−1/S²: d ln S = (μS·1/S + ½σ²S²·(−1/S²))dt +
+  σS·(1/S)dW = (μ−½σ²)dt + σdW. The −½σ² is the Itô correction, born of
+  (dW)²=dt in the second-order term. Forgetting it biases the
+  simulated/expected stock high: it is exactly the convexity adjustment
+  that keeps E{[}S(t){]}=S\_0e\^{}\{μt\}.
+\item
+  From the log-price ABM, write the closed-form S(t) and verify
+  E{[}S(t){]} = S\_0 e\^{}\{mu t\} using the Gaussian MGF. State the
+  distribution of ln(S(T)/S\_0) under Q. \textbf{A.} Integrating d ln S
+  gives S(t)=S\_0 exp{[}(μ−½σ²)t + σW(t){]}. Using
+  E{[}e\^{}\{σW(t)\}{]}=e\^{}\{σ²t/2\}: E{[}S(t){]}=S\_0
+  e\textsuperscript{\{(μ−σ²/2)t\}·e}\{σ²t/2\}=S\_0 e\^{}\{μt\}. Under Q
+  (μ→r), ln(S(T)/S\_0) \textasciitilde{} N((r−½σ²)T, σ²T) --- lognormal
+  stock.
+\item
+  State the four defining properties of a Wiener process. What are
+  E{[}dW{]}, E{[}(dW)\^{}2{]}, and the quadratic variation {[}W{]}\_t,
+  and why does that force Ito calculus instead of ordinary calculus?
+  \textbf{A.} (i) W(0)=0; (ii) independent, stationary increments; (iii)
+  W(t)\textasciitilde N(0,t); (iv) a.s. continuous paths. So
+  E{[}dW{]}=0, E{[}(dW)²{]}=dt, and {[}W{]}\_t=t (finite quadratic
+  variation, unbounded total variation). Because (dW)²=dt contributes at
+  first order in dt, second-order Taylor terms survive --- ordinary
+  calculus fails and Itô's correction ½σ²g\_xx dt is needed.
+\item
+  Define the Markov property via P(S\_\{t+1\} \textless= s \textbar{}
+  S\_t) = P(S\_\{t+1\} \textless= s \textbar{} S\_t, S\_\{t-1\},
+  \ldots). How does it relate to the weak-form EMH, and why does i.i.d.
+  returns imply weak-form EMH but not conversely? \textbf{A.} Markov:
+  the one-step-ahead conditional law given the present equals that given
+  the whole past --- history beyond S\_t carries no extra information,
+  which is precisely weak-form efficiency (prices reflect past prices).
+  i.i.d. returns make the \emph{entire} history useless, which certainly
+  gives Markov/weak-form; but weak-form only requires the one-step
+  conditional law to be unchanged by deeper history, a strictly weaker
+  condition than full independence and identical distribution --- so the
+  converse fails.
+\item
+  Contrast ABM, GBM and OU: which can go negative, which is
+  multiplicative, which mean-reverts, and what single property do all
+  three share? Which one is the template for the Heston variance
+  process? \textbf{A.} ABM (dX=μdt+σdW): additive noise, Gaussian, can
+  go negative. GBM (dX=μXdt+σXdW): multiplicative, stays positive,
+  lognormal. OU (dX=κ(θ−X)dt+σdW): mean-reverts to θ at speed κ,
+  Gaussian, can go negative. Shared property: all are Markov diffusions
+  driven by Brownian motion. OU is the template for the CIR/Heston
+  variance dv=κ(θ−v)dt+γ√v dW --- same mean-reverting drift but a √v
+  diffusion that keeps v≥0.
+\item
+  What stylised fact does the SPX QQ-plot reveal (sample quantiles
+  {[}-3,3{]} vs theoretical {[}-2.3,2.3{]}), and which later models in
+  the course are introduced to fix it? \textbf{A.} Empirical return
+  quantiles (≈±3) are wider than the normal's (≈±2.3): returns have
+  \emph{fatter tails} than Gaussian (large moves occur more often). This
+  is the central failure of GBM and motivates Heston stochastic
+  volatility (L7) and jump-diffusion models (Merton/Kou, L8), which put
+  weight back in the tails and reproduce the implied-vol smile.
+\end{enumerate}
+
+\hypertarget{lecture-02}{%
+\subsubsection{Lecture 02}\label{lecture-02}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Derive Ito's lemma heuristically: why does the second-order term in
+  g(t,X) survive while the others vanish? \textbf{A.} Taylor-expand dg =
+  g\_t dt + g\_x dX + ½g\_xx(dX)² + \ldots{} With dX=μdt+σdW,
+  (dX)²=σ²(dW)²+2μσ dt dW+μ²(dt)². Under the table (dW)²=dt, dW dt=0,
+  (dt)²=0, only σ²(dW)²=σ²dt survives at order dt. So
+  dY=(g\_t+μg\_x+½σ²g\_xx)dt+σg\_x dW: the second-order term survives
+  precisely because Brownian motion has finite quadratic variation
+  ((dW)²=dt), while genuinely higher-order terms vanish.
+\item
+  Apply Ito to g = ln S under dS = mu S dt + sigma S dW. Where does the
+  -sigma\^{}2/2 come from, and what is its sign relation to Jensen?
+  \textbf{A.} g\_S=1/S, g\_SS=−1/S²: d ln S = (μ−½σ²)dt+σdW. The −½σ² is
+  the Itô term from ½g\_SS(dS)² = −½σ²dt. It is Jensen's inequality made
+  precise: ln is concave, so E{[}ln S\_t{]} grows at the lower rate
+  μ−½σ² while E{[}S\_t{]} grows at μ; the gap is exactly ½σ².
+\item
+  Walk through the delta-hedging derivation of the Black-Scholes PDE. At
+  which exact step is Delta = V\_S forced, and why? \textbf{A.} Form
+  Π=V−ΔS, self-financing so dΠ=dV−ΔdS. Itô gives
+  dV=(V\_t+μSV\_S+½σ²S²V\_SS)dt+σSV\_S dW. Then
+  dΠ=(\ldots)dt+(σSV\_S−ΔσS)dW. The portfolio is locally riskless iff
+  the dW term vanishes, which forces Δ=V\_S. Imposing dΠ=rΠdt then
+  yields V\_t+rSV\_S+½σ²S²V\_SS−rV=0.
+\item
+  In that derivation, mu appears in dV but not in the final PDE. Show
+  precisely the cancellation that removes it. \textbf{A.} In dΠ the
+  drift is V\_t+μSV\_S+½σ²S²V\_SS−Δ·μS. Once Δ=V\_S is substituted, the
+  term μSV\_S (from dV) and −Δ·μS=−μSV\_S (from −ΔdS) cancel exactly,
+  removing μ entirely. Economically: hedging eliminates exposure to the
+  real-world drift, so only σ and r remain.
+\item
+  State the BS PDE, its order/type, and its terminal condition. Why is
+  it solved backward in time? \textbf{A.} V\_t+rSV\_S+½σ²S²V\_SS−rV=0:
+  second-order, linear, parabolic, with terminal data V(S,T)=payoff
+  g(S). It is solved backward because the only data we know is at
+  maturity (the payoff); discounted expectation propagates value from T
+  back to t, equivalently the substitution τ=T−t turns it into a forward
+  initial-value problem.
+\item
+  Define a risk-neutral measure Q. Starting from dS = mu' S dt + sigma S
+  dW\^{}Q, prove that the martingale property of e\^{}\{-rt\}S\_t forces
+  mu' = r. \textbf{A.} Q is a measure equivalent to P under which the
+  discounted asset e\^{}\{-rt\}S\_t is a martingale. By the product rule
+  d(e\^{}\{-rt\}S\_t) = (μ'−r)e\^{}\{-rt\}S\_t dt + σe\^{}\{-rt\}S\_t
+  dW\^{}Q. The stochastic integral is a martingale; the drift
+  dt-integral is a martingale only if it vanishes, i.e.~μ'−r=0. Hence
+  μ'=r and dS=rSdt+σS dW\^{}Q.
+\item
+  Under the change from P to Q, the drift goes mu -\textgreater{} r but
+  sigma is unchanged. Why must sigma be preserved (think equivalence /
+  quadratic variation)? \textbf{A.} Girsanov shifts only the drift; the
+  diffusion coefficient is invariant. Equivalence of P and Q means they
+  agree on which events have probability zero, and σ is fixed by the
+  path's quadratic variation {[}S{]}\_t=∫σ²S²ds --- an almost-sure
+  pathwise property. Changing σ would change the set of possible paths'
+  quadratic variation, breaking equivalence; so only the drift can move.
+\item
+  State Feynman-Kac and sketch its proof. What is the role of the
+  discounted process Y\_s and where is the PDE used? \textbf{A.} If V
+  solves V\_t+bV\_x+½σ²V\_xx−rV=0 with V(x,T)=g, and dX=b dt+σ dW with
+  X\_t=x, then V(x,t)=E{[}e\^{}\{−∫\_t\^{}T r
+  du\}g(X\_T)\textbar X\_t=x{]}. Proof: set Y\_s=e\^{}\{−∫\_t\^{}s r
+  du\}V(X\_s,s); Itô gives dY\_s =
+  (discount)·{[}V\_t+bV\_x+½σ²V\_xx−rV{]}ds + (\ldots)dW. The PDE makes
+  the ds-drift vanish, so Y\_s is a martingale; taking E of Y\_T−Y\_t
+  with Y\_t=V(x,t) gives the formula.
+\item
+  Explain how Feynman-Kac shows the PDE approach and the martingale
+  approach give the same price. State the equivalence ``drift = 0
+  \textless=\textgreater{} discounted price is a Q-martingale''.
+  \textbf{A.} The discounted option price e\^{}\{-rt\}V is a
+  Q-martingale iff its Itô drift e\^{}\{-rt\}(V\_t+rSV\_S+½σ²S²V\_SS−rV)
+  is zero --- which is exactly the BS PDE. So ``PDE holds'' ⇔
+  ``discounted price is a Q-martingale'', and applying the martingale
+  property between t and T gives
+  V=e\textsuperscript{\{-r(T-t)\}E}Q{[}g(S\_T){]}. PDE route and
+  expectation route are two faces of the same identity.
+\item
+  Derive C\_0 = e\^{}\{-rT\} E\^{}Q{[}(S\_T - K)\^{}+{]} down to S\_0
+  N(d1) - K e\^{}\{-rT\} N(d2). What measure-change / square-completion
+  produces the shift from d2 to d1? \textbf{A.} Write
+  C\_0=e\^{}\{-rT\}∫\_\{ln(K/S\_0)\}\^{}∞(S\_0 e\^{}z−K)f\_Z(z)dz with
+  Z\textasciitilde N((r−½σ²)T,σ²T). The K-term is
+  Ke\textsuperscript{\{-rT\}·Q(S\_T\textgreater K)=Ke}\{-rT\}N(d\_2).
+  For the S\_0 e\^{}z-term, completing the square in z−(z−m)²/2v² gives
+  S\_0 e\^{}z f\_Z(z)=S\_0 e\^{}\{rT\}·(N(m+v²,v²) density), i.e.~a
+  Girsanov shift of the mean up by v²=σ²T (change to the stock
+  numéraire). That shift turns d\_2 into d\_1=d\_2+σ√T, giving
+  C\_0=S\_0N(d\_1)−Ke\^{}\{-rT\}N(d\_2).
+\item
+  Interpret N(d2) and N(d1) probabilistically. Which one equals Q(S\_T
+  \textgreater{} K)? \textbf{A.} N(d\_2)=Q(S\_T\textgreater K), the
+  risk-neutral probability of finishing in the money. N(d\_1) is the
+  same exercise probability but under the \emph{stock-numéraire} measure
+  Q\^{}S; equivalently S\_0N(d\_1) is the present value (in numéraire
+  terms) of receiving the stock conditional on exercise. So
+  Q(S\_T\textgreater K)=N(d\_2).
+\item
+  Derive put-call parity from a static replication argument (not from
+  the BS formula). Why is parity model-free? \textbf{A.} Long one call,
+  short one put (same K,T) pays
+  (S\_T−K)\textsuperscript{+−(K−S\_T)}+=S\_T−K in every state. A payoff
+  S\_T−K at T is replicated today by one share and short K bonds, value
+  S\_0−Ke\^{}\{-rT\}. No-arbitrage ⇒ C\_0−P\_0=S\_0−Ke\^{}\{-rT\}. It is
+  model-free because it uses only the algebraic payoff identity, a
+  static portfolio, and a constant rate --- no assumption on the
+  dynamics of S.
+\item
+  Greeks: define Delta, Gamma, Theta. Show the BS PDE as an algebraic
+  identity linking them, and give the closed-form call Delta and Gamma.
+  \textbf{A.} Δ=∂V/∂S, Γ=∂²V/∂S², Θ=∂V/∂t. The BS PDE is literally
+  Θ+rSΔ+½σ²S²Γ=rV --- an algebraic relation tying the Greeks together
+  (they are not independent). For the call Δ=N(d\_1)∈(0,1) and
+  Γ=N'(d\_1)/(S\_0σ√T)\textgreater0.
+\item
+  List the five parameters the BS call price depends on and explain why
+  mu (the real-world drift) is not among them. \textbf{A.} The call
+  depends on S, K, T (or τ), r, σ. The physical drift μ is absent
+  because delta-hedging removes exposure to it (the μSV\_S terms
+  cancel), equivalently because under Q the drift is replaced by r. Risk
+  preferences are hedged away; only the cost of carry r and the
+  volatility σ matter.
+\end{enumerate}
+
+\hypertarget{lecture-03}{%
+\subsubsection{Lecture 03}\label{lecture-03}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  In the implied-volatility problem, which four inputs of the BS price
+  are known and which one is the unknown? Why is recovering σ a
+  root-find rather than a closed-form inversion? \textbf{A.} Known: τ,
+  K, r, S\_t (all observable). Unknown: σ. Recovering σ from C\^{}mkt is
+  a root-find of F(σ)=C\textsuperscript{BS(σ)−C}mkt=0 because σ sits
+  inside the nonlinear N(d\_1), N(d\_2); there is no algebraic inversion
+  of the normal CDF, so we iterate.
+\item
+  Prove vega = ∂C/∂σ = S0√T φ(d1) \textgreater{} 0 for σ\textgreater0.
+  Why does strict monotonicity of price in σ guarantee a unique implied
+  vol? \textbf{A.} Differentiating C=S\_tN(d\_1)−Ke\^{}\{-rτ\}N(d\_2)
+  and using the identity S\_tN'(d\_1)=Ke\^{}\{-rτ\}N'(d\_2) (from
+  N'(d\_1)/N'(d\_2)=e\^{}\{−ln(S/K)−rτ\} since d\_2=d\_1−σ√τ), the
+  ∂d\_1/∂σ terms cancel and Vega = Ke\^{}\{-rτ\}N'(d\_2)√τ = S\_t√τ
+  N'(d\_1) \textgreater{} 0. Strict positivity ⇒ C(σ) is strictly
+  increasing, hence a continuous bijection onto its range, so at most
+  one σ solves F(σ)=0.
+\item
+  State the admissible no-arbitrage price interval for a European call.
+  What happens to the implied vol as the market price approaches the
+  upper/lower bound? \textbf{A.} As σ→0⁺, C→max(S\_t−Ke\^{}\{-rτ\},0)
+  (intrinsic); as σ→∞, C→S\_t. So C is a bijection from {[}0,∞) onto
+  {[}max(S\_t−Ke\^{}\{-rτ\},0), S\_t). A quote at the lower bound forces
+  σ\^{}impl→0; a quote approaching the upper bound S\_t forces
+  σ\^{}impl→∞. A quote outside the band has no real implied vol
+  (static-arbitrage violation / stale quote).
+\item
+  Bisection vs Newton-Raphson for IV inversion: state the convergence
+  order of each and Newton's failure mode. Why is dividing by vega
+  dangerous deep OTM / short maturity? \textbf{A.} Bisection: linear,
+  rate ½ (one bit/step), globally fail-safe given a sign-changing
+  bracket. Newton σ\_\{n+1\}=σ\_n−F(σ\_n)/Vega(σ\_n): quadratic but only
+  local --- a poor start can overshoot, diverge, or step to negative σ.
+  Vega=S\_t√τN'(d\_1) is a Gaussian bump that →0 deep ITM/OTM and at
+  short τ; dividing by a near-zero vega makes the Newton step explode,
+  so the inversion is ill-conditioned in the wings.
+\item
+  Globalised Newton: why seed at the price-curve inflection point σ̂?
+  What property there makes Newton converge monotonically (no
+  overshoot)? \textbf{A.} ∂²C/∂σ² ∝ d\_1d\_2, which vanishes at
+  σ̂=√(2\textbar ln(S\_t/K)+rτ\textbar/τ): C is convex for σ\textless σ̂,
+  concave for σ\textgreater σ̂, so σ̂ is the inflection point and where
+  Vega=C' is \emph{maximal}. Starting there, the contraction ratio
+  1−F'(ξ)/F'(σ̂)∈(0,1) because F'(σ̂) is the maximum slope, so the first
+  step cannot overshoot the root; the iterates then stay on the monotone
+  (concave) side and converge monotonically and quadratically.
+\item
+  Put implied vol: why must a put and a call at the same (K,T) have the
+  same implied vol? Derive it from put-call parity. \textbf{A.} Parity
+  C−P=S\_t−Ke\^{}\{-rτ\} is σ-independent, so
+  P(σ)=C(σ)−(S\_t−Ke\^{}\{-rτ\}). Hence ∂P/∂σ=∂C/∂σ=Vega\textgreater0:
+  the put has the same vega and strict monotonicity. Since the market
+  call and put at (K,T) satisfy parity, the σ that reprices the call
+  also reprices the put --- one implied vol per (K,T).
+\item
+  Describe the implied-vol smile/skew in the strike direction and the
+  term structure in maturity. What market fact does each encode?
+  \textbf{A.} Strike direction: a \emph{smile} (convex U, high vol in
+  both tails) encodes excess kurtosis / heavy tails vs lognormal; a
+  \emph{skew/smirk} (decreasing in K, high vol for low-strike puts)
+  encodes negative skewness / crash risk, the typical equity-index
+  shape. Maturity direction (term structure): flat under constant σ;
+  under time-dependent σ(t), σ\^{}impl(T)²=(1/T)∫\_0\^{}T σ(t)²dt (RMS
+  average), so a rising instantaneous vol gives an upward-sloping term
+  structure. Generic surface: pronounced short-maturity smile flattening
+  to a milder long-maturity skew.
+\item
+  Why does constant-vol Black-Scholes fail to fit the whole surface?
+  State precisely what a single σ cannot reproduce. \textbf{A.} If BS
+  held, σ\^{}impl would be one constant for all (K,T) --- a flat plane.
+  The market surface is curved and tilted, so a single σ cannot
+  reproduce simultaneously the strike-direction smile/skew (heavy,
+  asymmetric tails) and the maturity term structure (vol clustering /
+  time-varying variance). Constant volatility and Gaussian returns are
+  the broken assumptions.
+\item
+  Distinguish implied vs local vs stochastic volatility: which is a
+  quoting convention, which is a deterministic σ(S,t), which adds its
+  own SDE? How does this motivate Heston (Lecture 7)? \textbf{A.}
+  Implied vol is a model-inversion \emph{output} --- a re-quoting of
+  price in BS units, one number per quote, saying nothing about true
+  dynamics. Local vol σ(S,t) is a deterministic \emph{input} surface
+  (Dupire) calibrated to fit the whole surface today. Stochastic vol
+  σ(W\^{}v,t) is a \emph{random} input with its own driving SDE (and
+  correlation ρ with spot). Implied describes the data, local fits it
+  deterministically, stochastic explains it --- Heston (random
+  mean-reverting variance, L7) generates smile/skew endogenously and is
+  the COS workhorse.
+\end{enumerate}
+
+\hypertarget{lecture-05}{%
+\subsubsection{Lecture 05}\label{lecture-05}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Derive the CRR up/down/probability parameters by matching the mean and
+  variance of the tree log-return to Black-Scholes. Show every step.
+  \textbf{A.} One step: ln(S/S\_0)=ln d + ln(u/d)·R,
+  R\textasciitilde Bernoulli(p). Mean = p ln u+(1−p)ln d, Var =
+  p(1−p)(ln(u/d))². Match to BS log-return over δt: mean=(r−½σ²)δt,
+  var=σ²δt. So p ln u+(1−p)ln d=(r−½σ²)δt and ln(u/d)=σ√δt/√(p(1−p)).
+  Closing with p=½ gives ln u−ln d=2σ√δt and ln u+ln d=2(r−½σ²)δt, hence
+  u=exp(σ√δt+(r−½σ²)δt), d=exp(−σ√δt+(r−½σ²)δt).
+\item
+  Why does the Itô-corrected drift r-½σ² (not r) appear inside u and d?
+  What exactly is being matched -- the price or the log-price?
+  \textbf{A.} The matching is on the \emph{log}-price increment, whose
+  risk-neutral mean is (r−½σ²)δt by Itô (d ln S=(r−½σ²)dt+σdW). So the
+  drift slot in u,d absorbs the Itô-corrected drift r−½σ², not r;
+  matching Var(ln S)=σ²δt reproduces the diffusion coefficient.
+\item
+  The moment equations give two equations in three unknowns (p,u,d).
+  Which free choice does the deck make, and how does that differ from
+  the classical d=1/u CRR tree? Do both match the first two moments?
+  \textbf{A.} Two equations, three unknowns ⇒ one free choice. The deck
+  picks p=½ (symmetric), giving the u,d above. Classical CRR instead
+  imposes d=1/u and solves for p, giving u=e\^{}\{σ√δt\},
+  d=e\^{}\{−σ√δt\}, p=(e\^{}\{rδt\}−d)/(u−d). Both match the first two
+  moments to O(δt); they differ only in the higher-order/free-parameter
+  choice.
+\item
+  State and justify the convergence rate of the binomial method. Why is
+  the convergence non-monotone (sign-oscillating in M)? What is the
+  mechanism? \textbf{A.} First order, \textbar error\textbar≤K/M, but
+  non-monotone (sign oscillates in M). Mechanism: the discrete terminal
+  nodes S\_n\^{}M straddle the strike K differently as M changes; the
+  position of K relative to the lattice wobbles irregularly, so the
+  payoff-region sampling error oscillates. This is why a raw tree cannot
+  be naively Richardson-extrapolated.
+\item
+  Write the FTCS stencil for u\_t=u\_xx, the explicit update, and the
+  matrix form U\^{}\{i+1\}=F U\textsuperscript{i+p}i. Why do boundary
+  terms appear only in the first and last entries of p\^{}i? \textbf{A.}
+  Forward time, central space:
+  (U\_j\textsuperscript{\{i+1\}−U\_j}i)/k=(U\_\{j+1\}\textsuperscript{i−2U\_j}i+U\_\{j−1\}\^{}i)/h²,
+  so
+  U\_j\textsuperscript{\{i+1\}=νU\_\{j+1\}}i+(1−2ν)U\_j\textsuperscript{i+νU\_\{j−1\}}i
+  with ν=k/h². In matrix form U\textsuperscript{\{i+1\}=FU}i+p\^{}i,
+  F=tridiag(ν,1−2ν,ν), p\^{}i=(νa, 0,\ldots,0, νb)\^{}T. Boundary terms
+  enter only the first and last entries because only the stencils at j=1
+  and j=N\_x−1 reach into the known boundary nodes U\_0, U\_\{N\_x\}.
+\item
+  Carry out the von Neumann analysis for FTCS. Derive ξ(β)=1-4ν
+  sin²(βh/2) and show the stability condition reduces to ν=k/h²≤½. Which
+  mode is worst? \textbf{A.} Insert U\_j\textsuperscript{i=ξ}i
+  e\^{}\{iβjh\}: ξ=1+ν(e\textsuperscript{\{iβh\}−2+e}\{−iβh\})=1−4ν
+  sin²(βh/2), using e\textsuperscript{\{iθ\}−2+e}\{−iθ\}=−4sin²(θ/2).
+  ξ≤1 automatically; the binding constraint ξ≥−1 gives 4ν sin²(βh/2)≤2.
+  The worst mode is the highest frequency βh=π (sin²=1), giving ν≤½,
+  i.e.~k≤h²/2.
+\item
+  Do the same for BTCS: derive ξ=1/(1+4ν sin²(βh/2)) and explain why
+  BTCS is unconditionally stable. \textbf{A.} Backward time evaluates
+  the space operator at the new level: ξ−1=−4νξ sin²(βh/2), so ξ=1/(1+4ν
+  sin²(βh/2)) ∈ (0,1{]} for every ν\textgreater0. Since
+  \textbar ξ\textbar≤1 for all modes and all k, there is no step
+  restriction --- BTCS is unconditionally stable. (CN, ξ=(1−2ν
+  sin²)/(1+2ν sin²), is likewise unconditionally stable.)
+\item
+  What is the CFL-type cost of FTCS's explicitness in terms of how k
+  must scale with h? Why is this expensive when refining the grid?
+  \textbf{A.} Stability forces k≤h²/2, so the time step scales
+  quadratically with the space step: halving h forces a fourfold cut in
+  k (and so \textasciitilde4× the time steps). Refining space therefore
+  makes explicit FTCS very expensive --- the cost of explicitness.
+  Implicit BTCS/CN avoid this with one tridiagonal solve per step.
+\item
+  Give the local truncation errors of FTCS, BTCS and Crank-Nicolson. Why
+  does CN gain an order in time while costing the same per step as BTCS?
+  \textbf{A.} FTCS: O(k)+O(h²); BTCS: O(k)+O(h²) (time term opposite
+  sign); CN: O(k²)+O(h²). CN is centred at the half time level i+½,
+  which by symmetry kills the leading O(k) term, leaving O(k²). It is
+  still one tridiagonal solve per step like BTCS, so it gains an order
+  in time at the same per-step cost --- hence preferred (caveat: it can
+  oscillate on non-smooth payoffs).
+\item
+  State the Lax equivalence theorem and explain its role: consistency +
+  stability ⇒ convergence. Why isn't consistency alone enough?
+  \textbf{A.} For a consistent linear finite-difference scheme of a
+  well-posed linear IVP, the scheme converges iff it is stable.
+  Consistency (truncation error →0) only says the scheme approximates
+  the PDE locally; without stability, errors (especially high-frequency
+  modes, \textbar ξ\textbar\textgreater1) are amplified each step and
+  blow up --- so the local approximation does not accumulate to a
+  convergent global solution. Stability bounds the error growth, and the
+  two together give convergence.
+\item
+  Transform the reverse-time BS PDE to a constant-coefficient equation
+  via X=ln S, then remove the reaction term via V=e\^{}\{-rτ\}W. Show
+  the coefficient algebra (S²∂\_SS=∂\_XX-∂\_X). \textbf{A.} X=ln S gives
+  ∂\_S=(1/S)∂\_X and ∂\_SS=(1/S²)(∂\_XX−∂\_X), so S²∂\_SS=∂\_XX−∂\_X and
+  S∂\_S=∂\_X. The reverse-time PDE V\_τ−½σ²S²V\_SS−rSV\_S+rV=0 becomes
+  V\_τ−½σ²V\_XX−(r−½σ²)V\_X+rV=0 (constant coefficients). Then
+  V=e\^{}\{-rτ\}W: V\_τ=e\^{}\{-rτ\}(W\_τ−rW), and the rV and −rW terms
+  cancel, leaving W\_τ−½σ²W\_XX−(r−½σ²)W\_X=0, a pure
+  advection--diffusion equation.
+\item
+  Show that applying BTCS to the log-transformed advection-diffusion
+  equation with the coupling h²=σ²k makes the centre node drop out,
+  yielding
+  V\textsuperscript{i\_j=e}\{-rk\}(p*V\^{}\{i+1\}\_\{j+1\}+(1-p*)V\textsuperscript{\{i+1\}\emph{\{j-1\}).
+  Derive p\emph{. \textbf{A.} BTCS on W\_τ=½σ²W\_XX+(r−½σ²)W\_X produces
+  the centre coefficient
+  (1/k)W\_j\textsuperscript{\{i+1\}−(σ²/h²)W\_j}\{i+1\}. With the
+  coupling h²=σ²k, σ²/h²=1/k, so the two centre terms cancel and only
+  the j±1 neighbours survive:
+  W\_j\textsuperscript{i=p\emph{W\_\{j+1\}\^{}\{i+1\}+(1−p})W\_\{j−1\}}\{i+1\}.
+  Collecting the up-coefficient (diffusion 1/2k plus convection
+  (r−½σ²)/2h) and using h=σ√k gives p}=½(1+(r−½σ²)√k/σ). Restoring
+  V=e\^{}\{-rτ\}W multiplies one τ-step by e\^{}\{-rk\}:
+  V\_j\textsuperscript{i=e}\{-rk\}(p\emph{V\_\{j+1\}\^{}\{i+1\}+(1−p})V}\{j−1\}}\{i+1\}).
+\item
+  In what precise sense is the binomial method ``an explicit FD scheme
+  customised to a single time-zero value''? What does a general FD
+  scheme give that the tree throws away? \textbf{A.} The recursion above
+  is exactly the risk-neutral binomial backward step (up-prob p\emph{,
+  log-spacing ±σ√k), i.e.~an explicit FD scheme on the transformed heat
+  equation, ``customised'' via h²=σ²k so the centre node drops out and
+  only the two branches remain. The tree returns only V\_0\^{}0 (one
+  spot). A general FD scheme returns the value at }every* grid node
+  \{jh,ik\}, hence prices for all initial spots at once --- that
+  whole-grid information is what the tree discards.
+\item
+  On the raw S-grid the FTCS diffusion weight is ½kσ²j². What does this
+  do to stability near S=L, and how does working in x=ln S fix it?
+  Connect this to domain-truncation pitfalls (cf.~the COS {[}a,b{]}
+  range at small c\_2). \textbf{A.} The weight ½kσ²j² grows like j², so
+  the effective stability condition σ²j²k\textless\textasciitilde1 is
+  hardest at the largest j (S near the truncation L): stability degrades
+  quadratically near the upper boundary. Working in x=ln S makes the PDE
+  constant-coefficient, so the stencil weight is uniform and this
+  blow-up disappears. Both are the same lesson as the COS {[}a,b{]}
+  trap: a method on a finite window is only as good as the window --- FD
+  truncates the state space, COS truncates the Fourier-cosine range, and
+  at small c\_2=σ²T that COS window collapses just as the FD domain must
+  be chosen to hold all the mass.
+\item
+  The deck's Slide 57 prints a garbled p* formula. Why is it wrong, and
+  what is the correct dimensionless form p\emph{=½(1+(r-σ²/2)√k/σ)?
+  Check the k→0 limit. \textbf{A.} The slide prints ½(1+√k/σ·r−σ²),
+  which is dimensionally inconsistent (the −σ² is not scaled and a
+  factor is missing). The correct algebra gives p}=½(1+(r−½σ²)√k/σ),
+  which is dimensionless (the √k/σ carries units that cancel). As k→0
+  the correction →0 and p*→½, consistent with the symmetric p=½ choice
+  of the moment-matched tree. Treat the slide as a transcription error.
+\end{enumerate}
+
+\hypertarget{cluster-2-monte-carlo}{%
+\subsection{Cluster 2 --- Monte Carlo}\label{cluster-2-monte-carlo}}
+
+\hypertarget{lecture-04}{%
+\subsubsection{Lecture 04}\label{lecture-04}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Construct the MC integral estimator and prove it is unbiased. Derive
+  Var(X̄\_N)=σ²/N from independence and state the standard error.
+  \textbf{A.} Write I=∫h g dx=E\_g{[}h(X){]}, estimate by
+  X̄\_N=(1/N)Σh(x\_i), x\_i\textasciitilde g i.i.d. Unbiased:
+  E{[}X̄\_N{]}=(1/N)ΣE{[}h(X){]}=I. Variance:
+  Var(X̄\_N)=(1/N²)ΣVar(X\_i)=(1/N²)·Nσ²=σ²/N (cross-covariances vanish
+  by independence). Standard error se=σ/√N=O(N\^{}\{-1/2\}).
+\item
+  Why is the MC error O(N\^{}\{-1/2\}) independent of dimension, while
+  tensor-product quadrature is O(N\^{}\{-k/d\})? When does MC win?
+  \textbf{A.} The CLT rate se=σ/√N depends only on the number of samples
+  N and the variance σ², not on the dimension d --- sampling a
+  high-dimensional density is no harder per draw. Tensor-product
+  quadrature of order k uses N=m\^{}d points (m per axis) for
+  O(m\textsuperscript{\{−k\})=O(N}\{−k/d\}), which degrades as d grows
+  (curse of dimensionality). MC wins in high dimension: baskets, many
+  time steps, path-dependent payoffs.
+\item
+  Write a CLT-based confidence interval for the MC estimate. Why use the
+  sample variance s\_N² with (N-1), and what does it cost? \textbf{A.}
+  By the CLT (X̄\_N−I)/(σ/√N)→N(0,1), so a (1−α) CI is X̄\emph{N ±
+  z}\{1−α/2\}·σ/√N (z=1.96 for 95\%). σ is unknown, so use
+  s\_N²=(1/(N−1))Σ(X\_i−X̄\_N)²; the N−1 (Bessel) makes it an
+  \emph{unbiased} variance estimate, at the cost of one degree of
+  freedom (negligible for large N). The reported half-width z·s\_N/√N is
+  exactly what variance reduction tries to shrink.
+\item
+  State the Koksma-Hlawka inequality (star discrepancy + Hardy-Krause
+  variation). Why can QMC achieve near-O(N\^{}\{-1\}) = (log N)\^{}d/N?
+  \textbf{A.} \textbar(1/N)Σf(x\_i)−∫f\textbar{} ≤ V(f)·D\_N\^{}\emph{,
+  where V(f) is the Hardy--Krause variation (integrand roughness,
+  independent of points) and D\_N\^{}} is the star discrepancy
+  (worst-case box gap, independent of f). A low-discrepancy sequence
+  (Sobol, Halton) has D\_N\^{}*=O((log N)\^{}d/N), so for
+  bounded-variation f the deterministic QMC error is O((log N)\^{}d/N)
+  --- essentially O(N\^{}\{−1\}), a full power faster than plain MC's
+  O(N\^{}\{−1/2\}).
+\item
+  What is ``effective dimension'' and why can plain QMC degrade in high
+  nominal dimension? What does randomised QMC recover? \textbf{A.} The
+  (log N)\^{}d factor is enormous for large d, so the QMC advantage only
+  shows at impractical N unless the \emph{effective} dimension (how much
+  each coordinate actually matters) is low --- Brownian-bridge / PCA
+  path constructions lower it and make QMC work for option pricing.
+  Plain QMC is deterministic, giving no error estimate; randomised QMC
+  (e.g.~random shifts of a lattice rule) restores an unbiased estimator
+  and lets you estimate the error from independent shifts while keeping
+  most of the discrepancy gain.
+\item
+  Write the Euler-Maruyama scheme for dX=a dt+b dW. What iterated Itô
+  integral does it drop? \textbf{A.}
+  X̂\emph{\{t\_k\}=X̂}\{t\_\{k−1\}\}+a(t\_\{k−1\},X̂)h+b(t\_\{k−1\},X̂)√h
+  Z\_k, Z\_k\textasciitilde N(0,1), freezing coefficients at the left
+  endpoint (Itô convention). It drops the iterated Itô integral ∫∫dW
+  dW=½{[}(ΔW)²−h{]}, i.e.~the variation of b \emph{within} the step ---
+  the leading correction that Milstein restores.
+\item
+  Derive the Milstein correction from the Itô-Taylor expansion: show
+  ∫∫dW dW = ½{[}(ΔW)²-h{]} and the resulting ½bb'{[}(ΔW)²-h{]} term.
+  \textbf{A.} Expand σ(X\_u) by Itô around X\_s: dσ(X\_t)=\ldots dt+σ'σ
+  dW, so σ(X\_u)=σ(x)+σ'(x)σ(x)∫dW+O(dt). Substituting into ∫σ dW gives
+  the extra term σ'σ·∫\_s\^{}\{t\_k\}∫\_s\^{}u dW\_r dW\_u. The inner
+  integral is ∫(W\_u−W\_s)dW\_u=½{[}(ΔW)²−h{]}. So the update gains
+  ½σσ'{[}(ΔW)²−h{]}=½bb'(Z²−1)h. It vanishes for additive noise (b
+  constant), where Euler already has strong order 1.
+\item
+  Define strong vs weak convergence order. Give the orders for Euler
+  (½,1) and Milstein (1,1). Why does Milstein buy pathwise but not
+  distributional accuracy? \textbf{A.} Strong order β:
+  E\textbar X̂\_\{Kh\}−X\_T\textbar≤ch\^{}β (pathwise, same Brownian
+  path). Weak order β:
+  \textbar E{[}f(X̂\_\{Kh\}){]}−E{[}f(X\_T){]}\textbar≤ch\^{}β for smooth
+  f (laws only). Euler: strong ½, weak 1; Milstein: strong 1, weak 1.
+  Milstein improves the \emph{strong} (pathwise) rate but has the same
+  weak rate as Euler --- so for a European price E{[}f(X\_T){]} it buys
+  nothing distributionally; it matters for path-dependent payoffs and
+  for coupling coarse/fine levels (multilevel MC) where pathwise
+  accuracy is used.
+\item
+  Antithetic variates: derive the variance of the antithetic estimator
+  and state the monotonicity/comonotonicity condition for it to help.
+  \textbf{A.} Pair each draw U with its reflection 1−U:
+  Î=(1/M)Σ½(f(U\_i)+f(1−U\_i)), unbiased. Per pair,
+  Var(½(f(U)+f(1−U)))=½Var(f(U))+½Cov(f(U),f(1−U)). Comparing with the
+  plain estimator on the same 2M evaluations, antithetic wins iff
+  Cov(f(U),f(1−U))\textless0, which is guaranteed when f is monotone (by
+  the FKG/correlation lemma: f increasing ⇒ −f(1−·) increasing ⇒
+  Cov(f(U),f(1−U))≤0). It can backfire for strongly non-monotone payoffs
+  (e.g.~a straddle).
+\item
+  Control variates: derive the optimal coefficient
+  θ\emph{=Cov(X,Y)/Var(Y) and show the variance is reduced by (1-ρ²).
+  What is a good control for an Asian option? \textbf{A.} With
+  Z\_θ=X+θ(E{[}Y{]}−Y), E{[}Z\_θ{]}=E{[}X{]} for all θ (unbiased),
+  Var(Z\_θ)=Var(X)−2θCov(X,Y)+θ²Var(Y). Minimising the quadratic gives
+  θ}=Cov(X,Y)/Var(Y), and substituting,
+  Var(Z\_\{θ\emph{\})=(1−ρ²\_\{XY\})Var(X). The reduction is dramatic
+  when \textbar ρ\textbar{} is near 1. For an arithmetic-average Asian
+  (no closed form), use the }geometric*-average Asian (closed form for
+  equally spaced fixings) as control --- the two payoffs are nearly
+  perfectly correlated path by path (Kemna--Vorst).
+\item
+  Importance sampling: write the likelihood-ratio estimator and the
+  Gaussian drift-shift. What is the infinite-variance pitfall, and how
+  does Girsanov connect? \textbf{A.} Sample from a proposal q and
+  reweight: E\_p{[}f(X){]}=E\_q{[}f(X)p(X)/q(X){]}, estimator
+  (1/N)Σf(X\_i)p(X\_i)/q(X\_i), X\_i\textasciitilde q, with p/q the
+  likelihood ratio (dp/dq). Gaussian shift X=Z+θ:
+  V=E{[}f(Z+θ)exp(−θᵀZ−½‖θ‖²){]}, moving mass into the payoff region
+  (e.g.~so S\_T\textgreater K is typical for a deep-OTM call). Pitfall:
+  a proposal with too-light tails makes p/q blow up and the estimator
+  has \emph{infinite variance} --- worse than plain MC; IS is the only
+  one of the four that can backfire catastrophically. In continuous time
+  the reweighting is exactly Girsanov: shifting the drift of W by Y\_s
+  corresponds to the density process exp(∫Y dW−½∫Y²ds).
+\item
+  Why is MC the benchmark that COS and FFT are compared against, and on
+  what axes (rate, dimension, smoothness) does COS dominate for European
+  options? \textbf{A.} MC is unbiased by construction and
+  dimension-robust, so it is the brute-force reference: a fast method is
+  ``right'' if it agrees with the MC price to within the CLT standard
+  error. For a 1-D European under a model with known smooth
+  characteristic function, COS converges \emph{exponentially} in the
+  number of cosine terms, vs MC's O(N\^{}\{−1/2\}) and FFT's algebraic
+  quadrature rate --- reaching machine precision with a few hundred
+  terms where MC needs \textasciitilde10\^{}\{12\} paths. MC still wins
+  on high-dimensional baskets and path-dependent payoffs with no
+  transform structure.
+\end{enumerate}
+
+\hypertarget{cluster-3-fourier-cos}{%
+\subsection{Cluster 3 --- Fourier / COS}\label{cluster-3-fourier-cos}}
+
+\begin{quote}
+COS-specific drilling lives in \texttt{cos-deep-dive.md}. This section
+holds the surrounding Fourier-family theory from Lecture 6 that Fang can
+ask ``around'' COS.
+\end{quote}
+
+\hypertarget{lecture-6-the-fourier-family-around-cos}{%
+\subsubsection{Lecture 6 --- the Fourier family (around
+COS)}\label{lecture-6-the-fourier-family-around-cos}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  State the continuous Fourier transform and its inverse. Which
+  scaling/sign convention did the slides use, and why does the
+  convention not matter for the method? \textbf{A.} One convention:
+  f̂(ω)=∫f(x)e\^{}\{i2πωx\}dx, f(x)=(1/2π)∫f̂(ω)e\^{}\{−i2πωx\}dω. The
+  slides place the 2π and sign so that the characteristic function φ\_X
+  is (up to that 2π-scaling) the Fourier transform of the density. The
+  convention does not matter for COS because only internal consistency
+  is needed --- COS reads cosine coefficients off φ at the grid
+  frequencies k π/(b−a), and any consistent choice gives the same A\_k.
+\item
+  Define the characteristic function φ\_X(t). In what precise sense is
+  it the ``Fourier dual'' of the density f\_X? Write the inversion
+  formula f\_X(x) = (1/2π)∫ e\^{}\{-itx\} φ\_X(t) dt. \textbf{A.}
+  φ\_X(t)=E{[}e\^{}\{itX\}{]}=∫e\^{}\{itx\}f\_X(x)dx --- this \emph{is}
+  the Fourier transform of the density (up to the 2π convention), so
+  f\_X and φ\_X are a Fourier pair. The inversion is
+  f\_X(x)=(1/2π)∫e\^{}\{−itx\}φ\_X(t)dt. This is exactly the integral
+  COS evaluates cheaply, without quadrature.
+\item
+  Why are characteristic-function methods attractive at all? Name four
+  models whose ch.f. is known in closed form but whose density is not.
+  \textbf{A.} Because for a huge class of models the density f is
+  intractable but the characteristic function φ is known in closed (or
+  semi-closed) form, and a method needing only φ inherits that whole
+  library for free. Examples: Heston, Variance-Gamma, Merton/Kou
+  jump-diffusions (and the affine jump-diffusions generally), CGMY/NIG
+  Lévy models.
+\item
+  Write the DFT and inverse DFT. What does the FFT change about the
+  cost, from what to what, and by what factorisation idea? Does COS use
+  the FFT? \textbf{A.} DFT X\_k=Σ\_n x\_n e\^{}\{i2πkn/N\}, inverse
+  x\_n=(1/N)Σ\_k X\_k e\^{}\{−i2πkn/N\}. Naively O(N²); the FFT
+  factorises the DFT matrix into O(log N) sparse factors (radix-2 split
+  into even/odd sub-DFTs of length N/2), giving O(N log N). European COS
+  does \emph{not} use the FFT --- its cost is the bare O(N) evaluation
+  of one cosine sum (the FFT returns only for the
+  discrete-barrier/Bermudan recursions).
+\item
+  Derive the half-range cosine series from the full Fourier series via
+  the even extension. Why does the even extension kill the sine terms?
+  \textbf{A.} A function on {[}0,L{]} has a full Fourier series with sin
+  and cos terms. Extending it \emph{evenly} to {[}−L,L{]} makes it an
+  even function; since sin is odd, all sine coefficients b\_n=(2/L)∫f
+  sin vanish, leaving the half-range cosine series f(x)=a\_0/2+Σ a\_n
+  cos(nπx/L), a\_n=(2/L)∫\_0\^{}L f cos(nπx/L)dx. COS uses this on
+  {[}a,b{]} (shift x↦x−a, period 2(b−a)); the cosine basis gives real
+  coefficients read directly off φ.
+\item
+  Carr--Madan: why is the undamped call C\_T(k) not square-integrable in
+  log-strike k? What is the role of the damping factor e\^{}\{αk\}, and
+  what is the cost of having a free parameter α? \textbf{A.} As k=ln
+  K→−∞, C\_T(k)→S\_0 (a nonzero constant), so C\_T is not in L¹/L² and
+  cannot be Fourier-transformed directly. Damping
+  c\_T(k)=e\^{}\{αk\}C\_T(k) with α\textgreater0 makes it integrable so
+  its Fourier transform exists. The cost is the free parameter α: it has
+  no canonical value, its choice affects accuracy/stability, and it must
+  be tuned. COS needs no such parameter (the range comes from
+  cumulants).
+\item
+  Carr--Madan: ψ\_T(v) = e\^{}\{-rT\} φ\_X(v-(α+1)i) /
+  (α²+α-v²+i(2α+1)v). Why is it a selling point that ψ\_T is expressible
+  through the ch.f.? How is the price recovered, and by what numerical
+  tool? \textbf{A.} Because the transform of the damped call ψ\_T is
+  written purely through φ\_X (evaluated at the shifted complex argument
+  v−(α+1)i), the whole library of models with known φ is immediately
+  available --- no density needed. The price is recovered by the inverse
+  transform C\_T(k)=(e\textsuperscript{\{−αk\}/2π)∫e}\{−ivk\}ψ\_T(v)dv,
+  evaluated numerically by the FFT (a trapezoidal-type quadrature of an
+  oscillatory integrand). The two weaknesses vs COS: it still does a
+  numerical \emph{integration}, and it needs α.
+\item
+  Contrast COS and Carr--Madan on: core operation, free parameters,
+  convergence rate for smooth f, and number of terms to reach machine
+  precision. \textbf{A.} COS: one O(N) cosine sum, no integration;
+  \emph{no} free parameter (range from cumulants); exponential
+  convergence for smooth f; dozens--hundreds of terms to machine
+  precision; analytic Greeks from the same sum. Carr--Madan/FFT: an FFT
+  quadrature O(N log N); free damping α to tune; algebraic
+  (quadrature-limited) convergence; thousands of nodes for far worse
+  accuracy. Both need only φ.
+\item
+  Give the BS log-price characteristic function and state the
+  risk-neutral drift μ = r - ½σ². Where does the martingale condition
+  fix μ? \textbf{A.} φ(u)=exp(iuμT−½σ²u²T) with μ=r−½σ² for
+  X\_T=ln(S\_T/S\_0). The drift is fixed by the martingale condition
+  that e\^{}\{−rt\}S\_t be a Q-martingale: with S\_T=S\_0 exp(μT+σW\_T),
+  E{[}e\^{}\{−rT\}S\_T{]}=S\_0 requires
+  e\textsuperscript{\{μT\}E{[}e\^{}\{σW\_T\}{]}=e}\{rT\}, i.e.~μ+½σ²=r,
+  so μ=r−½σ². (This is the same −½σ² Itô correction as in d ln S.)
+\end{enumerate}
+
+\hypertarget{lecture-10-barrier-options-theory-around-cos}{%
+\subsubsection{Lecture 10 --- barrier options (theory around
+COS)}\label{lecture-10-barrier-options-theory-around-cos}}
+
+\begin{quote}
+Deep COS-for-barrier drilling is in \texttt{cos-deep-dive.md} (sets
+H--K). These are the surrounding theory items.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{9}
+\tightlist
+\item
+  Name the 8 barrier types and explain why exactly 8. State in--out
+  parity and its uses. \textbf{A.} up/down × in/out × call/put = 2×2×2 =
+  8: up-and-out call, up-and-in call, down-and-out call, down-and-in
+  call, and the four put analogues. In--out parity: knock-in + knock-out
+  (same K,B,T) = vanilla, because exactly one of the two is alive at
+  maturity --- C\_in(t)+C\_out(t)=e\^{}\{−r(T−t)\}E{[}(S\_T−K)\^{}+{]}.
+  Uses: price the easier one (usually the knock-out) plus the vanilla
+  and back out the other by subtraction; and a free correctness check on
+  any numerical barrier price.
+\item
+  Write the barrier price as (i) a first-passage expectation and (ii) a
+  localized Feynman--Kac PDE. How does the barrier enter the PDE?
+  \textbf{A.} (i)
+  V(x,t)=e\^{}\{−r(T−t)\}E\_\{x\}{[}(α(e\textsuperscript{\{X\_T\}−K))}+·1\_\{τ\_B\textgreater T\}{]}
+  --- discounted vanilla payoff times a survival indicator. (ii) On
+  {[}a,b{]}, V solves the localized BS PDE
+  V\_t+(r−½σ²)V\_x+½σ²V\_xx−rV=0 with terminal data the vanilla payoff
+  and \emph{absorbing (Dirichlet) boundary} V=0 at the knock-out
+  level(s). The barrier enters not through the equation but through the
+  homogeneous boundary condition: hitting the barrier sets value to
+  zero.
+\item
+  State and prove the reflection principle result P(τ\_a ≤ T) = 2P(W\_T
+  ≥ a). Hence write the density of the running maximum. \textbf{A.} By
+  the strong Markov property at τ\_a and BM symmetry, a path that has
+  touched a is equally likely to end above or below a:
+  P(W\_T≥a\textbar τ\_a≤T)=½. So
+  P(τ\_a≤T)=P(τ\_a≤T,W\_T≥a)+P(τ\_a≤T,W\_T\textless a)=2P(τ\_a≤T,W\_T≥a)=2P(W\_T≥a)
+  (since reaching W\_T≥a forces τ\_a≤T). Hence the running max Ξ=max W
+  has the law of \textbar W\_T\textbar, with density
+  p\_Ξ(a)=√(2/πT)·e\^{}\{−a²/2T\}, a≥0.
+\item
+  Derive the joint density of (running max, W\_T). Why does the
+  reflection at level 2a−b appear? \textbf{A.} Reflect the path after
+  τ\_a across level a: for b≤a, P(Ξ≥a, W\_T\textless b)=P(Ξ≥a,
+  W\_T\textgreater2a−b)=P(W\_T\textgreater2a−b) (since 2a−b≥a forces the
+  max to exceed a). Differentiating the tail
+  P(Ξ\textgreater a,W\_T≤b)=P(W\_T≥2a−b) twice gives
+  p\_\{Ξ,W\_T\}(a,b)=√(2/π)·((2a−b)/T\textsuperscript{\{3/2\})·e}\{−(2a−b)²/2T\},
+  a≥max(b,0). The 2a−b is the mirror image of the endpoint b reflected
+  across the barrier a --- the reflected path's terminal point. (Drift
+  is handled by a Girsanov reweighting.)
+\item
+  Method of images: state U(S,t) = S\^{}\{2α\}V(B²/S,t), α = ½(1−2r/σ²),
+  and the down-and-out call it gives. \textbf{A.} One checks directly
+  that if LV=0 then the image U(S,t)=S\^{}\{2α\}V(B²/S,t), α=½(1−2r/σ²),
+  also solves LV=0 --- the BS analogue of reflecting a heat-equation
+  solution across a wall. Subtracting it with the right weight cancels
+  the value on S=B, giving the down-and-out call
+  C\_DO(S\_t,K)=C\_van(S\_t,K)−(S\_t/B)\^{}\{2α\}C\_van(B²/S\_t,K): the
+  vanilla minus the image evaluated at the mirror spot B²/S\_t with
+  weight (S\_t/B)\^{}\{2α\}, which removes exactly the barrier-crossing
+  paths.
+\item
+  Sine-series PDE route: what substitution turns the localized BS PDE
+  into the heat equation, and why the sine (not cosine) basis?
+  \textbf{A.} With τ=½σ²(T−t), κ=2r/σ², V=e\^{}\{αx+βτ\}U, α=−½(κ−1),
+  β=−α²−κ, z=x−a, the localized BS PDE becomes the heat equation
+  U\_τ=U\_zz on {[}0,b−a{]} with U(0,τ)=U(b−a,τ)=0. The homogeneous
+  \emph{Dirichlet} (zero) boundary conditions select the \emph{sine}
+  basis (sin(nπz/(b−a)) vanishes at both ends, cos does not); each mode
+  propagates by e\^{}\{−(nπ/(b−a))²τ\}. This is the structural precursor
+  of COS --- but the propagator is the explicit heat semigroup, whereas
+  COS uses φ and so generalises to any model.
+\item
+  Why is a discretely-monitored barrier a backward recursion? Where does
+  the Markov property enter, and why does the FFT reappear (vs European
+  COS)? \textbf{A.} Survival is a product of indicators
+  ∏1\_\{x\_m\textless h\}, and by the Markov property the joint density
+  factorises into one-step transitions
+  f(x\_M\textbar x\_\{M−1\})\ldots f(x\_1\textbar x\_0), so the
+  M-dimensional integral \emph{nests} into a backward recursion: at each
+  date c(x,t\_\{m−1\})=e\^{}\{−rΔt\}∫v(y,t\_m)f(y\textbar x)dy
+  (European-COS form), then knock out by overwriting v=R above h, which
+  splits the coefficient V\_k at h. The split feeds the previous V\_j
+  through an analytic coupling M\_\{k,j\} that is Hankel-plus-Toeplitz,
+  i.e.~a discrete convolution --- so each step is done by FFT in O(N log
+  N), overall O((M−1)N log₂N). European COS needs no FFT (single O(N)
+  sum); the barrier needs the whole coefficient vector propagated every
+  step, which is the convolution the FFT accelerates.
+\end{enumerate}
+
+\hypertarget{cluster-4-models-heston-jumps}{%
+\subsection{Cluster 4 --- Models (Heston /
+jumps)}\label{cluster-4-models-heston-jumps}}
+
+\hypertarget{lecture-07}{%
+\subsubsection{Lecture 07}\label{lecture-07}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Write down the Heston SDE system under Q, naming every parameter, and
+  state what dW\^{}S dW\^{}v = rho dt means physically. \textbf{A.}
+  dS\_t=rS\_t dt+√ν\_t S\_t dW\^{}S\_t, dν\_t=κ(ν̄−ν\_t)dt+γ√ν\_t
+  dW\^{}ν\_t, with dW\^{}S dW\^{}ν=ρ dt. Here ν\_t is the instantaneous
+  \emph{variance} (vol is √ν\_t), ν̄ the long-run variance,
+  κ\textgreater0 the mean-reversion speed, γ\textgreater0 the vol-of-vol
+  (smile curvature), ρ the spot/variance correlation (skew slope).
+  dW\^{}S dW\^{}ν=ρ dt means shocks to price and to variance are
+  instantaneously correlated; ρ\textless0 (the leverage effect) means
+  down-moves in S come with up-moves in variance, steepening the skew.
+\item
+  Derive the log-spot form d ln S\_t and show how the Cholesky factor
+  decorrelates the two Brownian motions into independent W\^{}S, W\^{}v.
+  \textbf{A.} Itô on ln S with (dS/S)²=ν dt: d ln S\_t=(r−½ν\_t)dt+√ν\_t
+  dW\^{}S\_t. For Σ={[}{[}1,ρ{]},{[}ρ,1{]}{]}=LLᵀ,
+  L={[}{[}1,0{]},{[}ρ,√(1−ρ²){]}{]}, write the correlated pair via
+  independent (W̃\_1,W̃\_2): W\^{}S=W̃\_1, W\^{}ν=ρW̃\_1+√(1−ρ²)W̃\_2, which
+  checks Cov(W\textsuperscript{S,W}ν)=ρt. Equivalently, driving the
+  variance by its own clean W\^{}ν, the log-spot diffusion becomes
+  √ν\_t(ρ dW\textsuperscript{ν+√(1−ρ²)dW}⊥) with W\textsuperscript{ν⊥W}⊥
+  --- the form used for Euler and the affine derivation.
+\item
+  State the conditional law of nu\_T given nu\_t (noncentral
+  chi-squared): give d, the noncentrality lambda, and the scaling c.
+  \textbf{A.} ν\_T\textbar ν\_t \textasciitilde{} Y/(2c) with
+  Y\textasciitilde χ*²\_d(λ) noncentral chi-squared,
+  c=2κ/(γ²(1−e\^{}\{−κτ\})), τ=T−t, degrees of freedom d=4κν̄/γ²,
+  noncentrality λ=2c e\^{}\{−κτ\}ν\_t. So the variance is exactly a
+  scaled noncentral χ² --- this is what the Broadie--Kaya exact scheme
+  samples.
+\item
+  State the Feller condition precisely. What exactly does it guarantee,
+  and what happens to nu\_t when it is violated? \textbf{A.} Feller: 2κν̄
+  ≥ γ². It guarantees the origin is inaccessible --- ν\_t stays strictly
+  positive a.s. If violated, ν\_t can reach 0 (and reflects/leaves again
+  for the pure CIR process), but it never goes negative. Practically the
+  exact noncentral-χ² scheme is guaranteed well-defined (d\textgreater0)
+  under Feller.
+\item
+  Derive the Feller condition from the noncentral chi-squared density
+  blowing up at zero (use I\_nu(y) \textasciitilde{} (y/2)\^{}nu /
+  Gamma(nu+1) as x-\textgreater0). \textbf{A.} The noncentral χ² density
+  ∝ x\^{}\{d/4−1/2\}I\_\{d/2−1\}(√(λx)). As x→0,
+  I\_\{d/2−1\}(√(λx))\textasciitilde(√(λx)/2)\^{}\{d/2−1\}/Γ(d/2), so
+  the density behaves like
+  x\textsuperscript{\{d/4−1/2\}·x}\{(d/2−1)/2\}=x\^{}\{d/2−1\}. For it
+  not to blow up at the origin we need d/2−1≥0, i.e.~d=4κν̄/γ²≥2, which
+  is 2κν̄≥γ² --- the Feller condition. A large γ relative to the
+  restoring force κν̄ makes excursions to zero likely.
+\item
+  Is the Heston model affine in (S, nu)? Show why not, then show how
+  moving to ln S restores the affine condition (give K0, K1, H0, H1).
+  \textbf{A.} Not affine in (S,ν): the diffusion covariance has top-left
+  entry νS², not affine in the state. Switching to x=ln S, the drift
+  becomes K0=(r, κν̄)ᵀ + K1·(x,ν)ᵀ with K1={[}{[}0,−½{]},{[}0,−κ{]}{]}
+  (affine), and σσᵀ=ν·{[}{[}1,γρ{]},{[}γρ,γ²{]}{]}, i.e.~H0=0 and H1 the
+  tensor whose ν-slice is {[}{[}1,γρ{]},{[}γρ,γ²{]}{]} and x-slice is 0
+  --- affine in ν. So in log-coordinates Heston is affine and the
+  Duffie--Pan--Singleton transform applies.
+\item
+  Set up the affine ansatz phi = exp(alpha + beta·x) and derive the
+  Riccati ODE system. Where does each ODE come from when you substitute
+  into the Feynman-Kac PDE? \textbf{A.} Feynman--Kac: φ solves
+  ∂\emph{tφ+Lφ−Rφ=0, φ(T,x)=e\^{}\{u·x\}. Substituting φ=e\^{}\{α+β·x\}
+  gives ∂}\{x\_i\}φ=β\_iφ, ∂\_\{x\_ix\_j\}φ=β\_iβ\_jφ, ∂\_tφ=(α̇+β̇·x)φ.
+  Dividing by φ and using that μ, σσᵀ, R are affine in x, collect terms:
+  the part \emph{linear} in x must vanish, giving β̇=ρ\_1−K\_1ᵀβ−½βᵀH\_1β
+  (the Riccati ODE); the part \emph{constant} in x gives
+  α̇=ρ\_0−K\_0·β−½βᵀH\_0β. Boundary conditions β(T,T)=u, α(T,T)=0.
+  Affineness is what lets the x-dependence separate cleanly.
+\item
+  Solve the scalar CIR Riccati dot-beta = -kappa beta + (1/2) gamma\^{}2
+  beta\^{}2 explicitly via g = 1/beta. Then integrate for alpha.
+  \textbf{A.} Set g=1/β; then ġ=−β̇/β²=κg−½γ², a linear ODE. With
+  integrating factor e\^{}\{−κt\}: d(g
+  e\textsuperscript{\{−κt\})=−½γ²e}\{−κt\}dt, so
+  g(t)=e\textsuperscript{\{κt\}(g(0)−γ²(1−e}\{−κt\})/(2κ)), g(0)=1/u.
+  Inverting, β(t)=u e\^{}\{−κt\}/(1−½uγ²ξ\_κ(t)) with
+  ξ\_κ(t)=(1−e\^{}\{−κt\})/κ. Then α̇=κν̄β integrates (since
+  e\^{}\{−κs\}=ξ\_κ') to α(t)=−(2κν̄/γ²)ln(1−½uγ²ξ\_κ(t)). This is the
+  same Riccati mechanism behind the full Heston cf.
+\item
+  Write the closed-form Heston cf of ln S\_T: give b, a, s and the
+  formulas for beta(tau,u) and alpha(tau,u). \textbf{A.} With b=γρu−κ,
+  a=u(1−u), s=√(b²+aγ²):
+  β(τ,u)=a(1−e\textsuperscript{\{−sτ\})/(2s−(s+b)(1−e}\{−sτ\})),
+  α(τ,u)=−rτ+ruτ−κν̄{[}(s+b)τ/γ²+(2/γ²)ln(1−((s+b)/2s)(1−e\^{}\{−sτ\})){]}.
+  Then φ\_\{ln S\_T\}(ω;τ)=exp(α(τ,iω)+iω ln S\_t+β(τ,iω)ν\_t). This is
+  the load-bearing object COS consumes.
+\item
+  Explain the ``little Heston trap'': what goes wrong at long
+  maturities, what causes it (branch cut of complex log / sqrt), and
+  which grouping fixes it? \textbf{A.} The cf involves a complex √ (s)
+  and complex log, which are multi-valued. The original Heston (1993)
+  grouping (with g=(b+s)/(b−s) and e\^{}\{+sτ\}) repeatedly crosses the
+  principal branch cut of ln as τ grows, making the integrand
+  discontinuous and giving wildly wrong long-maturity prices. The
+  algebraically equivalent ``little trap'' grouping (Albrecher et
+  al.~2007) --- written with e\^{}\{−sτ\} and
+  1−((s+b)/2s)(1−e\^{}\{−sτ\}), the form above, taking the principal √
+  with non-negative real part --- stays on the principal branch and is
+  stable for all τ.
+\item
+  How does the Heston cf enter the COS pricing formula? At which
+  frequencies is it evaluated, and why is Heston the ideal use case for
+  COS? \textbf{A.} The Heston φ is the \emph{only} model-specific input
+  to the COS formula v≈e\^{}\{−rτ\}Σ'
+  Re\{φ(kπ/(b−a))e\^{}\{−ikπa/(b−a)\}\}V\_k, evaluated at the COS
+  frequencies ω\_k=kπ/(b−a) (the V\_k are the model-free payoff
+  coefficients). Heston is the ideal use case because its \emph{density}
+  is unknown in closed form but its cf is known closed-form --- exactly
+  the regime where COS (which never touches the density) dominates,
+  reaching \textasciitilde10\^{}\{−10\} error with N≈160 terms.
+\item
+  Under Heston, how do you choose the COS truncation range {[}a,b{]}?
+  Why is the short-maturity (small c2) case dangerous, and how does
+  negative rho make it worse? \textbf{A.} Same cumulant rule
+  {[}a,b{]}=c\_1±L√(c\_2+√c\_4), with c\_1,c\_2,c\_4 of ln S\_T obtained
+  by differentiating log φ at ω=0. Danger at short τ: c\_2 (the
+  variance) is small, so the box collapses toward c\_1; if the higher
+  cumulants are under-weighted the range chops off mass and COS loses
+  spectral accuracy --- adding terms N does not help (it is a range, not
+  a series, error). Negative ρ produces a heavy left tail (skew) plus γ
+  fattens the tails, so the true support is wider than a c\_2-only box;
+  the fix is a larger L (10--12) and keeping the √c\_4 term, not the
+  BS-style L=8--10 with c\_4 ignored. This is the Assignment-2 bug
+  generalised.
+\item
+  Why can the Euler scheme produce negative variance? List truncation,
+  reflection, and log-variance fixes and state the drawback of each.
+  \textbf{A.} Euler updates ν\_\{i+1\}=ν\_i+κ(ν̄−ν\_i)Δ+γ√ν\_i √Δ Z with
+  Z Gaussian and unbounded below, so
+  P(ν\_\{i+1\}\textless0)\textgreater0 always; then √ν is undefined.
+  Fixes: (i) truncation/floor ν←max(ν,ε) --- simple but introduces
+  truncation bias; (ii) reflection ν←\textbar ν\textbar{} --- useful
+  when Feller fails but the reflected path sits systematically above the
+  floored one near zero; (iii) simulate ln ν by Euler and exponentiate
+  --- does \emph{not} work, ln ν can blow up so ν=e\^{}\{lnν\} explodes.
+  All are biased, worst when Feller is badly violated.
+\item
+  State the Broadie-Kaya exact simulation algorithm (4 steps). Which
+  step is hard and how is it solved (cf of integrated variance
+  -\textgreater{} COS inversion -\textgreater{} inverse sampling)?
+  \textbf{A.} (1) Sample ν\_t\textbar ν\_u from the noncentral χ². (2)
+  Sample ∫\_u\^{}t ν\_s ds given (ν\_u,ν\_t) --- the hard step. (3)
+  Recover ∫√ν dW\^{}ν=(1/γ)(ν\_t−ν\_u−κν̄(t−u)+κ∫ν ds) from the CIR
+  integral. (4) Sample ∫√ν dW\^{}S\textbar∫ν ds \textasciitilde{} N(0,∫ν
+  ds), then assemble S\_t. Step 2 is solved via the known closed-form cf
+  of the integrated variance (a ratio of modified Bessel functions);
+  invert it to the CDF F --- originally by trapezoidal Fourier
+  inversion, \emph{today by COS} --- and sample by inversion ∫ν
+  ds=F\^{}\{−1\}(U), U\textasciitilde Uniform(0,1).
+\item
+  Name the three tools behind the cf of the integrated variance
+  (infinitesimal generator, time change, Girsanov) and say what
+  discrepancy each one fixes relative to the squared Bessel process.
+  \textbf{A.} (i) Infinitesimal generator --- the CIR generator
+  κ(ν̄−x)f'+½γ²xf'\,' is matched against the squared-Bessel generator
+  nf'+2xf'\,', whose Laplace transform of the time-integral is known
+  (Pitman--Yor). (ii) Time change s=γ²t/4 rescales the
+  \emph{second-order} coefficient ½γ²x onto the squared-Bessel value 2x.
+  (iii) Girsanov change of measure absorbs the remaining \emph{drift}
+  discrepancy (κ(ν̄−x) vs n), expressing the CIR integrated-variance
+  transform as a ratio of squared-Bessel transforms --- giving the
+  Bessel-ratio formula for the cf.
+\item
+  Give the qualitative effect on the implied-vol surface of each
+  parameter: gamma, rho, kappa, nu0, nu-bar. \textbf{A.} γ (vol-of-vol):
+  larger γ deepens smile \emph{curvature}. ρ: more negative ρ steepens
+  the \emph{skew} (heavier left tail). κ: small effect on smile shape;
+  controls how fast ATM vol converges to √ν̄ in maturity. ν\_0: dominates
+  \emph{short}-maturity level. ν̄: dominates \emph{long}-maturity level
+  (both mediated by κ). Overall Heston gives heavier log-return tails
+  than BS and reproduces the smile.
+\end{enumerate}
+
+\hypertarget{lecture-08}{%
+\subsubsection{Lecture 08}\label{lecture-08}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Define the Poisson process N\_t with intensity lambda. State its three
+  defining properties and give P(N\_t=k). What are its mean and
+  variance? \textbf{A.} N\_t counts events with intensity λ: (i) N\_0=0;
+  (ii) independent, stationary increments; (iii)
+  N\_t−N\_s\textasciitilde Poisson(λ(t−s)). So P(N\_t=k)=(λt)\^{}k
+  e\^{}\{−λt\}/k!, with mean=variance=λt.
+\item
+  Show that mean = variance = lambda for the Poisson law. Do the
+  E{[}X{]} sum by hand. \textbf{A.} E{[}X{]}=Σ\_\{k≥0\} k λ\^{}k
+  e\textsuperscript{\{−λ\}/k!=λe}\{−λ\}Σ\_\{k≥1\}λ\textsuperscript{\{k−1\}/(k−1)!=λe}\{−λ\}e\^{}λ=λ.
+  Computing E{[}X(X−1){]}=λ² similarly gives
+  Var(X)=E{[}X²{]}−E{[}X{]}²=(λ²+λ)−λ²=λ. So mean=variance=λ.
+\item
+  What is the compensated Poisson process, and why is it (not N\_t
+  itself) a martingale? Verify the martingale property explicitly.
+  \textbf{A.} N\_t has positive drift (E{[}N\_t{]}=λt), so it is not a
+  martingale. The compensated process Ñ\_t=N\_t−λt is. Check:
+  E{[}Ñ\_\{t+Δ\}\textbar F\_t{]}=Ñ\_t+E{[}N\_\{t+Δ\}−N\_t{]}−λΔ=Ñ\_t+λΔ−λΔ=Ñ\_t
+  (increment independent of F\_t, mean λΔ), and integrability holds. The
+  compensator λt is the predictable finite-variation part removed to
+  leave a martingale --- the same idea as the risk-neutral jump drift
+  correction.
+\item
+  Distinguish homogeneous, inhomogeneous (time-dependent lambda(t)), and
+  Cox/doubly-stochastic Poisson processes. What is the compensator in
+  each case? \textbf{A.} Homogeneous: constant λ, compensator λt.
+  Inhomogeneous: deterministic λ(t), counts Poisson with integrated
+  intensity Λ(a,b)=∫\_a\^{}b λ(s)ds, compensator ∫\_0\^{}t λ(s)ds.
+  Cox/doubly-stochastic: λ(t) itself a stochastic process (conditionally
+  inhomogeneous given its path), compensator ∫\_0\^{}t λ(s)ds. In all
+  three N\_t−∫\_0\^{}t λ(s)ds is a martingale; the Cox case is the AJD
+  slot λ(x)=l\_0+l\_1·x where intensity responds to the state.
+\item
+  Derive the characteristic function of a compound Poisson process Q\_t
+  = sum\_\{k=1\}\^{}\{N\_t\} Y\_k by conditioning on N\_t. You should
+  reach exp(t\emph{lambda}(nu\_hat(u)-1)). \textbf{A.} Condition on the
+  count: E{[}e\^{}\{iuQ\_t\}{]}=Σ\_n
+  P(N\_t=n)E{[}e\^{}\{iuΣ\_\{k≤n\}Y\_k\}{]}=Σ\_n ((λt)\^{}n
+  e\textsuperscript{\{−λt\}/n!)ν̂(u)}n (Y\_k i.i.d.,
+  ν̂(u)=E{[}e\^{}\{iuY\}{]}). Pull out e\^{}\{−λt\} and recognise the
+  exponential series:
+  =e\textsuperscript{\{−λt\}e}\{λtν̂(u)\}=exp(tλ(ν̂(u)−1)).
+\item
+  Identify the characteristic exponent of the compound Poisson process
+  and connect it to the Levy-Khintchine representation. Why does the
+  ``-1'' appear, and what condition does nu\_hat(0)=1 enforce?
+  \textbf{A.} The exponent is linear in t, so the characteristic
+  exponent is ψ(u)=λ(ν̂(u)−1)=λ∫(e\^{}\{iuy\}−1)dν(y) --- the
+  finite-activity special case of Lévy--Khintchine
+  ψ(u)=∫(e\^{}\{iuy\}−1)Π(dy) with Lévy measure Π=λν. The ``−1'' is the
+  compensation that makes ψ(0)=0, so φ\_\{Q\_t\}(0)=1 as any cf must
+  satisfy (ν̂(0)=1 just says ν is a probability measure).
+\item
+  Write the Merton jump-diffusion SDE for S\_t and derive the log-price
+  SDE via Ito-for-jumps. Why is there no (1/2)g'`J\^{}2 term in the jump
+  part, and why does ln S\_t - ln S\_\{t\^{}-\} = ln(1+J\_t)?
+  \textbf{A.} dS\_t=μS\_\{t\textsuperscript{-\}dt+σS\_\{t}-\}dW\_t+J\_t
+  S\_\{t\^{}-\}dN\_t, so at a jump S\_t=S\_\{t\^{}-\}(1+J\_t).
+  Itô-for-jumps on g=ln: d ln S=(μ−½σ²)dt+σdW+{[}ln S\_t−ln
+  S\_\{t\^{}-\}{]}dN\_t. There is no ½g'`J² term because a jump is a
+  \emph{finite} move --- we use the exact difference
+  g(Y\_\{t\textsuperscript{-\}+J)−g(Y\_\{t}-\}), not a second-order
+  Taylor expansion (the ½g'' term only handles the \emph{continuous}
+  Brownian part). And ln S\_t−ln
+  S\_\{t\textsuperscript{-\}=ln(S\_\{t}-\}(1+J\_t))−ln
+  S\_\{t\^{}-\}=ln(1+J\_t).
+\item
+  Derive the risk-neutral drift correction mu = r - lambda*E{[}J\_t{]}
+  from the requirement that e\^{}\{-rt\}S\_t is a Q-martingale.
+  \textbf{A.}
+  d(e\textsuperscript{\{−rt\}S\_t)=e}\{−rt\}{[}(μ−r)S\_\{t\textsuperscript{-\}dt+σS\_\{t}-\}dW+J\_t
+  S\_\{t\^{}-\}dN\_t{]}. The dW term is a martingale; taking E\^{}Q and
+  using E{[}dN\_t{]}=λdt and J⊥N gives drift
+  e\textsuperscript{\{−rt\}S\_\{t}-\}{[}(μ−r)+λE\^{}Q{[}J{]}{]}dt.
+  Setting it to zero: μ=r−λE\^{}Q{[}J\_t{]}. The jump compensator
+  λE{[}J{]} is the mean rate at which jumps push the price up;
+  subtracting it keeps the expected return at r.
+\item
+  Common trap: in the Merton drift correction, is it E{[}J{]} or
+  E{[}ln(1+J){]} that gets compensated? If
+  ln(1+J)\textasciitilde N(mu\_J,sigma\_J\^{}2), what is kappa =
+  E{[}J{]}? \textbf{A.} It is E{[}J{]} (the arithmetic multiplier
+  J=S/S\_\{t\^{}-\}−1), \emph{not} E{[}ln(1+J){]}. With
+  ln(1+J)=ξ\textasciitilde N(μ\_J,σ\_J²), 1+J=e\^{}ξ, so
+  κ=E{[}J{]}=E{[}e\^{}ξ{]}−1=e\^{}\{μ\_J+½σ\_J²\}−1. The compensator is
+  λκ=λ(e\^{}\{μ\_J+½σ\_J²\}−1). Confusing E{[}J{]} with E{[}ξ{]}=μ\_J is
+  the classic exponent error.
+\item
+  Write Merton's lognormal-jump cf of ln S\_T and Kou's
+  double-exponential cf.~State Kou's nu\_hat(u) and explain the roles of
+  p,q,eta\_1,eta\_2 and why eta\_1\textgreater1 is required. \textbf{A.}
+  Merton (ν̂(u)=e\^{}\{iuμ\_J−½σ\_J²u²\}, κ=e\^{}\{μ\_J+½σ\_J²\}−1):
+  φ(u)=exp(iu(x+(r−½σ²−λκ)τ)−½σ²u²τ+λτ(e\^{}\{iuμ\_J−½σ\_J²u²\}−1)).
+  Kou: up-jumps Exp(η\_1) w.p. p, down-jumps −Exp(η\_2) w.p. q=1−p, so
+  ν̂(u)=p η\_1/(η\_1−iu)+q η\_2/(η\_2+iu), and
+  φ(u)=exp(iu(x+(r−½σ²−λκ)τ)−½σ²u²τ+λτ(ν̂(u)−1)). η\_1 governs the
+  up-tail decay, η\_2 the down-tail, p/q the up/down probabilities;
+  η\_1\textgreater1 is required so E{[}e\^{}X{]}=E{[}1+J{]} is finite
+  (the jump multiplier has finite mean, κ finite).
+\item
+  Compare Merton vs Kou: tail shape, symmetry, and the decay rate of the
+  cf in u. Why does the cf decay rate matter for COS? \textbf{A.}
+  Merton: Gaussian (symmetric, smooth) jumps; cf decays
+  super-exponentially like e\^{}\{−cu²\}. Kou: exponential tails
+  (heavier, asymmetric), and the cf decays only rationally like 1/u².
+  The cf decay rate sets the decay of the COS cosine coefficients, hence
+  the number of terms N for a given accuracy: Merton needs few terms,
+  Kou needs more; Kou also fattens the tails so the cumulant range
+  {[}a,b{]} is wider.
+\item
+  How does the jump-diffusion cf enter the COS formula? At which
+  arguments is phi evaluated, and what is the ONLY model-specific input
+  COS needs? \textbf{A.} The cf is the only model-specific input:
+  v≈e\^{}\{−rτ\}Σ' Re\{φ(kπ/(b−a))e\^{}\{−ikπa/(b−a)\}\}V\_k, with φ
+  evaluated at the grid arguments u\_k=kπ/(b−a) (and spot carried as
+  φ(u)e\^{}\{iux\_0\}). Nothing else about the jump structure is needed
+  --- supply Merton/Kou φ and the European COS machinery is unchanged
+  (slide 32: COS works as long as the cf is known).
+\item
+  Short-maturity COS trap: write c\_1, c\_2, c\_4 for Merton's
+  log-price. Why can a range {[}a,b{]} built from c\_2 alone be too
+  narrow at small tau, and how does the jump c\_4 fix it? (Connect to
+  the Assignment 2 bug.) \textbf{A.} Merton cumulants:
+  c\_1=(r−½σ²−λκ)τ+λτμ\_J, c\_2=σ²τ+λτ(μ\_J²+σ\_J²),
+  c\_4=λτ(μ\_J⁴+6μ\_J²σ\_J²+3σ\_J⁴). At small τ the diffusion part of
+  c\_2 (=σ²τ) shrinks, but jumps can still dominate the tails; a range
+  built from c\_2 alone (forgetting the jump kurtosis c\_4, or taking L
+  too small) is too narrow, so the truncation-error floor stays high and
+  the price is wrong \emph{no matter how many terms N} --- exactly the
+  Assignment-2 bug. Keeping the √c\_4 term (whose pure-jump contribution
+  fattens the tails) and a generous L widens {[}a,b{]} correctly.
+\item
+  State the PIDE for a jump-diffusion option value. Which term is
+  non-local, and why does this motivate Fourier methods over a PIDE grid
+  solve? \textbf{A.} V\_t+(r−λE{[}J{]})S
+  V\_S+½σ²S²V\_SS−rV+λE\^{}Q{[}V(S(1+J),t)−V(S,t){]}=0. The last term
+  --- an integral of V against the jump law --- is \emph{non-local}: it
+  couples the value at S to values at all S(1+J). On a grid this is a
+  dense coupling (expensive); a transform method instead reads φ once
+  and integrates against the payoff, so Fourier/COS sidesteps the
+  non-local PIDE entirely.
+\item
+  Define an affine process and write the AJD SDE with all four affine
+  conditions (mu, sigma sigma\^{}T, lambda(x), R(x)). What is the jump
+  transform theta(c)? \textbf{A.} Affine: the conditional cf is
+  exponential-affine,
+  E{[}e\^{}\{u·X\_T\}\textbar X\_t=x{]}=e\^{}\{α+β·x\}. The AJD is
+  dX=μ(X)dt+σ(X)dW+dZ with all coefficients affine: drift
+  μ(x)=K\_0+K\_1x; covariance
+  (σσᵀ)\emph{\{ij\}=(H\_0)}\{ij\}+(H\_1)\_\{ij\}·x; jump intensity
+  λ(x)=l\_0+l\_1·x (with jumps J\textasciitilde ν); short rate
+  R(x)=ρ\_0+ρ\_1·x. The jump law enters only through the jump transform
+  θ(c)=∫e\^{}\{c·z\}dν(z) (the ν̂ with complex argument c=β).
+\item
+  State the AJD result phi = exp(alpha + beta.x) and the Riccati ODEs
+  for (alpha,beta) with boundary conditions. Which term is quadratic,
+  and where does (theta(beta)-1) come from? \textbf{A.} φ=e\^{}\{α+β·x\}
+  with β̇=ρ\_1−K\_1ᵀβ−½βᵀH\_1β−l\_1(θ(β)−1),
+  α̇=ρ\_0−K\_0·β−½βᵀH\_0β−l\_0(θ(β)−1), boundary β(T,T)=u, α(T,T)=0. The
+  β equation is a Riccati ODE --- the \emph{quadratic} term is the
+  ½βᵀH\_1β diffusion term. The (θ(β)−1) comes from the expected jump
+  contribution: E{[}(φ(X+J)−φ(X))dN{]}=φ(θ(β)−1)λ(x)dt, the
+  compensator-type term, identical to the (ν̂−1) of the compound-Poisson
+  cf.
+\item
+  Recover the Black-Scholes log-price cf by solving the AJD ODEs with no
+  jumps (X=ln S). Show beta=iu and the alpha you obtain. \textbf{A.} No
+  jumps (l\_0=l\_1=0), X=ln S. The ODEs give β̇=0 with β(0)=iu, so β≡iu,
+  and α̇=(r−½σ²)β+½σ²β²−r. With β=iu: α(u,τ)=(r−½σ²)iuτ−½σ²u²τ−rτ. Hence
+  φ(u,τ)=exp((r−½σ²)iuτ−½σ²u²τ−rτ+iuX) --- the GBM log-price cf,
+  recovered as the degenerate AJD. Adding l\_0(θ(iu)−1) reproduces the
+  Merton cf.
+\item
+  The (theta-1) / compensator motif appears at three scales in this
+  lecture (compensated Poisson, drift correction, AJD ODE). State all
+  three and explain why they are ``the same idea''. \textbf{A.} (i)
+  Compensated Poisson: N\_t−λt. (ii) Risk-neutral drift correction:
+  μ=r−λE{[}J{]}. (iii) AJD ODEs: the −l(θ(β)−1) term. All three subtract
+  the \emph{predictable mean rate of the jumps} (the compensator) so
+  that the relevant object --- the counting process, the discounted
+  stock, the transform's drift --- becomes a martingale. They are the
+  single idea ``remove the predictable jump drift'' at three scales.
+\end{enumerate}
+
+\hypertarget{cluster-5-american-options}{%
+\subsection{Cluster 5 --- American
+options}\label{cluster-5-american-options}}
+
+\hypertarget{lecture-09}{%
+\subsubsection{Lecture 09}\label{lecture-09}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Define the American early-exercise problem as an optimal-stopping
+  problem. Write v(S,t)=max(Λ, continuation) and v\_0 = sup\_τ
+  E\^{}Q{[}e\^{}\{-rτ\}Λ(S\_τ,τ){]}. What makes τ* ``free''? \textbf{A.}
+  At each instant the holder takes the larger of exercising now and
+  holding: v(S,t)=max\{Λ(S,t), continuation\}, where continuation is the
+  discounted risk-neutral expectation of v an instant later. Globally
+  v\_0=sup\_\{τ∈T\_\{{[}0,T{]}\}\}
+  E\^{}Q{[}e\^{}\{−rτ\}Λ(S\_τ,τ)\textbar S\_0{]}, the supremum over all
+  stopping times. τ* is ``free'' because the optimal stopping rule is
+  not given in advance --- it is itself an output of the problem,
+  determined by where continuation falls to intrinsic.
+\item
+  What is the free boundary S\emph{(t)? Characterise the continuation
+  region (v\textgreater Λ, BS PDE holds) vs the stopping region (v=Λ).
+  State the smooth-pasting conditions at S}(t) for the put. \textbf{A.}
+  S\emph{(t) is the optimal exercise boundary, unknown a priori (hence
+  ``free''), separating the continuation region C (hold,
+  v\textgreater Λ, where v satisfies the BS PDE with equality) from the
+  stopping region S (exercise, v=Λ). For the put:
+  S\textless S}(t)⇒exercise, v=K−S; S\textgreater S\emph{(t)⇒hold,
+  v\textgreater K−S. At the boundary value and slope match continuously
+  --- the smooth-pasting conditions v(S},t)=K−S*, ∂\_S v(S*,t)=−1.
+\item
+  PROVE that an American call on a non-dividend stock equals the
+  European call. Give BOTH the slide dominating-strategy argument and
+  the parity lower-bound C\^{}eur = S - Ke\^{}\{-r(T-t)\} + P\^{}eur
+  \textgreater{} S - K. \textbf{A.} Dominating strategy: instead of
+  exercising at t for S\_t−K, short the stock (receive S\_t) and keep
+  the call; at T close the short paying min(K,S\_T)≤K. The alternative
+  gives S\_t now and ≤K later, which strictly dominates S\_t−K now once
+  interest on the deferred K is counted --- so early exercise is
+  dominated at every t\textless T, hence worthless. Lower-bound version:
+  by parity and P\^{}eur≥0,
+  C\textsuperscript{eur=S−Ke}\{−r(T−t)\}+P\textsuperscript{eur≥S−Ke}\{−r(T−t)\}\textgreater S−K
+  for r\textgreater0. The live call exceeds its intrinsic, so the
+  early-exercise right is never used: C\textsuperscript{am=C}eur.
+\item
+  Why does the same argument FAIL for the put, so early exercise can be
+  optimal? Use parity P\^{}eur = Ke\^{}\{-r(T-t)\} - S + C\^{}eur and
+  Ke\^{}\{-r(T-t)\} \textless{} K. What is the economic intuition?
+  \textbf{A.} Parity gives
+  P\textsuperscript{eur=Ke}\{−r(T−t)\}−S+C\^{}eur, and
+  Ke\^{}\{−r(T−t)\}\textless K, so the live put can be worth \emph{less}
+  than its intrinsic K−S. When that happens, exercising now and banking
+  the full K to earn interest beats holding --- early exercise is
+  strictly optimal, so there is no European--American equivalence.
+  Intuition: the put holder \emph{wants the strike cash K early} to earn
+  interest, whereas the call holder wants to \emph{defer paying K} ---
+  the asymmetry is entirely the sign of the strike cash flow.
+\item
+  Why does delta-hedging make the European BS relation an EQUALITY but
+  the American put only an INEQUALITY? Walk through both arbitrage
+  directions and explain why only one survives. \textbf{A.} For a
+  European option the delta-hedged position is perfectly riskless, so it
+  must earn r exactly --- equality. For the American put, hedging does
+  not remove the holder's early-exercise right. If the hedged option
+  \emph{out-earns} cash, an arbitrageur longs it (owning the exercise
+  right) and locks the surplus --- a genuine arbitrage, competed away.
+  If it \emph{under-earns} cash, arbitraging would require
+  \emph{shorting} the put, but that hands the exercise decision to the
+  counterparty, who can exercise during {[}t,t+Δt{]} --- no riskless
+  profit. Only the second case survives, giving LP\_Am≤0, hence an
+  inequality.
+\item
+  Write the LCP for the American put: (v-Λ)≥0, Lv≤0, (v-Λ)·Lv=0.
+  Interpret each line, why it equals an obstacle problem, and state
+  terminal/boundary conditions. \textbf{A.} (v−Λ)≥0 (value dominates
+  payoff, else buy-and-exercise arbitrage), Lv≤0 (the BS operator is a
+  supersolution, from the hedging inequality), (v−Λ)·Lv=0
+  (complementarity: at each point one holds with equality). In C,
+  v\textgreater Λ ⇒ Lv=0 (BS PDE holds); in S, v=Λ ⇒ Lv≤0 (payoff is not
+  a BS solution, exercise optimal). It is an obstacle problem because v
+  is the smallest supersolution of L lying above the obstacle Λ.
+  Conditions: terminal v(S,T)=max(K−S,0); boundary v(0,t)=K, v(∞,t)=0.
+\item
+  State the Bermudan backward recursion in log-space:
+  c(x,t\_\{n-1\})=e\^{}\{-rΔt\}E{[}v(X(t\_n))\textbar x{]}, v=max(Λ,c).
+  What single quantity do all four methods compute differently?
+  \textbf{A.} With X(t\_n)=ln(S(t\_n)/K), Λ(x,t)=max(αK(e\^{}x−1),0),
+  the recursion for n=N,\ldots,2 is
+  c(x,t\_\{n−1\})=e\^{}\{−rΔt\}E{[}v(X(t\_n),t\_n)\textbar X(t\_\{n−1\})=x{]},
+  v(x,t\_\{n−1\})=max(Λ(x,t\_\{n−1\}),c(x,t\_\{n−1\})). All four methods
+  (tree, FD/LCP, LSM, COS) run exactly this Bellman recursion; they
+  differ \emph{only} in how they compute the conditional expectation c
+  --- the continuation value.
+\item
+  Binomial tree: write the backward step with max(intrinsic, discounted
+  continuation). What is the ONLY line that differs from a European
+  tree? How does p=(e\^{}\{rΔt\}-d)/(u-d) arise? \textbf{A.}
+  V\_m\textsuperscript{n=max(K−S\_m}n,
+  e\^{}\{−rΔt\}{[}pV\_\{m+1\}\textsuperscript{\{n+1\}+(1−p)V\_m}\{n+1\}{]}).
+  The conditional expectation is the two-point binomial average; the
+  \emph{only} difference from a European tree is the outer
+  max(intrinsic, ·) inserted at every node. p=(e\^{}\{rΔt\}−d)/(u−d)
+  arises from the risk-neutral / martingale condition
+  E\textsuperscript{Q{[}S\_\{n+1\}\textbar S\_n{]}=e}\{rΔt\}S\_n,
+  i.e.~pu+(1−p)d=e\^{}\{rΔt\}.
+\item
+  Finite-difference LCP: write the projected update. Why can't you just
+  solve the implicit linear system and clip once? Explain PSOR ---
+  projecting INSIDE each SOR sweep. \textbf{A.} Projected update:
+  V\_m\textsuperscript{n=max(K−S\_m}n,
+  g(V\_\{m+1\}\textsuperscript{\{n+1\},V\_m}\{n+1\},V\_\{m−1\}\^{}\{n+1\}))
+  with g the implicit BS stencil --- the discrete LCP. For an
+  \emph{implicit} scheme the node m couples to its neighbours at the
+  \emph{same} time level through a tridiagonal system, and the
+  constraint V≥Λ must hold simultaneously with that solve; solving the
+  unconstrained system and clipping once gives the wrong answer because
+  the clipped values feed back into the coupling. PSOR (Projected SOR)
+  runs SOR sweeps but, after each node's update, immediately projects
+  V\_m←max(Λ\_m, V\_m\^{}\{SOR\}); projecting \emph{inside} the
+  iteration converges to the true LCP solution.
+\item
+  LSM mechanics: explain the backward regression of discounted future
+  cash flows on basis functions. Why regress only on ITM paths? Why is
+  the per-path decision Λ\textgreater ĉ (not the fitted value) the cash
+  flow? \textbf{A.} Working backward, at each date regress each path's
+  realised discounted future cash flow Y (from following the
+  already-determined later policy, discounted to t\_n) on basis
+  functions of the current state X=S\_\{t\_n\} (e.g.~1, X, X²); the fit
+  ĉ(x)=Σâ\_j L\_j(x) estimates the continuation value. Regress only on
+  ITM paths because OTM paths have zero intrinsic and would never
+  exercise --- restricting fits the conditional expectation only where
+  the decision matters (cheaper and more accurate). The realised
+  \emph{cash flow} used is the path's actual intrinsic when
+  Λ\textgreater ĉ, not the fitted ĉ: ĉ is only a noisy decision rule,
+  while the realised payoff is the unbiased value collected on that
+  path.
+\item
+  LSM 8-path example: how is Y constructed (which discount factor, which
+  future date)? Why does the t=1 regression depend on the t=2 exercise
+  decisions? Interpret 0.1144 vs European 0.0564. \textbf{A.} At t=2, Y
+  is the t=3 payoff discounted one period (×e\^{}\{−0.06\}=0.94176),
+  X=S\_\{t=2\}; fit gives exercise on paths 4,6,7. At t=1, Y is the
+  \emph{subsequent} realised cash flow --- which by the t=2 decisions
+  occurs at t=2 or t=3 --- discounted back to t=1; so the t=1 regression
+  depends on the t=2 exercise decisions because they determine when each
+  path's future cash flow actually lands. Final: discount each path's
+  first-exercise cash flow to t=0 and average → American put 0.1144, vs
+  European 0.0564 (only the t=3 payoffs). The American is
+  \textasciitilde twice the European: that gap is the entire value of
+  the early-exercise right.
+\item
+  Is LSM biased? Explain why a suboptimal finite-basis policy gives a
+  LOWER bound, and the competing in-sample foresight upward bias. How do
+  you get a clean out-of-sample estimate? \textbf{A.} A finite basis
+  cannot represent the true continuation surface exactly, so the
+  estimated stopping policy is suboptimal and a suboptimal rule can only
+  \emph{lose} value --- giving a lower bound. There is a competing
+  \emph{upward} (foresight) bias if the price is read off the same cash
+  flows used to fit the regression (in-sample look-ahead). Clean
+  practice: use the regression only for the exercise \emph{decision} and
+  value the realised cash flows along each path's stopping time; for a
+  strictly out-of-sample estimate, freeze the policy and re-simulate
+  fresh paths.
+\item
+  COS Bermudan: derive c(x,t\_\{n-1\}) ≈ e\^{}\{-rΔt\} Σ'
+  Re\{φ(kπ/(b-a)) e\^{}\{ikπ(x-a)/(b-a)\}\} V\_k(t\_n). What ARE the
+  V\_k(t\_n) --- relate to the Lecture-6 European V\_k. \textbf{A.}
+  Write c(x,t\_\{n−1\})=e\^{}\{−rΔt\}∫v(y,t\_n)f(y\textbar x)dy --- the
+  European COS integral with the payoff replaced by the next-step value
+  v(·,t\_n). Inserting the cosine expansion of f (coefficients read off
+  φ) gives ĉ(x,t\_\{n−1\})=e\^{}\{−rΔt\}Σ'\_\{k\}
+  Re\{φ(kπ/(b−a))e\^{}\{ikπ(x−a)/(b−a)\}\}V\_k(t\_n). Here
+  V\_k(t\_n)=(2/(b−a))∫\_a\^{}b v(y,t\_n)cos(kπ(y−a)/(b−a))dy are the
+  cosine coefficients of the option \emph{value} at t\_n.~At t\_N they
+  are exactly the Lecture-6 European payoff coefficients; for
+  n\textless N they are built recursively --- so it is a backward
+  recursion on the coefficient vector, not on a price grid.
+\item
+  COS early-exercise point: define x\_n* by
+  c(x\_n\emph{,t\_n)=Λ(x\_n},t\_n). Write the split
+  V\_k(t\_n)=G\_k(a,x\_n\emph{)+C\_k(x\_n},b,t\_n) for a put. Which
+  piece is closed-form (χ\_k,ψ\_k), which needs the previous
+  coefficients? How is x\_n* found? \textbf{A.} x\_n* solves
+  c(x\_n\emph{,t\_n)=Λ(x\_n},t\_n) --- the discrete avatar of the free
+  boundary S\emph{(t). For a put, exercise is on the low-y side:
+  V\_k(t\_n)=G\_k(a,x\_n})+C\_k(x\_n\emph{,b,t\_n), where G\_k is the
+  cosine integral of the payoff Λ=αK(e\^{}y−1) and C\_k that of the
+  continuation c.~G\_k is closed-form --- a combination of the Lecture-6
+  χ\_k (the e\^{}y cos integral) and ψ\_k (the cos integral) on the cut
+  interval. C\_k needs the }previous* step's coefficients
+  V\_l(t\_\{n+1\}) (it is built from ĉ). x\_n* is found by Newton's
+  method (one scalar root-find; the derivative of ĉ is the
+  differentiated cosine sum).
+\item
+  COS algorithm: initialisation, backward loop (Newton for x\_n\emph{,
+  FFT for C\_k), reconstruction. Why is the cost O(NK log₂K) not O(NK²)?
+  What gives the FFT (Toeplitz/Hankel kernel)? \textbf{A.} Initialise at
+  t\_N with the pure payoff coefficients V\_k(t\_N)=G\_k (Lecture-6
+  European). Backward loop n=N−1,\ldots,1: (a) find x\_n} by Newton from
+  ĉ=Λ; (b) form V\_k(t\_n) via the split --- G\_k closed-form, C\_k by
+  the FFT-accelerated product on \{V\_l(t\_\{n+1\})\}. Reconstruct:
+  v(x\_0,t\_0)=e\^{}\{−rΔt\}Σ'
+  Re\{φ(kπ/(b−a))e\^{}\{ikπ(x\_0−a)/(b−a)\}\}V\_k(t\_1). The C\_k
+  coupling matrix M\_\{k,l\} is Hankel-plus-Toeplitz (depends on l±k),
+  so the matrix--vector product is a discrete convolution done by FFT in
+  O(K log₂K) instead of the naive O(K²); over N steps the cost is O(NK
+  log₂K).
+\item
+  Why does the cumulant range {[}a,b{]}=c1±L√(c2+√c4) caveat carry into
+  the Bermudan COS recursion and bite harder per-step? Tie to the
+  Assignment-2 bug: c2=σ²Δt→0, c4=0, no floor; adding K terms does NOT
+  help. \textbf{A.} The range is still set from the cumulants of X\_T,
+  but now it must contain the support over the \emph{whole} backward
+  recursion and the Newton x\_n* must land inside {[}a,b{]}. At short
+  maturity (or small per-step Δt) c\_2=σ²Δt→0, so the box collapses
+  toward c\_1; for a Gaussian model c\_4=0 means no √c\_4 floor --- the
+  same failure mode as the Assignment-2 bug. Adding cosine terms K
+  cannot cure a range (truncation) error; the fix is a wider L or a
+  minimum half-width floor. It bites per-step because each of the N
+  steps re-uses the same possibly-too-narrow box.
+\item
+  Richardson extrapolation Bermudan→American: why does every method here
+  price a Bermudan? Write the 4-point scheme and explain what it
+  cancels. \textbf{A.} Every method discretises exercise to a finite
+  monitoring set, so each prices a \emph{Bermudan}; the American is the
+  N→∞ limit. Rather than push N large, take Bermudan prices v(M) at
+  M=2\textsuperscript{d,2}\{d+1\},2\textsuperscript{\{d+2\},2}\{d+3\}
+  and combine:
+  v\_Am(d)=(1/21)(64v(2\textsuperscript{\{d+3\})−56v(2}\{d+2\})+14v(2\textsuperscript{\{d+1\})−v(2}d)).
+  The weighted combination cancels the leading error terms in the
+  monitoring spacing, accelerating convergence to the
+  continuous-American limit from a handful of cheap fast Bermudan
+  computations.
+\end{enumerate}
+
+\hypertarget{cluster-6-exotics}{%
+\subsection{Cluster 6 --- Exotics}\label{cluster-6-exotics}}
+
+\hypertarget{lecture-11}{%
+\subsubsection{Lecture 11}\label{lecture-11}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Give the precise payoff of an arithmetic-average Asian call and a
+  geometric-average Asian call. \textbf{A.} Fixed-strike
+  arithmetic-average call: ((1/n)Σ\_\{i=1\}\^{}n S\_\{t\_i\}−K)\^{}+.
+  Geometric-average call: ((∏\emph{\{i=1\}\^{}n
+  S}\{t\_i\})\textsuperscript{\{1/n\}−K)}+. (Floating-strike variants
+  replace K by a multiple of S\_T.) Both are path-dependent on the
+  monitoring dates t\_1,\ldots,t\_n.
+\item
+  What economic need does an Asian option serve that a vanilla cannot,
+  and why is the premium lower? (airline fuel hedge; average exposure;
+  effective variance reduced) \textbf{A.} It matches an exposure to an
+  \emph{average} rather than a terminal price --- e.g.~an airline
+  hedging a month of fuel procurement buys one Asian call on the monthly
+  average instead of \textasciitilde20 daily vanillas, matching its real
+  cost (1/n)ΣS\_\{t\_i\} and reducing fixing-manipulation risk. The
+  premium is lower because the average is less volatile than the
+  terminal price (continuous-monitoring variance σ²T/3, one-third of the
+  vanilla), so the convex payoff is worth less.
+\item
+  Derive the geometric-Asian closed form: why is G lognormal, and what
+  are mu\_G and sigma\_G\^{}2 for equally spaced dates? Show
+  sigma\_G\^{}2 -\textgreater{} sigma\^{}2 T/3 in the continuous limit.
+  \textbf{A.} ln G=(1/n)Σ{[}(r−q−½σ²)t\_i+σW\_\{t\_i\}{]} is an affine
+  function of the jointly Gaussian (W\_\{t\_1\},\ldots,W\_\{t\_n\}),
+  hence normal --- so G is lognormal and prices by a Black-style
+  formula. μ\_G=ln S\_0+(r−q−½σ²)t̄, σ\_G²=(σ²/n²)Σ\_iΣ\_j
+  min(t\_i,t\_j). For equally spaced t\_i=iΔt: t̄=(n+1)T/2n,
+  σ\_G²=σ²Δt(n+1)(2n+1)/6n² → σ²T/3 as n→∞. The σ²T/3 (vs σ²T) is
+  exactly why the Asian is cheaper, and the geometric Asian is the
+  standard MC control variate for the arithmetic one (Kemna--Vorst).
+\item
+  Why does the arithmetic Asian have NO closed form / no closed-form CF,
+  and what does that imply for method choice? (sum of lognormals not
+  lognormal) \textbf{A.} A\_T=(1/n)ΣS\_\{t\_i\} is a \emph{sum} of
+  lognormals, which is not lognormal and has no elementary density ---
+  and crucially no closed-form characteristic function even under affine
+  models. So one cannot price it by Black or apply COS directly to A\_T;
+  the options are moment-matching, the (Vecer-reduced) PDE, COS with a
+  cumulant-approximated/recursive cf, or Monte Carlo.
+\item
+  List the four numerical methods for arithmetic Asians and the one-line
+  reason for each; what is the standard control variate for the MC?
+  (geometric Asian) \textbf{A.} (i) Moment matching
+  (Turnbull--Wakeman/Levy) --- fit a lognormal to the first two moments
+  of A\_T; fast but an approximation that degrades in the tails. (ii)
+  PDE --- 2-D in (S,A), reduced exactly to 1-D by Vecer's similarity
+  trick. (iii) COS/Fourier (Zhang--Oosterlee) --- cumulant-approximated
+  φ\_\{A\_T\} or backward recursion over monitoring dates with the
+  one-step conditional cf.~(iv) Monte Carlo --- most flexible for path
+  dependence, with the \emph{geometric}-Asian closed form as control
+  variate (essentially mandatory variance reduction).
+\item
+  State the Fouque-Han 3D Asian PDE and identify the four blocks. Then
+  explain Vecer's reduction: what does q(t) replicate, and how does it
+  collapse the path-dependent state I\_t? \textbf{A.} With (S,Y,I),
+  I\_t=∫\emph{0\^{}t S\_u du, the floating-strike Asian solves
+  ∂\emph{tP+½f²s²∂}\{ss\}P+ρβfs∂}\{sy\}P+½β²∂\_\{yy\}P+r(s∂\_sP−P)+(α(m−y)−βΛ)∂\_yP+s∂\_IP=0,
+  terminal (s−I/T)\^{}+. Four blocks: second-order (s,y) diffusion
+  (cross-term carries ρ); first-order risk-neutral drift in s and
+  risk-adjusted drift in y; the pure-drift term s∂\_IP (since dI=Sdt);
+  and −rP discounting. Vecer: hold a \emph{time-deterministic} number of
+  shares q(t)=(1−e\^{}\{−r(T−t)\})/(rT) in a self-financing portfolio so
+  that X\_T=(1/T)∫S du−K\_2 --- i.e.~q(t) replicates the running
+  average. Trading this deterministic q collapses the path-dependent
+  state I\_t into the single stochastic wealth X\_t; switching to the
+  stock numéraire and using homogeneity reduces the 3-D PDE to 2-D (1-D
+  in the constant-vol limit, the Vecer Asian PDE).
+\item
+  Give both digital payoffs (cash-or-nothing, asset-or-nothing). Derive
+  the cash-or-nothing call price = e\^{}\{-rT\} N(d2) from Q(S\_T
+  \textgreater{} K). \textbf{A.} Cash-or-nothing call:
+  1\_\{S\_T\textgreater K\} (× notional Q). Asset-or-nothing call: S\_T
+  1\_\{S\_T\textgreater K\}. The cash-or-nothing pays \$1 on
+  \{S\_T\textgreater K\}, so C\_dig=e\^{}\{−rT\}Q(S\_T\textgreater K).
+  Under GBM, \{S\_T\textgreater K\}=\{Z\textgreater−d\_2\} with
+  d\_2=(ln(S\_0/K)+(r−q−½σ²)T)/(σ√T), so Q(S\_T\textgreater K)=N(d\_2)
+  and C\_dig=e\^{}\{−rT\}N(d\_2). A digital prices a risk-neutral
+  probability; the asset-or-nothing is S\_0e\^{}\{−qT\}N(d\_1), and
+  vanilla = asset-or-nothing − K·cash-or-nothing.
+\item
+  A digital has a clean closed form. Why is it nonetheless considered a
+  hard/dangerous product? (delta spike, gamma sign-flip, pin risk;
+  call-spread notional 1/eps -\textgreater{} infinity near K at expiry)
+  \textbf{A.} Valuation is trivial (e\^{}\{−rT\}N(d\_2)); the
+  \emph{hedge} is not. The replicating call spread has notional 1/ε→∞ as
+  the spread tightens, and near expiry near the strike the delta spikes
+  (Dirac-like) and gamma flips sign --- ``pin risk''. A desk
+  delta-hedging a sold digital must trade a huge, sign-changing position
+  in a vanishingly small neighbourhood of K as t→T, impossible to
+  execute cleanly; in practice they over-hedge by pricing/hedging a
+  (super-replicating) call spread, not the exact digital. The difficulty
+  is risk management, not pricing.
+\item
+  State the Breeden-Litzenberger link dC/dK = -e\^{}\{-rT\} Q(S\_T
+  \textgreater{} K) and explain the centred call-spread static
+  replication (and why centring gives 2nd-order accuracy). \textbf{A.}
+  ∂C/∂K=−e\^{}\{−rT\}Q(S\_T\textgreater K)=−C\_dig: a digital is minus
+  the strike-derivative of vanilla prices, linking it to the implied
+  (risk-neutral) distribution. Static replication:
+  1\_\{S\_T\textgreater K\}≈{[}(S\_T−K+ε/2)\textsuperscript{+−(S\_T−K−ε/2)}+{]}/ε,
+  i.e.~buy 1/ε calls at K−ε/2 and sell 1/ε at K+ε/2. \emph{Centring} the
+  spread symmetrically around K makes the leading O(ε) error cancel (the
+  approximation is a centred difference of the call price in K), giving
+  second-order O(ε²) accuracy; a one-sided spread is only first-order.
+\item
+  Which numerical method is most natural for a digital and why? (COS:
+  indicator payoff has closed-form cosine coefficients; it's the
+  European COS method as a special case) \textbf{A.} COS. The indicator
+  payoff has closed-form cosine coefficients H\_k (an elementary
+  cos-integral over the in-the-money half-range), so a digital is just
+  the European COS method with a different H\_k --- no discontinuity
+  penalty on the payoff side, since the coefficients are computed
+  analytically rather than by sampling the jump. (Closed form exists
+  under GBM; COS handles any model with a known cf.)
+\item
+  Give the basket and worst-of payoffs. Show Var(B\_T) = sum\_i sum\_j
+  w\_i w\_j Cov(S\_i,S\_j) and explain why correlation is the dominant
+  risk. \textbf{A.} Basket call: (Σ\_i w\_i S\_i(T)−K)\^{}+. Worst-of
+  call: (min\_i S\_i(T)−K)\^{}+. For B\_T=Σ\_i w\_i S\_i(T),
+  Var(B\_T)=Σ\_iΣ\_j w\_i w\_j Cov(S\_i,S\_j)=Σ\_i
+  w\_i²Var(S\_i)+Σ\_\{i≠j\}w\_i w\_j ρ\_\{ij\}√(Var S\_i·Var S\_j). The
+  off-diagonal ρ\_\{ij\} terms drive the variance: positively correlated
+  baskets are more volatile (dearer), weakly/negatively correlated ones
+  diversify. A worst-of is even more correlation-sensitive (ρ→1 makes it
+  a single-asset option; low ρ drags the minimum down). The 2008
+  correlation break-down is what made these books dangerous.
+\item
+  Why is Monte Carlo (not PDE or COS) the method for a
+  \textgreater=4-asset worst-of? State the COS availability honestly.
+  (curse of dimensionality; Ruijter-Oosterlee 2D only, no dedicated COS
+  for n\textgreater=4) \textbf{A.} PDE and COS both use a tensor-product
+  grid whose cost grows like M\^{}n --- the curse of dimensionality
+  kills them beyond n≈2--3. Honestly: COS exists for 2-asset
+  basket/call-on-min (Ruijter--Oosterlee 2012) and a 3-asset spread
+  (Pellegrino--Sabino 2016), but there is \emph{no dedicated COS method
+  for n≥4}. MC handles arbitrary dimension and correlation naturally
+  (Cholesky-correlate normals, simulate, evaluate (min\_i S\_i−K)\^{}+),
+  enhanced with antithetics/QMC/control variates --- hence the industry
+  standard for the multi-asset book.
+\item
+  In a worst-of autocallable, is the embedded option a call-on-min or a
+  worst-of put? Explain who is short what. \textbf{A.} A worst-of
+  \emph{put}, not a clean call-on-min. The investor is \emph{short}
+  downside on the weakest index (e.g.~redemption is reduced if min\_i
+  S\_i(T)/S\_i(0) falls below a 60\% barrier), implicitly \emph{selling}
+  correlation and downside risk; the high coupon funds that sold risk.
+  The issuing bank is long that protection (short correlation in its
+  book). Be ready to state that the traded structure is a worst-of put,
+  distinct from the textbook call on the min.
+\item
+  Give the cliquet payoff with local cap C and floor F. Why is it
+  forward-skew / forward-volatility sensitive, and why is MC with
+  local/stochastic vol the practical method? \textbf{A.} With period
+  returns R\_i=S\_\{t\_i\}/S\_\{t\_\{i−1\}\}−1, the cliquet pays Σ\_i
+  min(max(R\_i,F),C) (optionally with a global cap/floor on the sum). It
+  is essentially a strip of \emph{forward-starting} capped/floored
+  options: each l\_i is determined over the future window
+  {[}t\_\{i−1\},t\_i{]}, so its value depends on the \emph{forward}
+  volatility and forward skew prevailing then, not today's spot-starting
+  smile --- an exposure no vanilla portfolio (all spot-starting) can
+  replicate. So pricing is highly sensitive to smile \emph{dynamics};
+  the practical method is MC with a local/stochastic-vol (or hybrid)
+  model that gets the forward skew right, since the reset features
+  combine trivially with such models.
+\item
+  Pre-2008 vs post-2008: which exotics grew, which shrank, and what is
+  the unifying post-crisis preference? (hedgeable, modellable,
+  explainable, liquid; basket/worst-of and autocallables grew;
+  bespoke/long-dated/aggressive cliquets shrank) \textbf{A.} Grew:
+  basket/worst-of and autocallables (now dominant in equity structured
+  products), driven by retail yield demand outrunning the correlation
+  caveats. Shrank: highly bespoke OTC, long-dated path-dependent
+  exotics, and aggressive cliquets (now insurance-driven, reduced).
+  Barriers/Asians/digitals stayed active. The unifying post-crisis
+  preference is for products that are easier to \emph{hedge, model,
+  explain to regulators, and more liquid} --- reflecting XVA/funding
+  costs, Basel III capital, collateralisation, and the lessons of
+  counterparty risk and correlation break-down.
+\end{enumerate}
+
+\end{document}
