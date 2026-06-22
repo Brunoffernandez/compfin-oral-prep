@@ -382,6 +382,22 @@ call}\label{exercise-4-monte-carlo-basket-call}}
 \hypertarget{assignment-set-1}{%
 \section{Assignment set 1}\label{assignment-set-1}}
 
+\begin{quote}
+\textbf{Grader-confirmed corrections (from the graded PDF):} -
+\textbf{Q13 (3c mean+var shift):} the report's claim that the mean+var
+shift is \emph{less} efficient than the mean-only shift is \textbf{not
+supported} --- the grader states the \textbf{mean+var shift usually
+gives smaller variance}. Do not rehearse ``3c is worse''; say it is
+generally \textbf{better} (verify by comparing variance/std over
+repeated runs). - \textbf{COS range in 2e:} the hand-picked
+\([a,b]=[−2,2]\) lost the \textbf{full 1.5 points} --- the
+\textbf{cumulant rule} \(c1 ± L√(c2+√c4)\) (used in 2d) was expected;
+the \(3.67e-11\) CDF plateau is the symptom of the too-narrow window. -
+\textbf{IS vs MC:} a single run does not establish IS \textgreater{} MC
+--- demonstrate it by repeated runs comparing the variance/std of the
+estimated quantile. Also add the missing \(x → −∞\) condition.
+\end{quote}
+
 Open the named file and answer at the line/function level. Point to the
 exact line, don't paraphrase the report.
 
@@ -657,6 +673,24 @@ exact line, don't paraphrase the report.
 
 \hypertarget{exercise-set-2}{%
 \section{Exercise set 2}\label{exercise-set-2}}
+
+\begin{quote}
+\textbf{Grader-confirmed corrections (from the graded PDF) --- these
+override the ``confirm'' hedges in the answers below:} - \textbf{Q9 (abs
+vs signed early-exercise value):} the grader deducted 0.5 for using
+\texttt{np.abs} --- the \textbf{signed} difference
+\(American − European\) is correct; \textbf{remove \texttt{np.abs}}. -
+\textbf{Q7 (antithetic standard error):} the grader deducted 1.0 ---
+\texttt{std/√N} over the 100,000 individual paths is \textbf{wrong}
+(antithetic pairs aren't independent). Correct: average each pair →
+50,000 i.i.d. pair-means, then \texttt{std(pair\_means)/√50000}. (Grader
+notes the \emph{paper's} s.e. is also wrong.) - Also flagged: vectorize
+the LSM loops; exploit the \textbf{tridiagonal} FD matrix (don't
+store/multiply the dense matrix); LSM is Monte Carlo so \textbf{not a
+deterministic benchmark} (add an American ≥ European test); and
+\(Nt = 40000·T\) over-prices the American vs the paper's
+50-exercises/year.
+\end{quote}
 
 Files: - \texttt{assignments/exercise-set-2/exercise1\_def\ (2).py} (LSM
 / Longstaff--Schwartz) -

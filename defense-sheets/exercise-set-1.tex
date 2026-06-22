@@ -519,4 +519,49 @@ Point to
 146--153 \\
 \end{longtable}
 
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{corrector-feedback-from-the-graded-pdf-points-lost-and-what-to-do}{%
+\section{Corrector feedback (from the graded PDF) --- points lost and
+what to
+do}\label{corrector-feedback-from-the-graded-pdf-points-lost-and-what-to-do}}
+
+\begin{quote}
+Extracted from the grader's annotations in
+\texttt{Computational\_Finance\_Set\_1\ (1)-3166960.pdf}. These are the
+most reliable predictor of what Fang will probe. Fold each into your
+prep.
+\end{quote}
+
+\textbf{Ex. 1 --- implied volatility} - \textbf{−0.2 (Q1):}
+\emph{``Please also give the plot of the IV for the put options.''} You
+only plotted IV for calls. Be ready to say how you'd back out put IV
+(directly, or via put--call parity) and that the IV should match the
+call IV at the same \((K,T)\). - \textbf{−0.2 and −0.1 (Q2):} same
+missing-put-IV deduction again, \textbf{plus} \emph{``for numerical
+stability please {[}put{]} a lower bound on Vega.''} → This is exactly
+the deep-OTM/short-T danger in the Newton step
+(\texttt{σ\ ←\ σ\ −\ f/vega}): when \(vega → 0\) the step explodes.
+Action: clamp \(vega\) from below (or fall back to bisection). Know this
+cold --- it ties to your \(Vega\) TODO and to the Lecture-3
+bisection-vs-Newton point.
+
+\textbf{Ex. 2 --- risk-neutral pricing / change of numéraire (analytic)}
+- \textbf{Notation (no points, but flagged):} \emph{``It should be
+\(σ(x,t) = σx\), or \texttt{σ(S\_t,t)\ =\ σ\ S\_t}. And please avoid
+writing \(b(x,t) = r S_t\), please write \(b(x,t) = r x\) or
+\texttt{b(S\_t,t)\ =\ r\ S\_t}. Same remark for \(V(x,T)\).''} → Keep
+the state-variable argument consistent (don't mix \(x\) and \(S_t\)
+inside one coefficient function). - \textbf{Method hint (important):}
+\emph{``The standard and easier method for this question is the
+risk-neutral pricing formula via the martingale property of the
+discounted price process. Please make sure that you also know this
+method.''} → Be ready to derive the Ex. 2 result the \textbf{martingale}
+way (discounted price is a Q-martingale), not only via the
+PDE/change-of-variable route you used.
+
+\textbf{Action checklist:} (1) add IV-for-puts plot + know the parity
+link; (2) add a Vega floor and explain why; (3) tighten coefficient
+notation; (4) rehearse the martingale/risk-neutral derivation for Ex. 2.
+
 \end{document}

@@ -632,4 +632,69 @@ spots}\label{show-me-in-your-code-where-you-do-x-anticipated-spots}}
   (\(|FD American - LSM American|\)).
 \end{itemize}
 
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{corrector-feedback-from-the-graded-pdf-points-lost-and-what-to-do}{%
+\section{Corrector feedback (from the graded PDF) --- points lost and
+what to
+do}\label{corrector-feedback-from-the-graded-pdf-points-lost-and-what-to-do}}
+
+\begin{quote}
+Extracted from the grader's annotations in
+\texttt{Computational\_Finance\_Set\_2-3262965.pdf}. Two items CONFIRM
+things this sheet only raised as TODO/uncertain --- they are settled
+now.
+\end{quote}
+
+\textbf{Ex. 1 --- LSM} - \textbf{−0.2 (formatting):} \emph{``The format
+is not very good\ldots{} in the table `Cash-flow matrix at time 2',
+please keep all numbers to 5 digits after the decimal point, not only
+half numbers.''} - \textbf{−0.5 --- \texttt{np.abs} on the
+Early-Exercise Value was WRONG (CONFIRMS this sheet's TODO):}
+\emph{``For the Early Exercise Value, you do not need to use the
+absolute value (\texttt{np.abs}).''} → My Q on
+\texttt{:257}/\texttt{:223} (abs vs signed) is now settled: the
+\textbf{signed} difference is correct; remove \texttt{np.abs}. The
+early-exercise value should be \(American − European\) (and it can
+legitimately be reported as-is; absolute value is unnecessary). -
+\textbf{−0.5 --- efficiency:} \emph{``the code is not very efficient,
+try to vectorize some for loops.''} - \textbf{−1.0 --- antithetic
+standard error was WRONG (CONFIRMS this sheet's TODO):} \emph{``The s.e.
+calculation is incorrect: for antithetic Monte Carlo, the standard error
+should be computed from the 50,000 pair-averaged payoffs, not from the
+100,000 individual path payoffs. I think the standard error in the paper
+is also incorrect, and some other literature has also mentioned this
+error in this paper.''} → My \texttt{:258} s.e. TODO is settled:
+\texttt{std(cashflow)/√N} over the \textbf{100,000} individual paths is
+\textbf{wrong} because antithetic pairs are not independent. Correct
+s.e.: average each antithetic \textbf{pair} into one payoff (→ 50,000
+i.i.d. pair-averages), then \texttt{std(pair\_means)/√50000}.
+\textbf{Bonus point to make out loud:} the grader agrees the paper's own
+s.e. is also incorrect.
+
+\textbf{Ex. 2 --- Finite differences} - \textbf{−1.0 --- FD efficiency:}
+\emph{``The FD matrix \(F\) is a tridiagonal matrix, you do not need to
+store the full matrix and apply the full matrix-vector multiplication at
+each time step.''} → Use a tridiagonal (banded) representation / sparse
+solve, not a dense \(Nx×Nx\) matrix. - \textbf{−1.5 --- the FD-vs-LSM
+``test'':} \emph{``LSM is a kind of Monte Carlo, it has sampling error,
+so it is not a deterministic benchmark. And it would be better to add
+some more tests, for example, if the American price is always larger
+than or equal to the European price.''} → Don't present LSM as the
+ground truth; add the \textbf{American ≥ European} sanity check (and
+ideally compare FD against a finer FD / closed form). - \textbf{−1.0 ---
+exercise-date assumption:} \emph{``In the paper the authors assumed the
+American option can be exercised 50 times a year\ldots{} but you assumed
+it can be exercised 40000 times a year, making your American option
+price slightly larger than in the paper.''} → Your \(Nt = 40000·T\)
+makes the FD effectively continuously-exercisable; to match the paper's
+Bermudan you should allow exercise at \textbf{50/year}. Be ready to
+explain why more exercise opportunities raise the American price.
+
+\textbf{Action checklist:} (1) drop \texttt{np.abs} on EE (signed); (2)
+recompute the antithetic s.e. from 50,000 pair-averages (and mention the
+paper's error); (3) vectorize / use a tridiagonal FD solve; (4) stop
+calling LSM a deterministic benchmark, add American ≥ European; (5)
+reconcile 40000 vs 50 exercise dates.
+
 \end{document}

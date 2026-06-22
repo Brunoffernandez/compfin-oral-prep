@@ -60,6 +60,11 @@ Files:
 
 ## Assignment set 1
 
+> **Grader-confirmed corrections (from the graded PDF):**
+> - **Q13 (3c mean+var shift):** the report's claim that the mean+var shift is *less* efficient than the mean-only shift is **not supported** — the grader states the **mean+var shift usually gives smaller variance**. Do not rehearse "3c is worse"; say it is generally **better** (verify by comparing variance/std over repeated runs).
+> - **COS range in 2e:** the hand-picked `[a,b]=[−2,2]` lost the **full 1.5 points** — the **cumulant rule** `c1 ± L√(c2+√c4)` (used in 2d) was expected; the `3.67e-11` CDF plateau is the symptom of the too-narrow window.
+> - **IS vs MC:** a single run does not establish IS > MC — demonstrate it by repeated runs comparing the variance/std of the estimated quantile. Also add the missing `x → −∞` condition.
+
 Open the named file and answer at the line/function level. Point to the exact line, don't paraphrase the report.
 
 1. **`2bCF (2).py:26`** — `fk = (2/(b-a)) * Im{ char(wk) * exp(-i wk a) }`. Explain term by term where this comes from. Why the imaginary part? Why the `2/(b-a)` prefactor (and not `1/(b-a)`)? Why does `k` start at 1 (`:22`) with no `k=0` term?
@@ -105,6 +110,11 @@ Open the named file and answer at the line/function level. Point to the exact li
    **A.** A quantile is read off the CDF, and the empirical CDF is `cumsum of weights ordered by the value axis`; so you must `argsort(values)` and permute the weights by the *same* `sorter` (lines 25–27) to keep each weight attached to its observation. `cumsum(w_sorted)/sum(w_sorted)` is then the weighted empirical CDF and `searchsorted(cdf, q)` finds the first value whose cumulative mass reaches `q`. 3a is plain MC under the true measure `p`, where every path has equal weight `1/N`, so `np.quantile` (equal-weight) is correct. 3b/3c sample under `q`, so each path carries its likelihood ratio `p/q` as a weight, and the unweighted `np.quantile` would be biased — the weighted version restores an unbiased estimate of the `p`-quantile. The estimator mismatch does *not* bias the comparison: both target the same population quantile of `L_T` under `p`; what differs is the variance of the estimator, which is exactly the efficiency being compared. (One caveat: with linear interpolation in 3a vs `searchsorted` index lookup in 3b/3c, the tiny discretisation conventions differ, but at 500k paths this is immaterial.) *(confirm this matches your own reasoning)*
 
 ## Exercise set 2
+
+> **Grader-confirmed corrections (from the graded PDF) — these override the "confirm" hedges in the answers below:**
+> - **Q9 (abs vs signed early-exercise value):** the grader deducted 0.5 for using `np.abs` — the **signed** difference `American − European` is correct; **remove `np.abs`**.
+> - **Q7 (antithetic standard error):** the grader deducted 1.0 — `std/√N` over the 100,000 individual paths is **wrong** (antithetic pairs aren't independent). Correct: average each pair → 50,000 i.i.d. pair-means, then `std(pair_means)/√50000`. (Grader notes the *paper's* s.e. is also wrong.)
+> - Also flagged: vectorize the LSM loops; exploit the **tridiagonal** FD matrix (don't store/multiply the dense matrix); LSM is Monte Carlo so **not a deterministic benchmark** (add an American ≥ European test); and `Nt = 40000·T` over-prices the American vs the paper's 50-exercises/year.
 
 Files:
 - `assignments/exercise-set-2/exercise1_def (2).py` (LSM / Longstaff–Schwartz)
