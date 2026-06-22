@@ -258,3 +258,26 @@ variance shift in 3c hurts."* — see the 3b/3c TODOs.)
 - **"...where you take the weighted quantile."** -> `weighted_quantile` in `3bCF (2).py:20-34` /
   `3cCF (2).py:20-34`, called at `:56`.
 - **"...where you take the plain quantile."** -> `3aCF (2).py:42` (`np.quantile(L_T, 1-alpha)`).
+
+---
+
+## Corrector feedback (from the graded PDF) — points lost and what to do
+
+> Extracted from the grader's annotations in `Computational_Finance_Assignment_1 (1)-3213313.pdf`.
+> Two of these CONTRADICT earlier notes in this sheet — read carefully and rehearse the corrected version.
+
+- **−0.2 (p5):** *"Please also give the condition when x → −∞."* A missing limiting/boundary condition in the derivation. Add it.
+
+- **−1.5 (2e, the `[a,b] = [−2,2]` choice) — DOCUMENTED COS-RANGE DEDUCTION:**
+  *"You manually chose `[a,b] = [−2,2]` in this question, which is not a very bad choice, but please choose the `[a,b]` with the formula using cumulants as in the COS paper, which can give better error."*
+  → **Reconcile with this sheet:** elsewhere I treated `[−2,2]` as "~±6.7σ, probably wide enough" and the `3.67e-11` plateau as merely "expected truncation-range error." The grader's verdict is sharper: `[−2,2]` was the wrong way to set the range and cost the **full 1.5 points**; the cumulant rule `[a,b] = c1 ± L√(c2+√c4)` (which you DID use in 2d) was expected, and the `3.67e-11` plateau is precisely the symptom of the hand-picked window. **This is the COS-range theme, graded — over-prepare it.** Correct answer: "I should have used the cumulant range in 2e as well; the fixed `[−2,2]` is what floored the CDF error at `3.67e-11`."
+
+- **−1 (3b) and −1 (3c): IS-vs-MC conclusion not supported:**
+  *"From your numerical results of 3.a and 3.b, I cannot conclude that importance sampling is better than Monte Carlo… please test Monte Carlo and Importance Sampling several times and compare the variance/std of the quantile they get; then the variance/std of the Importance Sampling is evidently smaller."*
+  → Action: don't claim IS wins from a single run; run both **repeatedly** and compare the **variance/std of the estimated quantile**. Be ready to say this is how you'd demonstrate the variance reduction.
+
+- **−0.2 (3c) — CONTRADICTS this sheet's 3b-vs-3c claim:**
+  *"As long as `p` and `q` are pdfs for two normal distributions, then `p/q` is well defined. And if you compute the variance, you will see that in this example, the mean+var shift can usually get smaller variance than only the mean shift."*
+  → **Reconcile:** this sheet (and the report) repeatedly says the **mean+var shift (3c) is *less* efficient** than the mean-only shift (3b). The grader says the opposite: the **mean+var shift usually gives *smaller* variance**. So do NOT rehearse "3c is worse." The correct line: "3c (mean+var shift) typically achieves smaller variance than 3b; my report's claim that it was worse was not well-supported — measured over repeated runs the mean+var shift is generally better."
+
+**Action checklist:** (1) add the `x → −∞` condition; (2) say plainly the 2e range should have been the cumulant rule (this is the graded COS-range point); (3) demonstrate IS>MC via repeated-run variance comparison; (4) flip the 3b-vs-3c efficiency claim — mean+var shift is usually better.

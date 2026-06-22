@@ -125,3 +125,20 @@ Reported in the PDF (Figures 4–7), reproduced here as facts the code produces:
 | "Show the standard-error formula." | lines 39 / 75 (`std(ddof=1)/√M`) |
 | "Show the 1/√M reference-curve construction." | lines 118–122 |
 | "Where do you set the two scenarios' parameters?" | lines 136–143 and 146–153 |
+
+---
+
+## Corrector feedback (from the graded PDF) — points lost and what to do
+
+> Extracted from the grader's annotations in `Computational_Finance_Set_1 (1)-3166960.pdf`.
+> These are the most reliable predictor of what Fang will probe. Fold each into your prep.
+
+**Ex. 1 — implied volatility**
+- **−0.2 (Q1):** *"Please also give the plot of the IV for the put options."* You only plotted IV for calls. Be ready to say how you'd back out put IV (directly, or via put–call parity) and that the IV should match the call IV at the same `(K,T)`.
+- **−0.2 and −0.1 (Q2):** same missing-put-IV deduction again, **plus** *"for numerical stability please [put] a lower bound on Vega."* → This is exactly the deep-OTM/short-T danger in the Newton step (`σ ← σ − f/vega`): when `vega → 0` the step explodes. Action: clamp `vega` from below (or fall back to bisection). Know this cold — it ties to your `Vega` TODO and to the Lecture-3 bisection-vs-Newton point.
+
+**Ex. 2 — risk-neutral pricing / change of numéraire (analytic)**
+- **Notation (no points, but flagged):** *"It should be `σ(x,t) = σx`, or `σ(S_t,t) = σ S_t`. And please avoid writing `b(x,t) = r S_t`, please write `b(x,t) = r x` or `b(S_t,t) = r S_t`. Same remark for `V(x,T)`."* → Keep the state-variable argument consistent (don't mix `x` and `S_t` inside one coefficient function).
+- **Method hint (important):** *"The standard and easier method for this question is the risk-neutral pricing formula via the martingale property of the discounted price process. Please make sure that you also know this method."* → Be ready to derive the Ex. 2 result the **martingale** way (discounted price is a Q-martingale), not only via the PDE/change-of-variable route you used.
+
+**Action checklist:** (1) add IV-for-puts plot + know the parity link; (2) add a Vega floor and explain why; (3) tighten coefficient notation; (4) rehearse the martingale/risk-neutral derivation for Ex. 2.

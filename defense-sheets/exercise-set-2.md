@@ -165,3 +165,26 @@ The explicit-scheme stability constraint for the diffusion part is roughly `0.5*
 - **"...the one line that makes it American."** `exercise2_def (2).py:105` (`U = np.maximum(U, intrinsic)`).
 - **"...read the price off the grid at S0."** `:54` and `:107` (`np.interp(np.log(S0), mvec, U[:, Nt])`).
 - **"...cross-check FD against LSM."** `:235-248` (`|FD American - LSM American|`).
+
+---
+
+## Corrector feedback (from the graded PDF) — points lost and what to do
+
+> Extracted from the grader's annotations in `Computational_Finance_Set_2-3262965.pdf`.
+> Two items CONFIRM things this sheet only raised as TODO/uncertain — they are settled now.
+
+**Ex. 1 — LSM**
+- **−0.2 (formatting):** *"The format is not very good… in the table 'Cash-flow matrix at time 2', please keep all numbers to 5 digits after the decimal point, not only half numbers."*
+- **−0.5 — `np.abs` on the Early-Exercise Value was WRONG (CONFIRMS this sheet's TODO):**
+  *"For the Early Exercise Value, you do not need to use the absolute value (`np.abs`)."* → My Q on `:257`/`:223` (abs vs signed) is now settled: the **signed** difference is correct; remove `np.abs`. The early-exercise value should be `American − European` (and it can legitimately be reported as-is; absolute value is unnecessary).
+- **−0.5 — efficiency:** *"the code is not very efficient, try to vectorize some for loops."*
+- **−1.0 — antithetic standard error was WRONG (CONFIRMS this sheet's TODO):**
+  *"The s.e. calculation is incorrect: for antithetic Monte Carlo, the standard error should be computed from the 50,000 pair-averaged payoffs, not from the 100,000 individual path payoffs. I think the standard error in the paper is also incorrect, and some other literature has also mentioned this error in this paper."*
+  → My `:258` s.e. TODO is settled: `std(cashflow)/√N` over the **100,000** individual paths is **wrong** because antithetic pairs are not independent. Correct s.e.: average each antithetic **pair** into one payoff (→ 50,000 i.i.d. pair-averages), then `std(pair_means)/√50000`. **Bonus point to make out loud:** the grader agrees the paper's own s.e. is also incorrect.
+
+**Ex. 2 — Finite differences**
+- **−1.0 — FD efficiency:** *"The FD matrix `F` is a tridiagonal matrix, you do not need to store the full matrix and apply the full matrix-vector multiplication at each time step."* → Use a tridiagonal (banded) representation / sparse solve, not a dense `Nx×Nx` matrix.
+- **−1.5 — the FD-vs-LSM "test":** *"LSM is a kind of Monte Carlo, it has sampling error, so it is not a deterministic benchmark. And it would be better to add some more tests, for example, if the American price is always larger than or equal to the European price."* → Don't present LSM as the ground truth; add the **American ≥ European** sanity check (and ideally compare FD against a finer FD / closed form).
+- **−1.0 — exercise-date assumption:** *"In the paper the authors assumed the American option can be exercised 50 times a year… but you assumed it can be exercised 40000 times a year, making your American option price slightly larger than in the paper."* → Your `Nt = 40000·T` makes the FD effectively continuously-exercisable; to match the paper's Bermudan you should allow exercise at **50/year**. Be ready to explain why more exercise opportunities raise the American price.
+
+**Action checklist:** (1) drop `np.abs` on EE (signed); (2) recompute the antithetic s.e. from 50,000 pair-averages (and mention the paper's error); (3) vectorize / use a tridiagonal FD solve; (4) stop calling LSM a deterministic benchmark, add American ≥ European; (5) reconcile 40000 vs 50 exercise dates.

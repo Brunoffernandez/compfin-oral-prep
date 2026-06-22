@@ -212,3 +212,12 @@ This is the single question most worth over-preparing.
 - **"…where you match 2 / 3 / 4 moments."** `price_2moments :78-89`, `price_3moments :91-107`,
   `price_4moments :109-139` in `Q2_moment_matching (1).py`.
 - **"…where the MC benchmark uses antithetics."** `Q2_moment_matching (1).py:154-158` and `:176-179`.
+
+---
+
+## Corrector feedback (from the graded PDF)
+
+> The returned PDF in this folder (`Computational_Finance_Assignment_2 (2) (1).pdf`) contains **no grader
+> annotations** — no embedded scores or comments were found, so there is nothing to reconcile here. The
+> COS truncation-range discussion above stands on its own. If a separately-graded copy exists, share it and
+> I'll fold the comments in the same way as for the other three sets.
