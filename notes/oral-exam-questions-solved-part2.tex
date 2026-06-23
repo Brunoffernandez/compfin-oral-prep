@@ -1,0 +1,280 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ch}{\varphi}
+\newcommand{\Lop}{\mathcal{L}}
+\newcommand{\psumN}{{\sum_{k=0}^{N-1}}'}
+
+\newtcolorbox{keybox}{colback=blue!4!white,colframe=blue!45!black,boxrule=0.4pt,
+  left=4pt,right=4pt,top=3pt,bottom=3pt,arc=2pt}
+
+\setlist[enumerate]{leftmargin=1.5em,topsep=3pt,itemsep=2pt}
+\setlist[itemize]{leftmargin=1.4em,topsep=3pt,itemsep=2pt}
+
+\newcommand{\Qq}[1]{\bigskip\noindent\textbf{\large #1}\par\nobreak\smallskip}
+\newcommand{\A}{\noindent\textbf{A.}\ }
+
+\title{\textbf{Computational Finance (WI4151) --- Oral Exam: Worked Answers, Part 2}\\[3pt]
+\large 20 more concept-level questions and answers, English. Companion to
+\texttt{oral-exam-questions-solved.pdf}.}
+\author{TU Delft --- Prof.\ F.\ Fang \quad\textbar\quad based on the course slides and assignments}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+\begin{keybox}
+\textbf{How to use this.} Part~1 covered the 11 questions reported from the 23~June oral (the three methods,
+Bermudan by MC/COS, correlated paths, FD schemes, the COS breakthrough, CDF inversion, affine cf, the pricing
+PDE, the COS steps). This Part~2 adds 20 \emph{more} questions of the same conceptual flavour, spanning the
+whole course. Same rule as the real exam: answer the \emph{idea}, then go one layer deeper if pushed.
+\end{keybox}
+
+\tableofcontents
+\bigskip
+
+% ==========================================================
+\section{Risk-neutral pricing and the Black--Scholes world}
+% ==========================================================
+
+\Qq{Q1. Why do we price under the risk-neutral measure $\Q$ and not the physical measure $\Prob$? What is Girsanov's role?}
+\A Because a price is the \emph{cost of a hedge}, not a forecast. By no-arbitrage, a contingent claim that can be
+replicated must cost the same as its replicating portfolio, and that cost equals the discounted expectation
+under the \emph{equivalent martingale measure} $\Q$ --- the measure under which discounted tradable prices are
+martingales. Under the physical measure $\Prob$ the stock drifts at $\mu$, which encodes risk preferences;
+delta-hedging removes the risk, so preferences (and $\mu$) cannot enter the price. \emph{Girsanov} is the tool
+that changes measure: it shifts the Brownian drift by the \emph{market price of risk} $\theta=(\mu-r)/\sigma$,
+turning $\dd W^{\Prob}$ into $\dd W^{\Q}=\dd W^{\Prob}+\theta\,\dd t$, so the stock drift becomes $r$ while the
+volatility $\sigma$ (the quadratic variation) is unchanged. Equivalence ($\Prob\sim\Q$, same null sets) is what
+keeps the model arbitrage-free.
+
+\Qq{Q2. What exactly is the characteristic function, and why is it the central object of this course?}
+\A The characteristic function of a random variable $X$ is $\ch_X(u)=\E[e^{\ii uX}]=\int_\R e^{\ii ux}f(x)\dd x$
+--- the Fourier transform of the density. It \emph{always exists} ($|e^{\ii uX}|=1$), it \emph{uniquely
+determines} the distribution, and its log generates the cumulants
+($c_n=\frac{1}{\ii^n}\frac{\dd^n}{\dd u^n}\ln\ch_X(u)\big|_{u=0}$). It is central because for almost every model
+used in pricing (Black--Scholes, Heston, Variance-Gamma, Merton/Kou jumps, affine jump-diffusions) the
+\emph{density is intractable but $\ch$ is known in closed form}. COS turns that knowledge directly into a price
+(the cosine coefficients of $f$ are $\Real\{\ch\}$ on a grid), and the cumulants of $\ch$ fix the COS truncation
+range.
+
+\Qq{Q3. Why does COS use a \emph{cosine} series and not a full complex Fourier series?}
+\A Three reasons: (i) extending $f$ to an \emph{even} function on $[a,b]$ kills all the sine terms, so the
+coefficients are \emph{real} --- real arithmetic, half the storage; (ii) the cosine coefficient is exactly the
+\emph{real part} of the characteristic function at the grid frequency $u_k=k\pi/(b-a)$, so it is read off $\ch$
+in one line with no inversion integral; (iii) the payoff coefficients $V_k$ then reduce to \emph{elementary
+closed forms} ($\chi_k$, $\psi_k$). A full complex Fourier series carries twice the coefficients and complex
+bookkeeping for no benefit.
+
+\Qq{Q4. Why is the COS truncation range chosen as $[a,b]=c_1\pm L\sqrt{c_2+\sqrt{c_4}}$? Interpret each term.}
+\A The range must contain (almost) all the probability mass of the log-return. $c_1$ (the mean) \emph{centres}
+the interval; $c_2$ (the variance) sets the natural width scale $\sqrt{c_2}$, so $L\sqrt{c_2}$ is an
+``$L$-standard-deviation'' box; $\sqrt{c_4}$ (from the fourth cumulant, i.e.\ kurtosis) \emph{fattens} the box
+for heavy-tailed models and vanishes for Gaussian returns; $L\approx 8\text{--}12$ is the safety multiplier.
+The trade-off: too narrow $\Rightarrow$ you truncate real mass and the price is biased (a fixed error floor);
+too wide $\Rightarrow$ you need more terms $N$ for the same accuracy (cost grows with $b-a$).
+
+\Qq{Q5. What governs the convergence rate of COS --- when is it exponential and when only algebraic?}
+\A There are three error sources: \emph{range truncation} (fixed once $[a,b]$ is chosen --- it sets the accuracy
+\emph{floor}), \emph{series truncation} at $N$, and any error in $\ch$. The rate in $N$ is governed by the decay
+of the cosine coefficients $A_k$, which is governed by the \emph{smoothness} of the density: if $f$ is analytic
+(or $C^\infty$ with integrable derivatives) the $A_k$ decay \emph{exponentially} $\Rightarrow$ exponential
+convergence (machine precision in dozens–hundreds of terms); if $f$ has only finite smoothness ($\beta$
+integrable derivatives) then $A_k=O(k^{-(\beta+1)})$ $\Rightarrow$ only \emph{algebraic} convergence. So a
+\emph{lack of smoothness} is what kills the exponential rate --- e.g.\ Variance-Gamma with small $\nu$ (a cusp
+in the density) or a very short maturity (the density approaches a Dirac).
+
+\Qq{Q6. Compare COS with the Carr--Madan FFT method. When does COS win?}
+\A Both need only the characteristic function. Carr--Madan damps the call ($c_T(k)=e^{\alpha k}C_T(k)$ in
+log-strike), Fourier-transforms it analytically, and \emph{inverts numerically by FFT}. Its weaknesses, all of
+which COS removes: it performs a numerical \emph{integration} (so it is quadrature-limited, only algebraic
+accuracy, and needs thousands of FFT nodes), and it needs a free \emph{damping parameter} $\alpha$ to make the
+call integrable. COS is one $O(N)$ cosine sum --- \emph{no integration, no FFT, no $\alpha$} --- with
+\emph{exponential} convergence, reaching machine precision in a few dozen to a few hundred terms. COS wins for
+smooth, low-dimensional European problems with a known $\ch$; you only have to choose $[a,b]$ carefully.
+
+% ==========================================================
+\section{Stochastic volatility and jumps}
+% ==========================================================
+
+\Qq{Q7. What is the Feller condition in the Heston model and why does it matter?}
+\A Heston's variance follows the CIR process $\dd v=\kappa(\bar v-v)\dd t+\eta\sqrt v\,\dd W$. The Feller
+condition $2\kappa\bar v\ge\eta^2$ guarantees that the variance stays strictly positive (the origin is
+\emph{unattainable}). It matters in two places: (i) \emph{simulation} --- if it is violated, $v$ visits zero,
+the $\sqrt v$ diffusion degenerates and an Euler scheme produces negative variance; (ii) \emph{the density / cf}
+--- when $v$ piles up at $0$ the conditional density is badly behaved and the characteristic-function evaluation
+(hence COS) loses accuracy. In words: it is the condition under which the mean-reversion ``push'' away from zero
+($2\kappa\bar v$) dominates the noise ($\eta^2$).
+
+\Qq{Q8. Why is Heston \emph{not} affine in $(S,v)$ but \emph{is} affine in $(\ln S,v)$?}
+\A ``Affine'' means the drift, the instantaneous covariance and the jump intensity are all linear-plus-constant
+in the state. In $(S,v)$ the stock diffusion is $\sqrt v\,S\,\dd W$, so the variance of $S$ is $vS^2$ --- it
+involves the \emph{product} $v\cdot S^2$, which is not affine. Switch to the log-price $x=\ln S$:
+$\dd x=(r-\tfrac12 v)\dd t+\sqrt v\,\dd W_1$. Now the drift $r-\tfrac12 v$ is affine in $v$, the variance of
+$x$ is $v$ (affine in $v$), and the variance dynamics are already affine. So the pair $(x,v)$ is an affine
+process, which is exactly why its characteristic function is exponential-affine
+$\ch=\exp(\alpha+\beta\cdot(x,v))$ obtained from Riccati ODEs.
+
+\Qq{Q9. How do you simulate the Heston model, and what goes wrong with a naive Euler scheme?}
+\A The problem is the variance leg. A plain Euler step
+$v_{n+1}=v_n+\kappa(\bar v-v_n)\Delta t+\eta\sqrt{v_n}\,\Delta W$ can overshoot below zero (especially when
+Feller is violated), and then $\sqrt{v_{n+1}}$ is undefined. Fixes: \emph{full truncation} (use
+$v^+=\max(v,0)$ inside the drift and diffusion), \emph{reflection} ($|v|$), or the log-variance / Andersen-QE
+schemes. The \emph{exact} method (Broadie--Kaya) samples $v_T$ from its noncentral-$\chi^2$ law and the
+\emph{integrated variance} $\int v\,\dd s$ from its characteristic function (numerically inverting the recovered
+CDF), then samples $S_T$ given those. Trade-off: exact is unbiased but slow; truncation schemes are fast but
+introduce a discretisation bias. The spot and variance Brownian motions are correlated by $\rho$ (Cholesky,
+Part~1 Q5).
+
+\Qq{Q10. What is the difference between strong and weak convergence of an SDE scheme, and which one matters for option pricing?}
+\A \emph{Strong} convergence controls the pathwise error: $\E|X_T^{\Delta t}-X_T|\le C\,\Delta t^{\,p}$ (order
+$p$). \emph{Weak} convergence controls the error in distribution / in expectations:
+$|\E g(X_T^{\Delta t})-\E g(X_T)|\le C\,\Delta t^{\,q}$ (order $q$). A European price is an \emph{expectation}
+$\E[\text{payoff}]$, so the \emph{weak} order is what governs the bias (Euler already has weak order $1$). Strong
+order matters when paths themselves matter --- path-dependent payoffs, or multilevel Monte Carlo. Euler--Maruyama
+is (strong $\tfrac12$, weak $1$); Milstein is (strong $1$, weak $1$).
+
+\Qq{Q11. What is a jump-diffusion / compound Poisson process and what is its characteristic function?}
+\A A compound Poisson process is $Q_t=\sum_{i=1}^{N_t}J_i$, where $N_t$ is a Poisson process with intensity
+$\lambda$ (jumps arrive at rate $\lambda$) and the $J_i$ are i.i.d.\ jump sizes. Conditioning on $N_t$ and using
+the Poisson law gives its characteristic function in closed form,
+\[
+\ch_{Q_t}(u)=\exp\!\big(t\,\lambda(\theta_J(u)-1)\big),\qquad \theta_J(u)=\E[e^{\ii uJ}],
+\]
+where $\lambda(\theta_J(u)-1)$ is the \emph{L\'evy--Khintchine jump exponent}. A jump-\emph{diffusion} log-price
+adds a Brownian part, so $\ch(u,t)=\exp\!\big(t[\,\ii u\mu-\tfrac12\sigma^2u^2+\lambda(\theta_J(u)-1)\,]\big)$.
+Merton takes Gaussian jumps ($\theta_J$ a Gaussian cf); Kou takes double-exponential jumps. Because $\ch$
+closes, COS prices these directly. (Risk-neutrality requires a drift compensator $\mu=r-\lambda\E[e^J-1]$.)
+
+\Qq{Q12. What is the PIDE for a jump model and why is it ``non-local''? Why prefer Fourier methods?}
+\A For a jump-diffusion the value solves a \emph{partial integro-differential equation}: besides the usual
+diffusion terms, the generator has an integral term
+$\lambda\!\int\![\,V(x+z,t)-V(x,t)-(e^z-1)\partial_x V\,]\,\nu(\dd z)$. It is \emph{non-local} because a jump
+connects the point $x$ to far-away points $x+z$ --- the equation at $x$ couples to the solution everywhere, not
+just to neighbouring grid points. Finite differences must then handle a dense/non-local operator at every step,
+which is expensive and awkward. Fourier/COS methods avoid this entirely: the jump enters \emph{analytically}
+through the characteristic function, so the same $O(N)$ machinery applies with no extra cost. This is a major
+reason Fourier methods dominate for L\'evy/jump models.
+
+% ==========================================================
+\section{PDE / finite-difference and lattice methods}
+% ==========================================================
+
+\Qq{Q13. Write the Black--Scholes PDE and explain what each term means, with the boundary and terminal conditions.}
+\A The PDE is
+\[
+\partial_t V+rS\,\partial_S V+\tfrac12\sigma^2S^2\partial_{SS}V-rV=0 .
+\]
+Reading the terms at a fixed spot: $\partial_t V$ is time decay (theta); $rS\,\partial_S V$ is the
+risk-neutral drift acting on the delta; $\tfrac12\sigma^2S^2\partial_{SS}V$ is the diffusion / convexity term
+(gamma) --- the only place volatility enters; $-rV$ is discounting. The \emph{terminal} condition is the
+payoff, $V(S,T)=g(S)$ (it is solved \emph{backward} in time). \emph{Boundary} conditions at the edges of the
+$S$-domain, e.g.\ for a call $V(0,t)=0$ and $V(S,t)\to S-Ke^{-r(T-t)}$ as $S\to\infty$; for a knock-out barrier,
+a homogeneous (absorbing) condition at the barrier. It is exactly the Feynman--Kac PDE of the risk-neutral
+expectation.
+
+\Qq{Q14. Which finite-difference schemes are there, and how do you choose between them?}
+\A On the heat-equation form, with $\nu=\Delta t/\Delta x^2$: \emph{FTCS} (explicit) --- cheap, one-step update,
+but only conditionally stable ($\nu\le\tfrac12$ by von Neumann, so the time step must scale like $\Delta x^2$);
+\emph{BTCS} (implicit) --- solve a tridiagonal system each step, \emph{unconditionally} stable;
+\emph{Crank--Nicolson} (their average) --- second-order accurate in time ($O(\Delta t^2+\Delta x^2)$) and
+unconditionally stable, the usual default, with mild oscillations possible near non-smooth payoffs. They are
+the $\theta=0,1,\tfrac12$ members of the $\theta$-scheme. Choose CN for accuracy; FTCS only when simplicity
+matters and the CFL step is affordable; for American options replace the linear solve by projected SOR (PSOR).
+
+\Qq{Q15. Explain von Neumann stability and the CFL condition for the explicit scheme.}
+\A Insert a Fourier mode $u_j^i=\xi^i e^{\ii\beta j\Delta x}$ into the scheme and solve for the
+\emph{amplification factor} $\xi(\beta)$; the scheme is stable iff $|\xi(\beta)|\le1$ for all modes $\beta$. For
+FTCS one gets $\xi=1-4\nu\sin^2(\beta\Delta x/2)$, and $|\xi|\le1$ forces the \emph{CFL condition}
+$\nu=\Delta t/\Delta x^2\le\tfrac12$, i.e.\ the time step must shrink like the square of the space step ---
+expensive when refining the grid. For BTCS $\xi=1/(1+4\nu\sin^2(\beta\Delta x/2))$, which is $\le1$ for every
+$\nu$, so it is unconditionally stable. (Lax equivalence: consistency $+$ stability $\Rightarrow$ convergence.)
+
+\Qq{Q16. How is the binomial tree related to finite differences, and how are the CRR parameters chosen?}
+\A The CRR up/down factors $u,d$ and risk-neutral probability $p$ are fixed by \emph{matching the first two
+moments} (mean and variance) of the one-step log-return to the risk-neutral GBM values; pricing is then backward
+induction $V=e^{-r\Delta t}(pV_u+(1-p)V_d)$. This is precisely an \emph{explicit finite-difference scheme on a
+log-price grid}: with the coupling $\Delta x^2=\sigma^2\Delta t$ the central node of the three-point explicit
+stencil drops out and you are left with the two-point binomial recursion. So a binomial tree is an explicit FD
+scheme specialised to a single time-zero value; convergence is $O(1/M)$ and non-monotone (the error oscillates
+as the strike straddles nodes).
+
+\Qq{Q17. Why do we work in $x=\ln S$ in both finite differences and COS?}
+\A Because it makes the coefficients \emph{constant}. In $S$ the BS PDE has $S$-dependent coefficients
+($rS\,\partial_S$, $\tfrac12\sigma^2S^2\partial_{SS}$); on a uniform $S$-grid the diffusion weight grows like
+$j^2$, which hurts conditioning and stability at large $S$. In $x=\ln S$ the PDE becomes a constant-coefficient
+advection--diffusion equation $\partial_t V+(r-\tfrac12\sigma^2)\partial_x V+\tfrac12\sigma^2\partial_{xx}V-rV=0$,
+which is uniform, well-conditioned and reduces cleanly to the heat equation. COS likewise works in the log-state
+because the characteristic functions and the cumulant range are naturally expressed for the log-return. (It is
+the same domain lesson as the COS truncation $[a,b]$.)
+
+% ==========================================================
+\section{Foundations, Greeks and variance reduction}
+% ==========================================================
+
+\Qq{Q18. State put--call parity, explain why it is model-free, and how it is used numerically.}
+\A Put--call parity is $C+Ke^{-r(T-t)}=P+S_t$. It follows from a \emph{static} replication: a portfolio of a
+call plus cash $Ke^{-r(T-t)}$ and a portfolio of a put plus the share both pay $\max(S_T,K)$ at maturity, so by
+no-arbitrage they cost the same today. It uses \emph{only} no-arbitrage and a constant rate --- no assumption
+about the dynamics of $S$ --- hence it is \emph{model-free}. Numerically it gives a free correctness check on
+any pricer, lets you recover one IV from the other (a put and call at the same $(K,T)$ share one implied vol),
+and its barrier analogue --- \emph{in--out parity} $C_{\text{in}}+C_{\text{out}}=C_{\text{vanilla}}$ --- lets
+you price the easier knock-out leg and subtract.
+
+\Qq{Q19. Why is an American call on a non-dividend stock never exercised early, while the put can be?}
+\A For the call, the no-arbitrage bound $C\ge S-Ke^{-r(T-t)}>S-K$ (for $r>0$) says the \emph{live} call is worth
+strictly more than its intrinsic value $S-K$, so you would never throw away that surplus by exercising early ---
+hence American call $=$ European call. Intuitively, exercising early forfeits the interest you could earn on the
+strike and the remaining ``insurance'' (time) value. For the \emph{put}, parity gives
+$P\ge Ke^{-r(T-t)}-S$, and since $Ke^{-r(T-t)}<K$ the live put can fall \emph{below} its intrinsic value
+$K-S$; then exercising early to receive $K$ now and earn interest on it can be optimal. That is why the put has
+a genuine free boundary and the call does not (without dividends).
+
+\Qq{Q20. What is the reflection principle, and how does it give the law of the running maximum used to price barriers under GBM?}
+\A For a standard Brownian motion $W$, the events $\{\max_{[0,T]}W\ge a\}$ and $\{\tau_a\le T\}$ (first hitting
+of level $a$) coincide. Reflecting the path after $\tau_a$ shows that a path which has touched $a$ is equally
+likely to end above or below $a$, giving $\Prob(\tau_a\le T)=2\,\Prob(W_T\ge a)$. Hence the running maximum has
+the law of $|W_T|$, with density $p_{\max}(a)=\sqrt{2/(\pi T)}\,e^{-a^2/2T}$ on $a\ge0$; reflecting the endpoint
+at $2a-b$ gives the \emph{joint} density of $(\,\text{max},W_T\,)$. Under GBM the barrier-crossing event is
+controlled by the maximum of a \emph{drifted} Brownian motion, and integrating the payoff against this joint
+density (the drift handled by a Girsanov reweighting) yields the closed-form barrier prices. This is the
+analytic backbone behind the (continuously-monitored) barrier formulas.
+
+\begin{keybox}
+\textbf{Greeks across the three methods (one compact answer worth memorising).}
+\begin{itemize}
+  \item \textbf{Monte Carlo:} \emph{pathwise} derivative (differentiate the discounted payoff along the path),
+  the \emph{likelihood-ratio} method (differentiate the density/weight, good for discontinuous payoffs), or
+  \emph{bump-and-revalue} finite differences with \emph{common random numbers} to control the noise.
+  \item \textbf{Finite differences:} read the Greeks straight off the grid --- $\Delta=\partial_S V$ and
+  $\Gamma=\partial_{SS}V$ from neighbouring nodes, $\Theta$ from adjacent time levels --- essentially free.
+  \item \textbf{COS:} differentiate the closed-form sum \emph{analytically}. Since $S_0$ enters only through the
+  cf factor $e^{\ii u x_0}$, $\Delta$ and Vega are termwise derivatives of the same $O(N)$ sum --- fast and
+  high-accuracy, no re-integration.
+\end{itemize}
+\end{keybox}
+
+\vspace{4pt}
+\noindent\textbf{Closing one-liner (ties Parts 1 and 2 together).} Everything is one identity ---
+$V=e^{-rT}\E^{\Q}[\text{payoff}]$ --- attacked three ways: \emph{sample} it (Monte Carlo), \emph{solve the PDE}
+it satisfies (finite differences), or \emph{evaluate the integral via the characteristic function} (COS); the
+same cf / affine structure, Cholesky correlation, reflection principle and backward recursion then recur across
+Heston, jumps, American/Bermudan and barrier options.
+
+\end{document}
