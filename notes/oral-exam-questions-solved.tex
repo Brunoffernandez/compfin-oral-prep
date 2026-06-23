@@ -1,0 +1,446 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ch}{\varphi}
+\newcommand{\Lop}{\mathcal{L}}
+\newcommand{\psumN}{{\sum_{k=0}^{N-1}}'}
+
+\newtcolorbox{keybox}{colback=blue!4!white,colframe=blue!45!black,boxrule=0.4pt,
+  left=4pt,right=4pt,top=3pt,bottom=3pt,arc=2pt}
+
+\setlist[enumerate]{leftmargin=1.5em,topsep=3pt,itemsep=2pt}
+\setlist[itemize]{leftmargin=1.4em,topsep=3pt,itemsep=2pt}
+
+\newcommand{\Qhead}[1]{\bigskip\noindent\textbf{\large #1}\par\nobreak\smallskip}
+
+\title{\textbf{Computational Finance (WI4151) --- Oral Exam: Worked Answers}\\[3pt]
+\large Reconstructed from a 23 June 2026 exam report. Concept-level questions, English.}
+\author{TU Delft --- Prof.\ F.\ Fang \quad\textbar\quad based on the course slides and assignments}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+\begin{keybox}
+\textbf{Read this first --- the exam format.} The oral is \emph{conceptual}: she asks about the \emph{ideas}
+behind the methods, not about your specific code (you do \emph{not} get to see your own code). A common
+opening: \emph{``Which of the three numerical methods do you find easiest?''} --- and you start there.
+So have a confident one-line summary of each method and be ready to go deep on the concepts. Everything below
+is the theory you need, in the order the questions were asked.
+\end{keybox}
+
+\tableofcontents
+\bigskip
+
+% ============================================================
+\section{The three numerical methods for option pricing}
+% ============================================================
+\Qhead{Q1. What are the three numerical methods for option pricing?}
+
+\textbf{Monte Carlo (MC)}, the \textbf{COS method} (Fourier-cosine), and \textbf{Finite Differences (FD)}.
+(One can add the binomial tree and the Carr--Madan FFT, but these three are the headline methods.)
+
+The unifying starting point is that \emph{every} option price is a discounted risk-neutral expectation of the
+payoff,
+\begin{equation}\label{eq:price}
+V(x_0,t_0)=e^{-rT}\,\E^{\Q}\!\big[\,\text{payoff}(X_T)\,\big]
+        =e^{-rT}\!\int_{\R} g(y)\,f(y\mid x_0)\dd y ,
+\end{equation}
+where $X$ is the (log-)state, $f$ is its risk-neutral transition density and $g$ the payoff. The three
+methods are three different ways to evaluate this object:
+\begin{itemize}
+  \item \textbf{MC} \emph{samples} the expectation \eqref{eq:price}: simulate many paths of $X$, average the
+  discounted payoff.
+  \item \textbf{FD} solves the \emph{pricing PDE} that \eqref{eq:price} satisfies (Feynman--Kac), on a grid.
+  \item \textbf{COS} evaluates the \emph{integral} in \eqref{eq:price} by expanding $f$ in a Fourier-cosine
+  series whose coefficients come from the \emph{characteristic function}.
+\end{itemize}
+
+% ============================================================
+\section{Main concepts of each method}
+% ============================================================
+\Qhead{Q2. For each method, explain the main concepts.}
+(She asks which you find easiest and you start with that. Below is the full content for each; lead with
+whichever you are most fluent in.)
+
+\subsection{Monte Carlo}
+\textbf{Idea.} Approximate $\E^{\Q}[g]$ by the sample mean over $M$ independent simulated paths:
+$\hat V=e^{-rT}\frac1M\sum_{m=1}^M g(X_T^{(m)})$.
+\begin{itemize}
+  \item \textbf{Why it is unbiased and how fast.} $\E[\hat V]=V$ (unbiased); the error is governed by the CLT,
+  $\mathrm{Var}(\hat V)=\sigma_g^2/M$, so the standard error decays like $O(M^{-1/2})$ --- crucially
+  \emph{independent of the dimension} $d$. Report a confidence interval $\hat V\pm z_{\alpha/2}\,s/\sqrt M$.
+  \item \textbf{Simulating $X$.} For GBM you can sample the terminal value \emph{exactly}
+  ($S_T=S_0e^{(r-\frac12\sigma^2)T+\sigma W_T}$). For a general SDE you time-step:
+  \emph{Euler--Maruyama} (strong order $\tfrac12$, weak order $1$) or \emph{Milstein} (strong order $1$,
+  adds the $\tfrac12 bb'[(\Delta W)^2-\Delta t]$ term).
+  \item \textbf{Variance reduction} (same accuracy, fewer paths): antithetic variates ($\pm Z$), control
+  variates (optimal coefficient $c^\ast=\mathrm{Cov}/\mathrm{Var}$, residual factor $1-\rho^2$), importance
+  sampling (change the sampling measure, reweight by the likelihood ratio), and quasi-Monte Carlo
+  (low-discrepancy points, near $O(M^{-1})$).
+  \item \textbf{Strengths / weaknesses.} Strength: high dimension and path-dependence are easy, the rate does
+  not deteriorate with $d$. Weakness: slow $O(M^{-1/2})$ convergence; only a statistical error; early exercise
+  needs extra machinery (Longstaff--Schwartz, Q3).
+\end{itemize}
+
+\subsection{Finite differences}
+\textbf{Idea.} The price solves a PDE (Q10); discretise it on a grid and march \emph{backward} in time from
+the payoff.
+\begin{itemize}
+  \item Work in $x=\ln S$ so the Black--Scholes PDE has \emph{constant coefficients}:
+  $\partial_t V+(r-\tfrac12\sigma^2)\partial_x V+\tfrac12\sigma^2\partial_{xx}V-rV=0$. Replace derivatives by
+  difference quotients on a grid $(x_j,t_i)$.
+  \item \textbf{Schemes} (see Q6): FTCS (explicit), BTCS (implicit), Crank--Nicolson; chosen for a
+  stability/accuracy trade-off.
+  \item \textbf{Boundary/terminal conditions.} Terminal condition $=$ payoff; boundary conditions at the grid
+  edges (e.g.\ Dirichlet). For \emph{barriers}, a homogeneous (absorbing) boundary at the barrier. For
+  \emph{American/Bermudan}, impose the early-exercise constraint $V\ge$ payoff at every step (a linear
+  complementarity problem, solved by projection / PSOR).
+  \item \textbf{Strengths / weaknesses.} Strength: low-dimensional problems, American options (free boundary),
+  and the Greeks read straight off the grid. Weakness: the curse of dimensionality --- impractical beyond
+  $2$--$3$ state variables.
+\end{itemize}
+
+\subsection{The COS method}
+\textbf{Idea.} Evaluate the integral \eqref{eq:price} spectrally. Truncate the density to a finite interval
+$[a,b]$, expand it in a \emph{Fourier-cosine series}, and note that the cosine coefficients are nothing but
+the \emph{characteristic function} sampled on a grid. Pair them against the cosine coefficients of the payoff.
+\begin{itemize}
+  \item Cost is a single $O(N)$ sum (no numerical integration, no FFT for the European case); convergence is
+  \emph{exponential} in $N$ for smooth densities.
+  \item Needs the characteristic function $\ch$ in closed form --- true for Black--Scholes, Heston, the
+  L\'evy/jump models, and affine jump-diffusions in general.
+  \item \textbf{Strengths / weaknesses.} Strength: extremely fast and accurate for European options, and it
+  extends to Bermudan/American (Q4) and barriers. Weakness: needs the cf; effectively low-dimensional; you
+  must choose the truncation range $[a,b]$ well (the one real pitfall, Q11).
+\end{itemize}
+The full algorithm is Q11; the ``why it works'' is Q7.
+
+% ============================================================
+\section{Bermudan options by Monte Carlo (Longstaff--Schwartz)}
+% ============================================================
+\Qhead{Q3. Can you price Bermudan options with Monte Carlo, and how?}
+\textbf{Yes --- by the Longstaff--Schwartz least-squares Monte Carlo (LSM) algorithm.}
+
+A Bermudan option can be exercised at a finite set of dates $t_1<\dots<t_M$. At each date the holder compares
+the \emph{intrinsic value} (exercise now) with the \emph{continuation value} (keep the option),
+$V(t_m)=\max\big(\,\Lambda(S_{t_m}),\ c(S_{t_m})\,\big)$, where the continuation value is the discounted
+risk-neutral expectation of next period's value,
+\[
+c(S_{t_m})=\E^{\Q}\!\big[e^{-r\Delta t}V(t_{m+1})\,\big|\,S_{t_m}\big].
+\]
+
+\textbf{Why naive MC fails.} Forward-simulated paths do not, by themselves, tell you the conditional
+expectation $c$ at an interior node; estimating it by a fresh inner Monte Carlo at every node of every path is
+prohibitively expensive (nested simulation).
+
+\textbf{The LSM trick --- regression.} Replace the conditional expectation by a \emph{least-squares
+regression} on a small set of basis functions of the current state (e.g.\ $1,S,S^2$, or weighted Laguerre
+polynomials). Working \emph{backward} from $t_M$:
+\begin{enumerate}
+  \item At $t_M$ the value is the payoff.
+  \item At each earlier date $t_m$, take the \emph{in-the-money} paths, regress the realised discounted
+  future cash flows $Y$ on the basis $\{\psi_j(S_{t_m})\}$, giving an estimate $\hat c(S_{t_m})$ of the
+  continuation value.
+  \item Exercise on a path iff $\Lambda(S_{t_m})>\hat c(S_{t_m})$; otherwise carry the cash flow forward.
+  \item At the end, discount each path's single realised cash flow to $t_0$ and average.
+\end{enumerate}
+\textbf{Key points to state:} regress only on \emph{in-the-money} paths (the exercise decision is irrelevant
+elsewhere, and it conditions the regression where it matters); the regression \emph{approximates} the
+conditional expectation; and the estimator has a small \emph{low bias} (a sub-optimal exercise policy can only
+lose value) together with an in-sample ``foresight'' bias --- so a clean estimate uses an independent
+out-of-sample set of paths for the valuation pass.
+
+% ============================================================
+\section{Bermudan options by the COS method}
+% ============================================================
+\Qhead{Q4. Can you price Bermudan options with the COS method, and how?}
+\textbf{Yes --- by the Fang--Oosterlee COS backward recursion.}
+
+Use the same dynamic-programming structure as LSM, but compute the continuation value by COS instead of by
+regression. In the log-state $x=\ln(S/K)$, for $m=M,M-1,\dots,1$:
+\begin{equation}\label{eq:berm}
+c(x,t_{m-1})=e^{-r\Delta t}\!\int_{\R} v(y,t_m)\,f(y\mid x)\dd y,
+\qquad v(x,t_{m-1})=\max\big(\Lambda(x),\,c(x,t_{m-1})\big).
+\end{equation}
+Each continuation integral is \emph{exactly a European COS step}: with
+$F_k(x)=\Real\{\ch(\tfrac{k\pi}{b-a};x)e^{-\ii k\pi a/(b-a)}\}$,
+\[
+c(x,t_{m-1})\approx e^{-r\Delta t}\psumN F_k(x)\,V_k(t_m),
+\]
+where $V_k(t_m)$ are the cosine coefficients of the \emph{next} step's value $v(\cdot,t_m)$. The work is to
+propagate those coefficients backward. Because $v=\max(\Lambda,c)$, at each date one finds the
+\textbf{early-exercise point} $x_m^\ast$ where $c=\Lambda$ (by Newton's method) and \emph{splits} the
+coefficient integral at $x_m^\ast$:
+\[
+V_k(t_m)=\underbrace{G_k(\cdots)}_{\text{closed-form payoff part}}+\underbrace{C_k(\cdots)}_{\text{continuation part}} .
+\]
+$G_k$ is the analytic payoff coefficient ($\chi_k,\psi_k$); $C_k$ is built from the \emph{previous} step's
+coefficients through a coefficient-coupling matrix that is the sum of a \textbf{Toeplitz} and a \textbf{Hankel}
+matrix --- so each step is a discrete convolution computed by \textbf{FFT} in $O(N\log N)$. Total cost
+$O(M\,N\log_2 N)$. A Bermudan price with many exercise dates approximates the American (extrapolate in $\Delta t$).
+
+\begin{keybox}
+\textbf{Contrast worth saying out loud:} the \emph{European} COS method needs \emph{no} FFT --- it is one
+$O(N)$ sum. The \emph{Bermudan/barrier} COS method \emph{does} use the FFT, because at every exercise/monitoring
+date you must propagate the whole vector of cosine coefficients, and that propagation is a structured
+(Toeplitz $+$ Hankel) matrix--vector product, i.e.\ a convolution.
+\end{keybox}
+
+% ============================================================
+\section{Simulating two correlated sample paths}
+% ============================================================
+\Qhead{Q5. How do you simulate two correlated sample paths?}
+\textbf{By the Cholesky factorisation of the correlation matrix.}
+
+You want two Brownian increments with $\dd W_1\,\dd W_2=\rho\,\dd t$. Draw two \emph{independent} standard
+normals $Z_1,Z_2\sim N(0,1)$ and set
+\begin{equation}\label{eq:chol2}
+\boxed{\;W_1=Z_1,\qquad W_2=\rho\,Z_1+\sqrt{1-\rho^2}\,Z_2.\;}
+\end{equation}
+Then $\mathrm{Var}(W_2)=\rho^2+(1-\rho^2)=1$ and $\mathrm{Cov}(W_1,W_2)=\rho$, as required. This is exactly the
+$2\times2$ Cholesky factor of the correlation matrix
+$\Sigma=\begin{psmallmatrix}1&\rho\\ \rho&1\end{psmallmatrix}=LL^{\!\top}$ with
+$L=\begin{psmallmatrix}1&0\\ \rho&\sqrt{1-\rho^2}\end{psmallmatrix}$.
+
+\textbf{General case ($n$ assets).} Factor the correlation matrix $\Sigma=LL^{\!\top}$ (Cholesky, $L$ lower
+triangular), draw an independent vector $Z\sim N(0,I_n)$, and set the correlated vector $W=LZ$; then
+$\mathrm{Cov}(W)=L L^{\!\top}=\Sigma$. For increments over a step scale by $\sqrt{\Delta t}$.
+
+\textbf{Where it is used in this course:} the two-asset basket Monte Carlo (assignment), and \emph{Heston},
+where the spot and variance Brownian motions are correlated ($\rho$, usually negative). One small subtlety to
+mention: the correlation is imposed on the driving Brownian \emph{increments}; under a scheme like Euler this
+correlates the simulated state increments to first order.
+
+% ============================================================
+\section{Finite-difference schemes}
+% ============================================================
+\Qhead{Q6. Which finite-difference schemes are there?}
+Take the heat-equation form $u_t=u_{xx}$ (the Black--Scholes PDE reduces to it). With grid spacings $k=\Delta t$,
+$h=\Delta x$ and ratio $\nu=k/h^2$, the three standard schemes are:
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lll}
+\toprule
+\textbf{Scheme} & \textbf{Type} & \textbf{Stability \& accuracy}\\
+\midrule
+FTCS (forward time, central space) & explicit & conditionally stable, needs $\nu\le\tfrac12$; $O(k+h^2)$\\
+BTCS (backward time, central space) & implicit & unconditionally stable; $O(k+h^2)$\\
+Crank--Nicolson ($\tfrac12$FTCS$+\tfrac12$BTCS) & implicit & unconditionally stable; $O(k^2+h^2)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}
+  \item \textbf{FTCS} updates each node explicitly from the previous time level --- cheap, but a
+  \emph{von Neumann stability analysis} (insert a Fourier mode $u_j^i=\xi^i e^{\ii\beta j h}$) gives the
+  amplification factor $\xi=1-4\nu\sin^2(\beta h/2)$, and $|\xi|\le1$ forces the CFL condition
+  $\nu=k/h^2\le\tfrac12$. So refining the space grid forces a quadratically smaller time step.
+  \item \textbf{BTCS} solves a (tridiagonal) linear system at each step; amplification
+  $\xi=1/(1+4\nu\sin^2(\beta h/2))$, so $|\xi|\le1$ \emph{always} --- unconditionally stable.
+  \item \textbf{Crank--Nicolson} averages the two; it is second-order accurate in time and unconditionally
+  stable --- the usual default --- though it can show mild oscillations near non-smooth payoffs.
+\end{itemize}
+(These are special cases of the $\theta$-scheme: $\theta=0$ FTCS, $\theta=1$ BTCS, $\theta=\tfrac12$ CN.)
+For \emph{American} options the linear solve is replaced by a \emph{linear complementarity problem} and solved
+with projected SOR (PSOR): project onto the payoff inside each sweep.
+
+% ============================================================
+\section{The main breakthrough of the COS method}
+% ============================================================
+\Qhead{Q7. What is the main breakthrough of the COS method?}
+\textbf{That the Fourier-cosine coefficients of the density are obtained \emph{directly and in closed form}
+from the characteristic function} --- no numerical integration and no Fourier inversion are needed.
+
+In detail. On $[a,b]$ a function has the cosine expansion $f(x)=\sum_{k\ge0}{}'A_k\cos\!\big(k\pi\frac{x-a}{b-a}\big)$,
+and the coefficient is the \emph{inner product of $f$ with the cosine basis function} (this is precisely the
+``$b_k$ via an inner product with cosine'' your friend remembered):
+\begin{equation}\label{eq:Ak}
+A_k=\frac{2}{b-a}\int_a^b f(x)\cos\!\Big(k\pi\frac{x-a}{b-a}\Big)\dd x .
+\end{equation}
+Now write the cosine as the real part of a complex exponential and \emph{extend the integral to $\R$} (legitimate
+because $f$ has negligible mass outside $[a,b]$):
+\begin{equation}\label{eq:AkPhi}
+A_k\approx\frac{2}{b-a}\,\Real\!\Big\{e^{-\ii k\pi\frac{a}{b-a}}\!\int_{\R}\! f(x)\,e^{\ii\frac{k\pi}{b-a}x}\dd x\Big\}
+       =\frac{2}{b-a}\,\Real\!\Big\{\ch\!\Big(\tfrac{k\pi}{b-a}\Big)e^{-\ii k\pi\frac{a}{b-a}}\Big\},
+\end{equation}
+because $\int_{\R}f(x)e^{\ii ux}\dd x=\ch(u)$ \emph{is} the characteristic function. So the inner product
+\eqref{eq:Ak} equals the real part of the cf evaluated at the grid frequency $u_k=\tfrac{k\pi}{b-a}$.
+
+\textbf{Why this is the breakthrough.} For almost all useful models the \emph{density is unknown} but the
+\emph{characteristic function is known in closed form}. Earlier Fourier methods (Carr--Madan) had to invert a
+Fourier integral numerically with an FFT and a damping parameter. COS replaces all of that with: evaluate the
+known cf at $N$ points, take real parts, and sum against the (also closed-form) payoff coefficients. The result
+is an $O(N)$ algorithm with \emph{exponential} convergence for smooth densities. The structural reason it is
+so cheap is the orthogonality of the cosine basis (a Parseval/inner-product pairing): the integral of the
+product $f\cdot g$ becomes a simple sum of the products of their cosine coefficients.
+
+% ============================================================
+\section{Sampling from a CDF you cannot invert analytically}
+% ============================================================
+\Qhead{Q8. How do you sample a value when you have the (uniform) CDF but not an explicit inverse CDF?}
+\textbf{By inverse-transform sampling with a \emph{numerical} inversion of the CDF.}
+
+The inverse-transform principle: if $U\sim\mathrm{Uniform}(0,1)$ then $X=F^{-1}(U)$ has CDF $F$. When $F^{-1}$
+has no closed form, you do not need it analytically --- for each draw $U$ you \emph{solve} the scalar equation
+\begin{equation}
+F(x)=U
+\end{equation}
+for $x$ with a root-finder: \textbf{bisection} (robust, $F$ is monotone so the root is bracketed) or
+\textbf{Newton's method} using the density $f=F'$ as the derivative,
+$x\leftarrow x-\big(F(x)-U\big)/f(x)$. Equivalently, evaluate $F$ on a grid once and \emph{interpolate} the
+inverse (build a lookup table $x\mapsto F(x)$ and invert by interpolation), which is efficient if you need many
+samples. (An alternative family is acceptance--rejection, when even $F$ is awkward.)
+
+\textbf{Where this appears in the course --- the Broadie--Kaya exact Heston simulation.} The hard step in
+sampling Heston exactly is drawing the \emph{integrated variance} $\int_t^{t+\Delta}v_s\,\dd s$ given its
+endpoints. Its conditional distribution has no closed-form inverse, but its \emph{characteristic function} is
+known; one recovers the conditional \emph{CDF} from that cf (by Fourier/COS inversion), and then samples it by
+\emph{numerically inverting the recovered CDF} (Newton on the COS-built CDF against a uniform draw). This is
+exactly ``I have the CDF (from the cf) but not its analytic inverse, so I invert it numerically.''
+
+% ============================================================
+\section{Affine jump processes and their characteristic function}
+% ============================================================
+\Qhead{Q9. What is an affine jump process, what is the form of its characteristic function, and how do you get $a$ and $b$?}
+\textbf{Definition.} A process $X_t\in\R^d$ is an \emph{affine jump-diffusion} (Duffie--Pan--Singleton) if its
+drift $\mu(X)$, its instantaneous covariance $\sigma\sigma^{\!\top}(X)$, the jump intensity $\lambda(X)$, and
+the discount rate $R(X)$ are all \emph{affine} (linear $+$ constant) functions of the state $X$:
+\[
+\mu(x)=K_0+K_1x,\quad (\sigma\sigma^{\!\top})(x)=H_0+H_1x,\quad \lambda(x)=l_0+l_1x,\quad R(x)=R_0+R_1x .
+\]
+Black--Scholes (no jumps, log-price) and Heston (in $(\ln S,v)$) are affine; Merton/Kou jump-diffusions are
+affine.
+
+\textbf{Form of the characteristic function.} For an affine process the (discounted) characteristic
+function / transform is \emph{exponential-affine} in the state:
+\begin{equation}\label{eq:affcf}
+\boxed{\;\ch(u,\tau;x)=\E\big[e^{\ii u X_T}\mid X_t=x\big]=\exp\big(\alpha(\tau)+\beta(\tau)\cdot x\big),\qquad
+\tau=T-t.\;}
+\end{equation}
+Here $\alpha(\tau)$ (the constant term, ``$a$'') and $\beta(\tau)$ (the coefficient of the state, ``$b$'')
+are functions of the time-to-maturity only.
+
+\textbf{How to get $\alpha$ and $\beta$ --- the Riccati ODEs.} Substitute the ansatz \eqref{eq:affcf} into the
+pricing/backward PDE that $\ch$ must satisfy (the Feynman--Kac / Kolmogorov backward equation for the affine
+generator, see Q10). Because every coefficient is affine in $x$, after dividing by $\ch$ you can \emph{match}
+the terms that are \emph{constant} in $x$ and the terms that are \emph{linear} in $x$ separately. This collapses
+the PDE into a coupled system of ordinary differential equations in $\tau$ --- \emph{Riccati} equations (they
+are quadratic in $\beta$ because of the diffusion term $\tfrac12\beta^{\!\top}H\beta$, and they carry a jump
+term $\lambda\,(\theta(\beta)-1)$ where $\theta(c)=\E[e^{c\cdot J}]$ is the jump-size transform):
+\[
+\beta'(\tau)=K_1^{\!\top}\beta+\tfrac12\beta^{\!\top}H_1\beta+l_1(\theta(\beta)-1)-R_1,\qquad
+\alpha'(\tau)=K_0^{\!\top}\beta+\tfrac12\beta^{\!\top}H_0\beta+l_0(\theta(\beta)-1)-R_0,
+\]
+with initial conditions $\beta(0)=\ii u$ and $\alpha(0)=0$ (so that $\ch(u,0;x)=e^{\ii u x}$). You solve the
+$\beta$-Riccati first (often in closed form), then integrate to get $\alpha$.
+
+\textbf{Concrete examples.}
+\begin{itemize}
+  \item \textbf{Black--Scholes} (no jumps): the ODEs give $\beta(\tau)=\ii u$ and
+  $\alpha(\tau)=\ii u(r-\tfrac12\sigma^2)\tau-\tfrac12\sigma^2u^2\tau$, i.e.\
+  $\ch(u,\tau)=\exp\!\big(\ii u(r-\tfrac12\sigma^2)\tau-\tfrac12\sigma^2u^2\tau\big)$.
+  \item \textbf{Heston}: $\beta$ for the variance state solves a scalar Riccati whose solution contains
+  $D=\sqrt{(\kappa-\ii\rho\eta u)^2+\eta^2(u^2+\ii u)}$ and $G=\tfrac{\kappa-\ii\rho\eta u-D}{\kappa-\ii\rho\eta u+D}$;
+  $\alpha$ follows by integration. (Group the complex $\log/\sqrt{}$ carefully --- the ``little Heston trap'' ---
+  to stay on the right branch at long maturities.)
+\end{itemize}
+The payoff of all this: once you have $\alpha,\beta$ you have $\ch$, and $\ch$ is the \emph{only} model-specific
+input the COS method needs.
+
+% ============================================================
+\section{Deriving the pricing PDE}
+% ============================================================
+\Qhead{Q10. How do you arrive at the PDE for a pricing function?}
+Two equivalent routes; know both.
+
+\textbf{Route 1 --- delta-hedging / replication.} Hold the option and short $\Delta$ units of stock:
+$\Pi=V(S,t)-\Delta S$. Apply It\^o to $V$ (using $(\dd W)^2=\dd t$):
+\[
+\dd V=\Big(\partial_tV+\mu S\,\partial_S V+\tfrac12\sigma^2S^2\partial_{SS}V\Big)\dd t+\sigma S\,\partial_S V\,\dd W .
+\]
+Choose $\Delta=\partial_S V$ so the $\dd W$ terms cancel: the portfolio is \emph{instantaneously riskless},
+hence by no-arbitrage it must earn the risk-free rate, $\dd\Pi=r\Pi\,\dd t$. Equating the two expressions for
+$\dd\Pi$ and cancelling gives the \textbf{Black--Scholes PDE}
+\begin{equation}\label{eq:bspde}
+\partial_t V+rS\,\partial_S V+\tfrac12\sigma^2S^2\partial_{SS}V-rV=0 ,
+\end{equation}
+with terminal condition $V(S,T)=$ payoff. Note the real-world drift $\mu$ \emph{cancelled}: the price does not
+depend on it.
+
+\textbf{Route 2 --- Feynman--Kac / martingale.} Under the risk-neutral measure $\Q$ the discounted price
+$e^{-rt}V(S_t,t)$ is a \emph{martingale}, so it has zero drift. Apply It\^o to $e^{-rt}V$ and set the $\dd t$
+coefficient to zero --- this gives the \emph{same} PDE \eqref{eq:bspde}. More generally, the Feynman--Kac
+theorem says that for any diffusion $X$ with infinitesimal generator $\Lop$, the conditional expectation
+\[
+V(x,t)=\E\big[e^{-r(T-t)}g(X_T)\mid X_t=x\big]
+\quad\text{solves}\quad
+\partial_t V+\Lop V-rV=0,\ \ V(x,T)=g(x),
+\]
+where for GBM $\Lop=(r-\tfrac12\sigma^2)\partial_x+\tfrac12\sigma^2\partial_{xx}$ in log-space (and for a
+jump model $\Lop$ gains a \emph{non-local} integral term, giving a PIDE). This is the bridge between the
+expectation \eqref{eq:price} and the PDE that FD solves --- and it is the same backward equation whose
+exponential-affine solution gives the cf in Q9.
+
+% ============================================================
+\section{All the steps of the COS method}
+% ============================================================
+\Qhead{Q11. What are all the steps of the COS method (European option)?}
+\begin{enumerate}
+  \item \textbf{Write the price as a discounted expectation / integral.}
+  $V=e^{-rT}\int_{\R}g(y)f(y\mid x_0)\dd y$, in the (log-)state $y$.
+  \item \textbf{Choose the truncation range $[a,b]$ from the cumulants} of the (log-)return:
+  \[
+  [a,b]=\Big[c_1-L\sqrt{c_2+\sqrt{c_4}},\ \ c_1+L\sqrt{c_2+\sqrt{c_4}}\Big],\qquad L\approx 8\text{--}12 ,
+  \]
+  with $c_1$ the mean, $c_2$ the variance, $c_4$ the fourth cumulant. (For Black--Scholes
+  $c_1=\ln\tfrac{S_0}{K}+(r-\tfrac12\sigma^2)T$, $c_2=\sigma^2T$, $c_4=0$.)
+  \item \textbf{Replace the truncated density by its Fourier-cosine series} on $[a,b]$:
+  $f(y)\approx\sum_{k\ge0}{}'A_k\cos\!\big(k\pi\frac{y-a}{b-a}\big)$.
+  \item \textbf{Get the coefficients $A_k$ from the characteristic function} (the breakthrough, Q7):
+  $A_k\approx\frac{2}{b-a}\Real\{\ch(\tfrac{k\pi}{b-a})e^{-\ii k\pi a/(b-a)}\}$ --- evaluate the known cf on the
+  grid $u_k=\tfrac{k\pi}{b-a}$.
+  \item \textbf{Compute the payoff cosine coefficients} $V_k=\frac{2}{b-a}\int_a^b g(y)\cos(\cdot)\dd y$, which
+  are \emph{closed-form} for a call/put via the elementary integrals $\chi_k$ (of $e^{y}\cos$) and $\psi_k$
+  (of $\cos$): e.g.\ call $V_k=\frac{2}{b-a}K\big[\chi_k(0,b)-\psi_k(0,b)\big]$.
+  \item \textbf{Insert the series, swap sum and integral} (justified by uniform convergence) and use
+  orthogonality:
+  $V\approx e^{-rT}\frac{b-a}{2}\sum_{k\ge0}{}'A_kV_k$.
+  \item \textbf{Substitute $A_k$ and truncate at $N$ terms} to obtain the COS pricing formula
+  \begin{equation}
+  \boxed{\;V\approx e^{-rT}\psumN \Real\!\Big\{\ch\!\Big(\tfrac{k\pi}{b-a};x_0\Big)\,e^{-\ii k\pi a/(b-a)}\Big\}\,V_k.\;}
+  \end{equation}
+  \item \textbf{Check convergence.} Increase $N$; for a smooth density the error falls exponentially and then
+  \emph{saturates at the range-truncation floor} set by $[a,b]$.
+\end{enumerate}
+\begin{keybox}
+\textbf{The one pitfall she loves (be ready for it).} If $[a,b]$ is too narrow the price is wrong, and adding
+more terms $N$ does \emph{not} help --- because that error is a \emph{range} error, not a \emph{series} error.
+This bites at \emph{short maturity}: $c_2=\sigma^2T\to0$, so the half-width $L\sqrt{c_2+\sqrt{c_4}}$ collapses
+and $[a,b]$ becomes too small. Fix: use the cumulant rule (not a hand-picked window), keep the $\sqrt{c_4}$
+term / a minimum width, and make $[a,b]$ cover the whole strike/spot grid.
+\end{keybox}
+
+\vspace{4pt}
+\noindent\emph{One-sentence summary of the whole exam.} Every price is $e^{-rT}\E^{\Q}[\text{payoff}]$;
+\textbf{MC} samples it, \textbf{FD} solves the PDE it satisfies, and \textbf{COS} evaluates the integral using
+the characteristic function --- and the same characteristic function / affine structure, the same Cholesky
+correlation, and the same backward dynamic-programming recursion reappear across Bermudans, barriers, Heston
+and jumps.
+
+\end{document}
